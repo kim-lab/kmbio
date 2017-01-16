@@ -457,6 +457,13 @@ if is_Numpy_installed():
                   include_dirs=[numpy_include_dir],
                   ))
 
+try:
+    from Cython.Build import cythonize
+except ImportError:
+    pass
+else:
+    EXTENSIONS.extend(cythonize("Bio/PDB/*.pyx"))
+
 
 # We now define the Biopython version number in Bio/__init__.py
 # Here we can't use "import Bio" then "Bio.__version__" as that would
@@ -479,13 +486,13 @@ os.chdir(src_path)
 sys.path.insert(0, src_path)
 
 setup_args = {
-    "name": 'biopython',
+    "name": 'kmbio',
     "version": __version__,
-    "author": 'The Biopython Contributors',
-    "author_email": 'biopython@biopython.org',
-    "url": 'http://www.biopython.org/',
+    "author": 'The Biopython Contributors + KimLab',
+    "author_email": 'alexey.strokach@kimlab.org',
+    "url": 'https://github.com/kimlaborg/kmbio',
     "description": 'Freely available tools for computational molecular biology.',
-    "download_url": 'http://biopython.org/DIST/',
+    "download_url": 'https://github.com/kimlaborg/kmbio/release/',
     "cmdclass": {
         "install": install_biopython,
         "build_py": build_py_biopython,

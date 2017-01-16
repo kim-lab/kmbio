@@ -7,15 +7,18 @@
 
 from __future__ import print_function
 
-from string import ascii_letters
-
 import numpy
 import warnings
 
 from Bio.File import as_handle
 from Bio._py3k import range
 
-from Bio.PDB.MMCIF2Dict import MMCIF2Dict
+try:
+    from Bio.PDB._mmcif_to_dict import MMCIF2Dict
+except ImportError:
+    warnings.warn("Cound not import cythonized MMCIF2Dict module. Performance will suffer!")
+    from Bio.PDB.MMCIF2Dict import MMCIF2Dict
+
 from Bio.PDB.StructureBuilder import StructureBuilder
 from Bio.PDB.PDBExceptions import PDBConstructionException
 from Bio.PDB.PDBExceptions import PDBConstructionWarning
@@ -186,11 +189,11 @@ class MMCIFParser(object):
 
             coord = numpy.array((x, y, z), 'f')
             element = element_list[i] if element_list else None
-            structure_builder.init_atom(name, coord, tempfactor, occupancy, altloc,
-                name, element=element)
+            structure_builder.init_atom(
+                name, coord, tempfactor, occupancy, altloc, name, element=element)
             if aniso_flag == 1:
-                u = (aniso_u11[i], aniso_u12[i], aniso_u13[i],
-                    aniso_u22[i], aniso_u23[i], aniso_u33[i])
+                u = (aniso_u11[i], aniso_u12[i], aniso_u13[i], aniso_u22[i], aniso_u23[i],
+                     aniso_u33[i])
                 mapped_anisou = [float(x) for x in u]
                 anisou_array = numpy.array(mapped_anisou, 'f')
                 structure_builder.set_anisou(anisou_array)
@@ -372,7 +375,8 @@ class FastMMCIFParser(object):
             icode = icode_list[i]
             if icode == "?":
                 icode = " "
-            name = atom_id_list[i].strip('"')  # Remove occasional " from quoted atom names (e.g. xNA)
+            # Remove occasional " from quoted atom names (e.g. xNA)
+            name = atom_id_list[i].strip('"')
 
             # occupancy & B factor
             try:
@@ -421,14 +425,15 @@ class FastMMCIFParser(object):
 
             coord = numpy.array((x, y, z), 'f')
             element = element_list[i] if element_list else None
-            structure_builder.init_atom(name, coord, tempfactor, occupancy, altloc,
-                name, element=element)
+            structure_builder.init_atom(
+                name, coord, tempfactor, occupancy, altloc, name, element=element)
             if aniso_flag == 1:
-                u = (aniso_u11[i], aniso_u12[i], aniso_u13[i],
-                    aniso_u22[i], aniso_u23[i], aniso_u33[i])
+                u = (aniso_u11[i], aniso_u12[i], aniso_u13[i], aniso_u22[i], aniso_u23[i],
+                     aniso_u33[i])
                 mapped_anisou = [float(x) for x in u]
                 anisou_array = numpy.array(mapped_anisou, 'f')
                 structure_builder.set_anisou(anisou_array)
+
 
 if __name__ == "__main__":
     import sys

@@ -1,0 +1,114 @@
+{% set data = load_setup_py_data() %}
+
+package:
+  name: kmbio
+  version: {{ data.get('version') }}
+
+source:
+  path: ../../
+
+build:
+  script: python setup.py install
+  number: 0
+
+requirements:
+  build:
+    - python
+    - numpy
+    - reportlab
+    - mmtf-python
+    - cython
+  run:
+    - python
+    - numpy
+    - reportlab
+    - mmtf-python
+    # Binaries
+    - bwa
+    - clustalo
+    - clustalw
+    - emboss
+    - mafft
+    - muscle
+    - paml
+    # - phyml
+    # - probcons
+    - samtools
+    # - wise2
+
+test:
+  imports:
+    - Bio
+    - Bio.Align
+    - Bio.Align.Applications
+    - Bio.AlignIO
+    - Bio.Alphabet
+    - Bio.Application
+    - Bio.Blast
+    - Bio.CAPS
+    - Bio.Compass
+    - Bio.Crystal
+    - Bio.Data
+    - Bio.Emboss
+    - Bio.Entrez
+    - Bio.ExPASy
+    - Bio.FSSP
+    - Bio.GA
+    - Bio.GA.Crossover
+    - Bio.GA.Mutation
+    - Bio.GA.Repair
+    - Bio.GA.Selection
+    - Bio.GenBank
+    - Bio.Geo
+    - Bio.Graphics
+    - Bio.Graphics.GenomeDiagram
+    - Bio.HMM
+    - Bio.KEGG
+    - Bio.KEGG.Compound
+    - Bio.KEGG.Enzyme
+    - Bio.KEGG.KGML
+    - Bio.KEGG.Map
+    - Bio.Medline
+    - Bio.NMR
+    - Bio.NeuralNetwork
+    - Bio.NeuralNetwork.BackPropagation
+    - Bio.NeuralNetwork.Gene
+    - Bio.Nexus
+    - Bio.PDB
+    - Bio.PDB.QCPSuperimposer
+    - Bio.PDB.mmtf
+    - Bio.Pathway
+    - Bio.Pathway.Rep
+    - Bio.Phylo
+    - Bio.Phylo.Applications
+    - Bio.Phylo.PAML
+    - Bio.PopGen
+    - Bio.PopGen.Async
+    - Bio.PopGen.FDist
+    - Bio.PopGen.GenePop
+    - Bio.PopGen.SimCoal
+    - Bio.Restriction
+    - Bio.SCOP
+    - Bio.SVDSuperimposer
+    - Bio.SearchIO
+    - Bio.SearchIO.BlastIO
+    - Bio.SearchIO.ExonerateIO
+    - Bio.SearchIO.HmmerIO
+    - Bio.SearchIO._model
+    - Bio.SeqIO
+    - Bio.SeqUtils
+    - Bio.Sequencing
+    - Bio.Sequencing.Applications
+    - Bio.Statistics
+    - Bio.SubsMat
+    - Bio.SwissProt
+    - Bio.TogoWS
+    - Bio.UniGene
+    - Bio.UniProt
+    - Bio.Wise
+    - Bio._py3k
+    - Bio.codonalign
+    - Bio.motifs
+    - Bio.motifs.applications
+    - Bio.motifs.jaspar
+    - BioSQL
