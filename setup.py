@@ -25,12 +25,11 @@ from __future__ import print_function
 
 import sys
 import os
-import shutil
 
 if "bdist_wheel" in sys.argv:
     try:
-        import setuptools
-        import wheel
+        import setuptools  # noqa
+        import wheel  # noqa
     except ImportError:
         sys.exit("We need both setuptools AND wheel packages installed for bdist_wheel to work")
     # Import specific bits of setuptools ...
@@ -96,6 +95,7 @@ def osx_clang_fix():
         elif "-Qunused-arguments" not in os.environ[flag]:
             os.environ[flag] += " -Qunused-arguments"
 
+
 osx_clang_fix()
 
 
@@ -128,7 +128,7 @@ def get_yes_or_no(question, default):
         if sys.version_info[0] == 3:
             response = input().lower()
         else:
-            response = raw_input().lower()
+            response = raw_input().lower()  # noqa
         if not response:
             response = default_str
         if response[0] in ['y', 'n']:
@@ -180,10 +180,10 @@ def is_automated():
     if sys.argv in [["-c", "develop", "--no-deps"],
                     ["--no-deps", "-c", "develop"],
                     ["-c", "egg_info"]] \
-                    or "pip-egg-info" in sys.argv \
-                    or sys.argv[:3] == ["-c", "install", "--record"] \
-                    or sys.argv[:4] == ['-c', 'install', '--single-version-externally-managed',
-                                        '--record']:
+        or "pip-egg-info" in sys.argv \
+        or sys.argv[:3] == ["-c", "install", "--record"] \
+        or sys.argv[:4] == ['-c', 'install', '--single-version-externally-managed',
+                            '--record']:
         is_automated = True
     return is_automated
 
@@ -320,6 +320,7 @@ def is_Numpy_installed():
         return False
     return bool(can_import("numpy"))
 
+
 # --- set up the packages we are going to install
 # standard biopython packages
 PACKAGES = [
@@ -398,7 +399,7 @@ PACKAGES = [
     'Bio._py3k',
     # Other top level packages,
     'BioSQL',
-    ]
+]
 
 # packages that require Numeric Python
 NUMPY_PACKAGES = [
@@ -416,17 +417,17 @@ elif is_pypy() or is_ironpython():
     EXTENSIONS = []
 else:
     EXTENSIONS = [
-    Extension('Bio.cpairwise2',
-              ['Bio/cpairwise2module.c'],
-              ),
-    Extension('Bio.trie',
-              ['Bio/triemodule.c',
-               'Bio/trie.c'],
-              include_dirs=["Bio"]
-              ),
-    Extension('Bio.Nexus.cnexus',
-              ['Bio/Nexus/cnexus.c']
-              ),
+        Extension('Bio.cpairwise2',
+                  ['Bio/cpairwise2module.c'],
+                  ),
+        Extension('Bio.trie',
+                  ['Bio/triemodule.c',
+                   'Bio/trie.c'],
+                  include_dirs=["Bio"]
+                  ),
+        Extension('Bio.Nexus.cnexus',
+                  ['Bio/Nexus/cnexus.c']
+                  ),
     ]
 
 # Add extensions that requires NumPy to build
@@ -490,14 +491,14 @@ setup_args = {
         "build_py": build_py_biopython,
         "build_ext": build_ext_biopython,
         "test": test_biopython,
-        },
+    },
     "packages": PACKAGES,
     "ext_modules": EXTENSIONS,
     "package_data": {
         'Bio.Entrez': ['DTDs/*.dtd', 'DTDs/*.ent', 'DTDs/*.mod'],
         'Bio.PopGen': ['SimCoal/data/*.par'],
-         },
-   }
+    },
+}
 
 try:
     setup(**setup_args)
