@@ -196,7 +196,7 @@ class MMCIFParser(object):
                      aniso_u33[i])
                 mapped_anisou = [float(x) for x in u]
                 anisou_array = numpy.array(mapped_anisou, 'f')
-                structure_builder.set_anisou(anisou_array)
+                structure_builder.atom.anisou_array = anisou_array
         # Now try to set the cell
         try:
             a = float(mmcif_dict["_cell.length_a"])
@@ -432,7 +432,7 @@ class FastMMCIFParser(object):
                      aniso_u33[i])
                 mapped_anisou = [float(x) for x in u]
                 anisou_array = numpy.array(mapped_anisou, 'f')
-                structure_builder.set_anisou(anisou_array)
+                structure_builder.atom.anisou_array = anisou_array
 
 
 if __name__ == "__main__":
@@ -447,8 +447,8 @@ if __name__ == "__main__":
 
     structure = p.get_structure("test", filename)
 
-    for model in structure.get_list():
+    for model in structure:
         print(model)
-        for chain in model.get_list():
+        for chain in model:
             print(chain)
-            print("Found %d residues." % len(chain.get_list()))
+            print("Found %d residues." % len(chain))

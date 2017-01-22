@@ -39,7 +39,7 @@ class NeighborSearch(object):
         """
         self.atom_list = atom_list
         # get the coordinates
-        coord_list = [a.get_coord() for a in atom_list]
+        coord_list = [a.coord for a in atom_list]
         # to Nx3 array of type float
         self.coords = numpy.array(coord_list).astype("f")
         assert(bucket_size > 1)
@@ -57,8 +57,8 @@ class NeighborSearch(object):
         # o pair_list - a list of (entity, entity) tuples
         parent_pair_list = []
         for (e1, e2) in pair_list:
-            p1 = e1.get_parent()
-            p2 = e2.get_parent()
+            p1 = e1.parent
+            p2 = e2.parent
             if p1 == p2:
                 continue
             elif p1 < p2:
@@ -127,6 +127,7 @@ class NeighborSearch(object):
             next_level_pair_list = self._get_unique_parent_pairs(next_level_pair_list)
             if level == l:
                 return next_level_pair_list
+
 
 if __name__ == "__main__":
 

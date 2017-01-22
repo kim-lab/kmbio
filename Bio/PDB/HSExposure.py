@@ -81,7 +81,7 @@ class _AbstractHSExposure(AbstractPropertyMap):
                             # neighboring residues in the chain are ignored
                             continue
                         ro = pp2[j]
-                        if not is_aa(ro) or not ro.has_id('CA'):
+                        if not is_aa(ro) or 'CA' not in ro:
                             continue
                         cao = ro['CA'].get_vector()
                         d = (cao - ca2)
@@ -90,8 +90,8 @@ class _AbstractHSExposure(AbstractPropertyMap):
                                 hse_u += 1
                             else:
                                 hse_d += 1
-                res_id = r2.get_id()
-                chain_id = r2.get_parent().get_id()
+                res_id = r2.id
+                chain_id = r2.parent.id
                 # Fill the 3 data structures
                 hse_map[(chain_id, res_id)] = (hse_u, hse_d, angle)
                 hse_list.append((r2, (hse_u, hse_d, angle)))
@@ -182,12 +182,12 @@ class HSExposureCA(_AbstractHSExposure):
         b.normalize()
         # Add to ca_cb_list for drawing
         self.ca_cb_list.append((ca2, b + ca2))
-        if r2.has_id('CB'):
+        if 'CB' in r2:
             cb = r2['CB'].get_vector()
             cb_ca = cb - ca2
             cb_ca.normalize()
             angle = cb_ca.angle(b)
-        elif r2.get_resname() == 'GLY':
+        elif r2.resname == 'GLY':
             cb_ca = self._get_gly_cb_vector(r2)
             if cb_ca is None:
                 angle = None
@@ -239,8 +239,7 @@ class HSExposureCB(_AbstractHSExposure):
         @param offset: number of flanking residues that are ignored in the calculation of the number of neighbors
         @type offset: int
         """
-        _AbstractHSExposure.__init__(self, model, radius, offset,
-                'EXP_HSE_B_U', 'EXP_HSE_B_D')
+        _AbstractHSExposure.__init__(self, model, radius, offset, 'EXP_HSE_B_U', 'EXP_HSE_B_D')
 
     def _get_cb(self, r1, r2, r3):
         """
@@ -249,10 +248,10 @@ class HSExposureCB(_AbstractHSExposure):
         @param r1, r2, r3: three consecutive residues (only r2 is used)
         @type r1, r2, r3: L{Residue}
         """
-        if r2.get_resname() == 'GLY':
+        if r2.resname == 'GLY':
             return self._get_gly_cb_vector(r2), 0.0
         else:
-            if r2.has_id('CB') and r2.has_id('CA'):
+            if 'CB' in r2 and 'CA' in r2:
                 vcb = r2['CB'].get_vector()
                 vca = r2['CA'].get_vector()
                 return (vcb - vca), 0.0
@@ -286,7 +285,7 @@ class ExposureCN(AbstractPropertyMap):
             for i in range(0, len(pp1)):
                 fs = 0
                 r1 = pp1[i]
-                if not is_aa(r1) or not r1.has_id('CA'):
+                if not is_aa(r1) or 'CA' not in r1:
                     continue
                 ca1 = r1['CA']
                 for pp2 in ppl:
@@ -294,14 +293,14 @@ class ExposureCN(AbstractPropertyMap):
                         if pp1 is pp2 and abs(i - j) <= offset:
                             continue
                         r2 = pp2[j]
-                        if not is_aa(r2) or not r2.has_id('CA'):
+                        if not is_aa(r2) or 'CA' not in r2:
                             continue
                         ca2 = r2['CA']
                         d = (ca2 - ca1)
                         if d < radius:
                             fs += 1
-                res_id = r1.get_id()
-                chain_id = r1.get_parent().get_id()
+                res_id = r1.id
+                chain_id = r1.parent.id
                 # Fill the 3 data structures
                 fs_map[(chain_id, res_id)] = fs
                 fs_list.append((r1, fs))

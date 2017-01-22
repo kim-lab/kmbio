@@ -12,30 +12,28 @@ class Structure(Entity):
     """
     The Structure class contains a collection of Model instances.
     """
-    def __init__(self, id):
-        self.level = "S"
-        Entity.__init__(self, id)
-
-    # Special methods
+    level = "S"
 
     def __repr__(self):
-        return "<Structure id=%s>" % self.get_id()
+        return "<Structure id=%s>" % self.id
 
-    # Private methods
+    def __lt__(self, other):
+        return self.id.lower() < other.id.lower()
 
-    def _sort(self, m1, m2):
-        """Sort models.
+    def __le__(self, other):
+        return self.id.lower() <= other.id.lower()
 
-        This sorting function sorts the Model instances in the Structure instance.
-        The sorting is done based on the model id, which is a simple int that
-        reflects the order of the models in the PDB file.
+    def __eq__(self, other):
+        return self.id.lower() == other.id.lower()
 
-        Arguments:
-        o m1, m2 - Model instances
-        """
-        return cmp(m1.get_id(), m2.get_id())
+    def __ne__(self, other):
+        return self.id.lower() != other.id.lower()
 
-    # Public
+    def __ge__(self, other):
+        return self.id.lower() >= other.id.lower()
+
+    def __gt__(self, other):
+        return self.id.lower() > other.id.lower()
 
     def get_models(self):
         for m in self:
@@ -55,3 +53,9 @@ class Structure(Entity):
         for r in self.get_residues():
             for a in r:
                 yield a
+
+    def extract_models(self, model_ids):
+        structure = Structure(self.id)
+        for model_id in model_ids:
+            structure.add(self[model_id].copy())
+        return structure

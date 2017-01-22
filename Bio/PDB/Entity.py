@@ -8,10 +8,28 @@ Base class for Residue, Chain, Model and Structure classes.
 
 It is a simple container class, with list and dictionary like properties.
 """
-
+from abc import abstractmethod
+import logging
 from copy import copy
 
 from Bio.PDB.PDBExceptions import PDBConstructionException
+
+logger = logging.getLogger(__name__)
+
+
+class Index:
+
+    def __init__(self, entity):
+        self._entity = entity
+
+    def __getitem__(self, idx):
+        """Return the child with given id."""
+        return self._entity._child_list[idx]
+
+    def __delitem__(self, idx):
+        """Remove a child."""
+        item = self._entity._child_list[idx]
+        del self._entity[item.id]
 
 
 class Entity(object):
@@ -19,36 +37,42 @@ class Entity(object):
     Basic container object. Structure, Model, Chain and Residue
     are subclasses of Entity. It deals with storage and lookup.
     """
-    def __init__(self, id):
+    def __init__(self, id, children=None):
         self._id = id
-        self.full_id = None
+        self._full_id = None
         self.parent = None
-        self.child_list = []
-        self.child_dict = {}
+        self._child_list = []
+        self._child_dict = {}
         # Dictionary that keeps additional properties
         self.xtra = {}
+        #
+        self.ix = Index(self)
+        if children is not None:
+            self.add(children)
 
     # Special methods
 
     def __len__(self):
-        "Return the number of children."
-        return len(self.child_list)
+        """Return the number of children."""
+        return len(self._child_list)
 
     def __getitem__(self, id):
-        "Return the child with given id."
-        return self.child_dict[id]
+        """Return the child with given id."""
+        return self._child_dict[id]
 
     def __delitem__(self, id):
-        "Remove a child."
-        return self.detach_child(id)
+        """Remove a child."""
+        child = self._child_dict.pop(id)
+        self._child_list.remove(child)
+        child.parent = None
 
     def __contains__(self, id):
-        "True if there is a child element with the given id."
-        return (id in self.child_dict)
+        """True if there is a child element with the given id."""
+        return id in self._child_dict
 
     def __iter__(self):
-        "Iterate over children."
-        for child in self.child_list:
+        """Iterate over children."""
+        for child in self._child_list:
             yield child
 
     # Private methods
@@ -66,7 +90,7 @@ class Entity(object):
                 child._reset_full_id()
             except AttributeError:
                 pass  # Atoms do not cache their full ids.
-        self.full_id = None
+        self._full_id = None
 
     # Public methods
 
@@ -76,8 +100,7 @@ class Entity(object):
 
     @id.setter
     def id(self, value):
-        """
-        Change the id of this entity.
+        """Change the id of this entity.
 
         This will update the child_dict of this entity's parent
         and invalidate all cached full ids involving this entity.
@@ -85,18 +108,19 @@ class Entity(object):
         @raises: ValueError
         """
         if self.parent:
-            if value in self.parent.child_dict:
+            if value in self.parent:
                 raise ValueError(
-                              "Cannot change id from `{}` to `{}`. "
-                              "The id `{}` is already used for a sibling of"
-                              " this entity.".format(self._id, value, value))
-            del self.parent.child_dict[self._id]
-            self.parent.child_dict[value] = self
-
+                    "Cannot change id from `{0}` to `{1}`. "
+                    "The id `{1}` is already used for a sibling of this entity."
+                    .format(self._id, value))
+            del self.parent._child_dict[self._id]
+            self.parent._child_dict[value] = self
         self._id = value
         self._reset_full_id()
 
-    def get_level(self):
+    @property
+    @abstractmethod
+    def level(self):
         """Return level in hierarchy.
 
         A - atom
@@ -105,65 +129,61 @@ class Entity(object):
         M - model
         S - structure
         """
-        return self.level
+        raise NotImplementedError
 
-    def set_parent(self, entity):
-        "Set the parent Entity object."
-        self.parent = entity
+    def pop(self, id):
+        """Remove and return a child."""
+        child = self._child_dict.pop(id)
+        self._child_list.remove(child)
+        child.parent = None
+        return child
 
-    def detach_parent(self):
-        "Detach the parent."
-        self.parent = None
+    def clear(self):
+        for child in self:
+            child.parent = None
+        self._child_list.clear()
+        self._child_dict.clear()
+        self.xtra.clear()
 
-    def detach_child(self, id):
-        "Remove a child."
-        child = self.child_dict[id]
-        child.detach_parent()
-        del self.child_dict[id]
-        self.child_list.remove(child)
+    def add(self, entities):
+        """Add a child to the Entity."""
+        # Single entity
+        if entities is None:
+            logger.warning("Trying to add a 'None' child to {}".format(self))
+            return
+        if isinstance(entities, (Entity, DisorderedEntityWrapper)):
+            entities = [entities]
+        elif not isinstance(entities, list):
+            # Like a generator...
+            entities = list(entities)
+        if any(c.id in self for c in entities):
+            raise PDBConstructionException("Some of the entities are defined twice")
+        if len({c.id for c in entities}) < len(entities):
+            raise PDBConstructionException("Some of the entities are duplicates")
+        for entity in entities:
+            entity.parent = self
+        self._child_list.extend(entities)
+        self._child_dict.update({c.id: c for c in entities})
 
-    def add(self, entity):
-        "Add a child to the Entity."
-        entity_id = entity.get_id()
-        if self.has_id(entity_id):
-            raise PDBConstructionException(
-                "%s defined twice" % str(entity_id))
-        entity.set_parent(self)
-        self.child_list.append(entity)
-        self.child_dict[entity_id] = entity
-
-    def insert(self, pos, entity):
+    def insert(self, pos, entities):
         "Add a child to the Entity at a specified position."
-        entity_id = entity.get_id()
-        if self.has_id(entity_id):
-            raise PDBConstructionException(
-                "%s defined twice" % str(entity_id))
-        entity.set_parent(self)
-        self.child_list[pos:pos] = [entity]
-        self.child_dict[entity_id] = entity
+        # Single entity
+        if isinstance(entities, (Entity, DisorderedEntityWrapper)):
+            entities = [entities]
+        elif not isinstance(entities, list):
+            # Like a generator...
+            entities = list(entities)
+        if any(c.id in self for c in entities):
+            raise PDBConstructionException("Some of the entities are defined twice")
+        if len({c.id for c in entities}) < len(entities):
+            raise PDBConstructionException("Some of the entities are duplicates")
+        for entity in entities:
+            entity.parent = self
+        self._child_list[pos:pos] = entities
+        self._child_dict.update({c.id: c for c in entities})
 
-    def get_iterator(self):
-        "Return iterator over children."
-        for child in self.child_list:
-            yield child
-
-    def get_list(self):
-        "Return a copy of the list of children."
-        return copy(self.child_list)
-
-    def has_id(self, id):
-        """True if a child with given id exists."""
-        return (id in self.child_dict)
-
-    def get_parent(self):
-        "Return the parent Entity object."
-        return self.parent
-
-    def get_id(self):
-        "Return the id."
-        return self.id
-
-    def get_full_id(self):
+    @property
+    def full_id(self):
         """Return the full id.
 
         The full id is a tuple containing all id's starting from
@@ -183,17 +203,17 @@ class Entity(object):
         (or a water) because it has a blank hetero field, that its sequence
         identifier is 10 and its insertion code "A".
         """
-        if self.full_id is None:
-            entity_id = self.get_id()
+        if self._full_id is None:
+            entity_id = self.id
             l = [entity_id]
-            parent = self.get_parent()
+            parent = self.parent
             while parent is not None:
-                entity_id = parent.get_id()
+                entity_id = parent.id
                 l.append(entity_id)
-                parent = parent.get_parent()
+                parent = parent.parent
             l.reverse()
-            self.full_id = tuple(l)
-        return self.full_id
+            self._full_id = tuple(l)
+        return self._full_id
 
     def transform(self, rot, tran):
         """
@@ -210,20 +230,14 @@ class Entity(object):
         @param tran: the translation vector
         @type tran: size 3 Numeric array
         """
-        for o in self.get_list():
+        for o in self:
             o.transform(rot, tran)
 
     def copy(self):
-        shallow = copy(self)
-
-        shallow.child_list = []
-        shallow.child_dict = {}
-        shallow.xtra = copy(self.xtra)
-
-        shallow.detach_parent()
-
-        for child in self.child_list:
-            shallow.add(child.copy())
+        shallow = copy(self)  # copy class type, etc.
+        # Need a generator from self because lazy evaluation:
+        Entity.__init__(shallow, shallow.id, (c.copy() for c in self))
+        shallow.xtra = self.xtra.copy()
         return shallow
 
 
@@ -237,11 +251,13 @@ class DisorderedEntityWrapper(object):
     where each Atom object represents a specific position of a disordered
     atom in the structure.
     """
+
     def __init__(self, id):
         self.id = id
-        self.child_dict = {}
+        self._child_dict = {}  # this is more of a sibling dict
         self.selected_child = None
-        self.parent = None
+        self._parent = None
+        self.disordered = 2
 
     # Special methods
 
@@ -261,18 +277,19 @@ class DisorderedEntityWrapper(object):
     # (NB: setitem was here before getitem, iter, len, sub)
     def __setitem__(self, id, child):
         "Add a child, associated with a certain id."
-        self.child_dict[id] = child
+        self._child_dict[id] = child
 
     def __contains__(self, id):
-        "True if the child has the given id."
+        """True if the child has the given id."""
         return (id in self.selected_child)
 
     def __iter__(self):
-        "Return the number of children."
-        return iter(self.selected_child)
+        """Iterate over the children."""
+        for item in self.selected_child:
+            yield item
 
     def __len__(self):
-        "Return the number of children."
+        """Return the number of children."""
         return len(self.selected_child)
 
     def __sub__(self, other):
@@ -281,51 +298,51 @@ class DisorderedEntityWrapper(object):
 
     # Public methods
 
-    def get_id(self):
-        "Return the id."
-        return self.id
+    @property
+    def parent(self):
+        return self._parent
+
+    @parent.setter
+    def parent(self, parent):
+        if parent is None:
+            # Detach parent
+            self.parent = None
+            for child in self.disordered_get_list():
+                child.parent = None
+        else:
+            self._parent = parent
+
+    @property
+    def parent(self):
+        "Return parent."
+        return self._parent
+
+    @parent.setter
+    def parent(self, parent):
+        "Set the parent for the object and its children."
+        self._parent = parent
+        for child in self.disordered_get_list():
+            child.parent = parent
 
     def disordered_has_id(self, id):
         """True if there is an object present associated with this id."""
-        return (id in self.child_dict)
-
-    def detach_parent(self):
-        "Detach the parent"
-        self.parent = None
-        for child in self.disordered_get_list():
-            child.detach_parent()
-
-    def get_parent(self):
-        "Return parent."
-        return self.parent
-
-    def set_parent(self, parent):
-        "Set the parent for the object and its children."
-        self.parent = parent
-        for child in self.disordered_get_list():
-            child.set_parent(parent)
+        return (id in self._child_dict)
 
     def disordered_select(self, id):
         """Select the object with given id as the currently active object.
 
         Uncaught method calls are forwarded to the selected child object.
         """
-        self.selected_child = self.child_dict[id]
+        self.selected_child = self._child_dict[id]
 
     def disordered_add(self, child):
         "This is implemented by DisorderedAtom and DisorderedResidue."
         raise NotImplementedError
 
-    def is_disordered(self):
-        """
-        Return 2, indicating that this Entity is a collection of Entities.
-        """
-        return 2
-
     def disordered_get_id_list(self):
-        "Return a list of id's."
+        """Return a list of id's."""
         # sort id list alphabetically
-        return sorted(self.child_dict)
+        return sorted(self._child_dict)
 
     def disordered_get(self, id=None):
         """Get the child object associated with id.
@@ -334,8 +351,8 @@ class DisorderedEntityWrapper(object):
         """
         if id is None:
             return self.selected_child
-        return self.child_dict[id]
+        return self._child_dict[id]
 
     def disordered_get_list(self):
         "Return list of children."
-        return list(self.child_dict.values())
+        return list(self._child_dict.values())

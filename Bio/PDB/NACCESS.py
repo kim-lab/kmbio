@@ -43,7 +43,7 @@ def run_naccess(model, pdb_file, probe_size=None, z_slice=None,
         shutil.copy(pdb_file, tmp_pdb_file)
     else:
         writer = PDBIO()
-        writer.set_structure(model.get_parent())
+        writer.set_structure(model.parent)
         writer.save(tmp_pdb_file)
 
     # chdir to temp directory, as NACCESS writes to current working directory
@@ -136,13 +136,13 @@ class NACCESS(AbstractResiduePropertyMap):
         property_list = []
         # Now create a dictionary that maps Residue objects to accessibility
         for chain in model:
-            chain_id = chain.get_id()
+            chain_id = chain.id
             for res in chain:
-                res_id = res.get_id()
+                res_id = res.id
                 if (chain_id, res_id) in naccess_dict:
                     item = naccess_dict[(chain_id, res_id)]
                     res_name = item['res_name']
-                    assert (res_name == res.get_resname())
+                    assert (res_name == res.resname)
                     property_dict[(chain_id, res_id)] = item
                     property_keys.append((chain_id, res_id))
                     property_list.append((res, item))
@@ -166,11 +166,11 @@ class NACCESS_atomic(AbstractAtomPropertyMap):
         property_list = []
         # Now create a dictionary that maps Atom objects to accessibility
         for chain in model:
-            chain_id = chain.get_id()
+            chain_id = chain.id
             for residue in chain:
-                res_id = residue.get_id()
+                res_id = residue.id
                 for atom in residue:
-                    atom_id = atom.get_id()
+                    atom_id = atom.id
                     full_id = (chain_id, res_id, atom_id)
                     if full_id in self.naccess_atom_dict:
                         asa = self.naccess_atom_dict[full_id]

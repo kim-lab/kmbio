@@ -27,7 +27,7 @@ def uniqueify(items):
 
 def get_unique_parents(entity_list):
     """Translate a list of entities to a list of their (unique) parents."""
-    unique_parents = set(entity.get_parent() for entity in entity_list)
+    unique_parents = set(entity.parent for entity in entity_list)
     return list(unique_parents)
 
 
@@ -57,8 +57,8 @@ def unfold_entities(entity_list, target_level):
     if isinstance(entity_list, (Entity, Atom)):
         entity_list = [entity_list]
 
-    level = entity_list[0].get_level()
-    if not all(entity.get_level() == level for entity in entity_list):
+    level = entity_list[0].level
+    if not all(entity.level == level for entity in entity_list):
         raise PDBException("Entity list is not homogeneous.")
 
     target_index = entity_levels.index(target_level)
@@ -73,7 +73,10 @@ def unfold_entities(entity_list, target_level):
     else:  # we're going up, e.g. A->S
         for i in range(level_index, target_index):
             # find unique parents
-            entity_list = set(entity.get_parent() for entity in entity_list)
+            _seen = set()
+            entity_list = [
+                entity.parent for entity in entity_list
+                if entity.parent.id not in _seen and not _seen.add(entity.parent.id)]
     return list(entity_list)
 
 

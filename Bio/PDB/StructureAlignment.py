@@ -81,7 +81,7 @@ class StructureAlignment(object):
 
     def _test_equivalence(self, r1, aa1):
         "Test if aa in sequence fits aa in structure."
-        resname = r1.get_resname()
+        resname = r1.resname
         resname = SCOPData.protein_letters_3to1[resname]
         assert(aa1 == resname)
 

@@ -63,11 +63,11 @@ class ParseReal(unittest.TestCase):
             f_pp = f_polypeptides[0]
 
             # Check the start and end positions
-            self.assertEqual(pp[0].get_id()[1], 151)
-            self.assertEqual(pp[-1].get_id()[1], 220)
+            self.assertEqual(pp[0].id[1], 151)
+            self.assertEqual(pp[-1].id[1], 220)
 
-            self.assertEqual(f_pp[0].get_id()[1], 151)
-            self.assertEqual(f_pp[-1].get_id()[1], 220)
+            self.assertEqual(f_pp[0].id[1], 151)
+            self.assertEqual(f_pp[-1].id[1], 220)
 
             # Check the sequence
             s = pp.get_sequence()
@@ -91,8 +91,8 @@ class ParseReal(unittest.TestCase):
 
             # First fragment
             pp = polypeptides[0]
-            self.assertEqual(pp[0].get_id()[1], 152)
-            self.assertEqual(pp[-1].get_id()[1], 184)
+            self.assertEqual(pp[0].id[1], 152)
+            self.assertEqual(pp[-1].id[1], 184)
             s = pp.get_sequence()
             self.assertTrue(isinstance(s, Seq))
             self.assertEqual(s.alphabet, generic_protein)
@@ -100,8 +100,8 @@ class ParseReal(unittest.TestCase):
 
             # Second fragment
             pp = polypeptides[1]
-            self.assertEqual(pp[0].get_id()[1], 186)
-            self.assertEqual(pp[-1].get_id()[1], 213)
+            self.assertEqual(pp[0].id[1], 186)
+            self.assertEqual(pp[-1].id[1], 213)
             s = pp.get_sequence()
             self.assertTrue(isinstance(s, Seq))
             self.assertEqual(s.alphabet, generic_protein)
@@ -109,8 +109,8 @@ class ParseReal(unittest.TestCase):
 
             # Third fragment
             pp = polypeptides[2]
-            self.assertEqual(pp[0].get_id()[1], 216)
-            self.assertEqual(pp[-1].get_id()[1], 220)
+            self.assertEqual(pp[0].id[1], 216)
+            self.assertEqual(pp[-1].id[1], 220)
             s = pp.get_sequence()
             self.assertTrue(isinstance(s, Seq))
             self.assertEqual(s.alphabet, generic_protein)
@@ -140,8 +140,8 @@ class ParseReal(unittest.TestCase):
             self.assertEqual(len(polypeptides), 1)
             pp = polypeptides[0]
             # Check the start and end positions
-            self.assertEqual(pp[0].get_id()[1], 1)
-            self.assertEqual(pp[-1].get_id()[1], 51)
+            self.assertEqual(pp[0].id[1], 1)
+            self.assertEqual(pp[-1].id[1], 51)
             # Check the sequence
             s = pp.get_sequence()
             self.assertTrue(isinstance(s, Seq))
@@ -155,8 +155,8 @@ class ParseReal(unittest.TestCase):
             self.assertEqual(len(polypeptides), 1)
             pp = polypeptides[0]
             # Check the start and end positions
-            self.assertEqual(pp[0].get_id()[1], 1)
-            self.assertEqual(pp[-1].get_id()[1], 51)
+            self.assertEqual(pp[0].id[1], 1)
+            self.assertEqual(pp[-1].id[1], 51)
             # Check the sequence
             s = pp.get_sequence()
             self.assertTrue(isinstance(s, Seq))
@@ -181,8 +181,8 @@ class ParseReal(unittest.TestCase):
             self.assertEqual(len(polypeptides), 2)
             pp = polypeptides[0]
             # Check the start and end positions (first segment only)
-            self.assertEqual(pp[0].get_id()[1], 16)
-            self.assertEqual(pp[-1].get_id()[1], 244)
+            self.assertEqual(pp[0].id[1], 16)
+            self.assertEqual(pp[-1].id[1], 244)
             # Check the sequence
             refseq = "IIGGEFTTIENQPWFAAIYRRHRGGSVTYVCGGSLISPCWVISATHCFIDYPKKEDYIVYLGR" \
                      "SRLNSNTQGEMKFEVENLILHKDYSADTLAYHNDIALLKIRSKEGRCAQPSRTIQTIALPSMY" \
@@ -221,13 +221,13 @@ class ParseReal(unittest.TestCase):
 
         # Cursory check -- this would be true even if the residue just
         # contained some disordered atoms.
-        self.assertTrue(res_1.is_disordered(), "Residue 1 is disordered")
-        self.assertTrue(res_15.is_disordered(), "Residue 15 is disordered")
+        self.assertTrue(res_1.disordered, "Residue 1 is disordered")
+        self.assertTrue(res_15.disordered, "Residue 15 is disordered")
 
         # Check a non-mutated residue just to be sure we didn't break the
         # parser and cause everyhing to be disordered.
         self.assertFalse(
-            structure[0]["A"][13].is_disordered(),
+            structure[0]["A"][13].disordered,
             "Residue 13 is not disordered")
 
         # Check that the residue types were parsed correctly.
@@ -244,13 +244,14 @@ class ParseReal(unittest.TestCase):
         # correct set of residues was parsed.
         res_1.disordered_select('PRO')
         self.assertAlmostEqual(
-            res_1["CA"].get_occupancy(),
+            res_1["CA"].occupancy,
             0.83, 2, "Residue 1 proline occupancy correcy")
 
         res_1.disordered_select('SER')
         self.assertAlmostEqual(
-            res_1["CA"].get_occupancy(),
+            res_1["CA"].occupancy,
             0.17, 2, "Residue 1 serine occupancy correcy")
+
 
 if __name__ == '__main__':
     runner = unittest.TextTestRunner(verbosity=2)

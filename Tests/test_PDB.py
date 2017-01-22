@@ -105,9 +105,9 @@ class A_ExceptionTest(unittest.TestCase):
             self.assertEqual(len(w), 3, w)
         atoms = structure[0]['A'][(' ', 152, ' ')]
         # Blank occupancy behavior set in Bio/PDB/PDBParser
-        self.assertEqual(atoms['N'].get_occupancy(), None)
-        self.assertEqual(atoms['CA'].get_occupancy(), 1.0)
-        self.assertEqual(atoms['C'].get_occupancy(), 0.0)
+        self.assertEqual(atoms['N'].occupancy, None)
+        self.assertEqual(atoms['CA'].occupancy, 1.0)
+        self.assertEqual(atoms['C'].occupancy, 0.0)
 
         strict = PDBParser(PERMISSIVE=False)
         self.assertRaises(PDBConstructionException,
@@ -170,8 +170,8 @@ class ParseTest(unittest.TestCase):
         self.assertEqual(len(polypeptides), 1)
         pp = polypeptides[0]
         # Check the start and end positions
-        self.assertEqual(pp[0].get_id()[1], 2)
-        self.assertEqual(pp[-1].get_id()[1], 86)
+        self.assertEqual(pp[0].id[1], 2)
+        self.assertEqual(pp[-1].id[1], 86)
         # Check the sequence
         s = pp.get_sequence()
         self.assertTrue(isinstance(s, Seq))
@@ -187,8 +187,8 @@ class ParseTest(unittest.TestCase):
         self.assertEqual(len(polypeptides), 1)
         pp = polypeptides[0]
         # Check the start and end positions
-        self.assertEqual(pp[0].get_id()[1], 2)
-        self.assertEqual(pp[-1].get_id()[1], 86)
+        self.assertEqual(pp[0].id[1], 2)
+        self.assertEqual(pp[-1].id[1], 86)
         # Check the sequence
         s = pp.get_sequence()
         self.assertTrue(isinstance(s, Seq))
@@ -208,8 +208,8 @@ class ParseTest(unittest.TestCase):
         # Chain 'A' contains 1 residue
         self.assertEqual(len(m0['A']), 1)
         # Residue ('H_PCA', 1, ' ') contains 8 atoms.
-        residue = m0['A'].get_list()[0]
-        self.assertEqual(residue.get_id(), ('H_PCA', 1, ' '))
+        residue = m0['A'].ix[0]
+        self.assertEqual(residue.id, ('H_PCA', 1, ' '))
         self.assertEqual(len(residue), 9)
         # --- Checking model 1 ---
         m1 = self.structure[1]
@@ -390,19 +390,19 @@ class ParseTest(unittest.TestCase):
 
         for c_idx, chn in enumerate(chain_data):
             # Check chain ID and length
-            chain = m1.get_list()[c_idx]
-            self.assertEqual(chain.get_id(), chn[0])
+            chain = m1.ix[c_idx]
+            self.assertEqual(chain.id, chn[0])
             self.assertEqual(len(chain), chn[1])
+            # Now go over all the residues:
             for r_idx, res in enumerate(chn[2]):
-                residue = chain.get_list()[r_idx]
+                residue = chain.ix[r_idx]
                 # Check residue ID and atom count
-                self.assertEqual(residue.get_id(), res[0])
+                self.assertEqual(residue.id, res[0])
                 self.assertEqual(len(residue), res[1])
-                disorder_lvl = residue.is_disordered()
+                disorder_lvl = residue.disordered
                 if disorder_lvl == 1:
                     # Check the number of disordered atoms
-                    disordered_count = sum(1 for atom in residue
-                                           if atom.is_disordered())
+                    disordered_count = sum(1 for atom in residue if atom.disordered)
                     if disordered_count:
                         self.assertEqual(disordered_count, res[2])
                 elif disorder_lvl == 2:
@@ -553,8 +553,8 @@ class ParseReal(unittest.TestCase):
             self.assertEqual(len(polypeptides), 1)
             pp = polypeptides[0]
             # Check the start and end positions
-            self.assertEqual(pp[0].get_id()[1], 151)
-            self.assertEqual(pp[-1].get_id()[1], 220)
+            self.assertEqual(pp[0].id[1], 151)
+            self.assertEqual(pp[-1].id[1], 220)
             # Check the sequence
             s = pp.get_sequence()
             self.assertTrue(isinstance(s, Seq))
@@ -570,24 +570,24 @@ class ParseReal(unittest.TestCase):
             self.assertEqual(len(polypeptides), 3)
             # First fragment
             pp = polypeptides[0]
-            self.assertEqual(pp[0].get_id()[1], 152)
-            self.assertEqual(pp[-1].get_id()[1], 184)
+            self.assertEqual(pp[0].id[1], 152)
+            self.assertEqual(pp[-1].id[1], 184)
             s = pp.get_sequence()
             self.assertTrue(isinstance(s, Seq))
             self.assertEqual(s.alphabet, generic_protein)
             self.assertEqual("DIRQGPKEPFRDYVDRFYKTLRAEQASQEVKNW", str(s))
             # Second fragment
             pp = polypeptides[1]
-            self.assertEqual(pp[0].get_id()[1], 186)
-            self.assertEqual(pp[-1].get_id()[1], 213)
+            self.assertEqual(pp[0].id[1], 186)
+            self.assertEqual(pp[-1].id[1], 213)
             s = pp.get_sequence()
             self.assertTrue(isinstance(s, Seq))
             self.assertEqual(s.alphabet, generic_protein)
             self.assertEqual("TETLLVQNANPDCKTILKALGPGATLEE", str(s))
             # Third fragment
             pp = polypeptides[2]
-            self.assertEqual(pp[0].get_id()[1], 216)
-            self.assertEqual(pp[-1].get_id()[1], 220)
+            self.assertEqual(pp[0].id[1], 216)
+            self.assertEqual(pp[-1].id[1], 220)
             s = pp.get_sequence()
             self.assertTrue(isinstance(s, Seq))
             self.assertEqual(s.alphabet, generic_protein)
@@ -831,7 +831,7 @@ class WriteTest(unittest.TestCase):
                 warnings.simplefilter("ignore", PDBConstructionWarning)
                 struct2 = self.parser.get_structure("test", filename)
             atoms = struct2[0]['A'][(' ', 152, ' ')]
-            self.assertEqual(atoms['N'].get_occupancy(), None)
+            self.assertEqual(atoms['N'].occupancy, None)
         finally:
             os.remove(filename)
 
@@ -845,16 +845,16 @@ class Exposure(unittest.TestCase):
             structure = PDBParser(PERMISSIVE=True).get_structure('X', pdb_filename)
         self.model = structure[1]
         # Look at first chain only
-        a_residues = list(self.model["A"].child_list)
+        a_residues = list(self.model["A"])
         self.assertEqual(86, len(a_residues))
-        self.assertEqual(a_residues[0].get_resname(), "CYS")
-        self.assertEqual(a_residues[1].get_resname(), "ARG")
-        self.assertEqual(a_residues[2].get_resname(), "CYS")
-        self.assertEqual(a_residues[3].get_resname(), "GLY")
+        self.assertEqual(a_residues[0].resname, "CYS")
+        self.assertEqual(a_residues[1].resname, "ARG")
+        self.assertEqual(a_residues[2].resname, "CYS")
+        self.assertEqual(a_residues[3].resname, "GLY")
         # ...
-        self.assertEqual(a_residues[-3].get_resname(), "TYR")
-        self.assertEqual(a_residues[-2].get_resname(), "ARG")
-        self.assertEqual(a_residues[-1].get_resname(), "CYS")
+        self.assertEqual(a_residues[-3].resname, "TYR")
+        self.assertEqual(a_residues[-2].resname, "ARG")
+        self.assertEqual(a_residues[-1].resname, "CYS")
         self.a_residues = a_residues
         self.radius = 13.0
 
@@ -931,7 +931,7 @@ class Atom_Element(unittest.TestCase):
 
     def test_AtomElement(self):
         """ Atom Element """
-        atoms = self.residue.child_list
+        atoms = self.residue.ix[:]
         self.assertEqual('N', atoms[0].element)  # N
         self.assertEqual('C', atoms[1].element)  # Alpha Carbon
         self.assertEqual('CA', atoms[8].element)  # Calcium
@@ -941,7 +941,7 @@ class Atom_Element(unittest.TestCase):
         pdb_filename = "PDB/ions.pdb"
         structure = PDBParser(PERMISSIVE=True).get_structure('X', pdb_filename)
         # check magnesium atom
-        atoms = structure[0]['A'][('H_ MG', 1, ' ')].child_list
+        atoms = structure[0]['A'][('H_ MG', 1, ' ')].ix[:]
         self.assertEqual('MG', atoms[0].element)
 
     def test_hydrogens(self):
@@ -1048,7 +1048,7 @@ class ChangingIdTests(unittest.TestCase):
         atom = next(iter(self.struc.get_atoms()))
 
         # Generate the original full id.
-        original_id = atom.get_full_id()
+        original_id = atom.full_id
         self.assertEqual(original_id,
                          ('X', 0, 'A', ('H_PCA', 1, ' '), ('N', ' ')))
         residue = next(iter(self.struc.get_residues()))
@@ -1059,7 +1059,7 @@ class ChangingIdTests(unittest.TestCase):
 
         # Changing the residue's id should lead to an updated full id.
         residue.id = (' ', 1, ' ')
-        new_id = atom.get_full_id()
+        new_id = atom.full_id
         self.assertNotEqual(original_id, new_id)
         self.assertEqual(new_id, ('X', 0, 'A', (' ', 1, ' '), ('N', ' ')))
 
@@ -1070,7 +1070,7 @@ class ChangingIdTests(unittest.TestCase):
         atom = next(iter(self.struc.get_atoms()))
 
         # Generate the original full id.
-        original_id = atom.get_full_id()
+        original_id = atom.full_id
         self.assertEqual(original_id,
                          ('X', 0, 'A', ('H_PCA', 1, ' '), ('N', ' ')))
         residue = next(iter(self.struc.get_residues()))
@@ -1082,7 +1082,7 @@ class ChangingIdTests(unittest.TestCase):
 
         # Changing the chain's id should lead to an updated full id.
         chain.id = 'Q'
-        new_id = atom.get_full_id()
+        new_id = atom.full_id
         self.assertNotEqual(original_id, new_id)
         self.assertEqual(new_id, ('X', 0, 'Q', ('H_PCA', 1, ' '), ('N', ' ')))
 
@@ -1109,21 +1109,21 @@ class TransformTests(unittest.TestCase):
             warnings.simplefilter("ignore", PDBConstructionWarning)
             self.s = PDBParser(PERMISSIVE=True).get_structure(
                 'X', "PDB/a_structure.pdb")
-        self.m = self.s.get_list()[0]
-        self.c = self.m.get_list()[0]
-        self.r = self.c.get_list()[0]
-        self.a = self.r.get_list()[0]
+        self.m = self.s.ix[0]
+        self.c = self.m.ix[0]
+        self.r = self.c.ix[0]
+        self.a = self.r.ix[0]
 
     def get_total_pos(self, o):
         """
         Returns the sum of the positions of atoms in an entity along
         with the number of atoms.
         """
-        if hasattr(o, "get_coord"):
-            return o.get_coord(), 1
+        if hasattr(o, "coord"):
+            return o.coord, 1
         total_pos = numpy.array((0.0, 0.0, 0.0))
         total_count = 0
-        for p in o.get_list():
+        for p in o:
             pos, count = self.get_total_pos(p)
             total_pos += pos
             total_count += count
@@ -1156,22 +1156,22 @@ class CopyTests(unittest.TestCase):
             warnings.simplefilter("ignore", PDBConstructionWarning)
             self.s = PDBParser(PERMISSIVE=True).get_structure(
                 'X', "PDB/a_structure.pdb")
-        self.m = self.s.get_list()[0]
-        self.c = self.m.get_list()[0]
-        self.r = self.c.get_list()[0]
-        self.a = self.r.get_list()[0]
+        self.m = self.s.ix[0]
+        self.c = self.m.ix[0]
+        self.r = self.c.ix[0]
+        self.a = self.r.ix[0]
 
     def test_atom_copy(self):
         aa = self.a.copy()
         self.assertFalse(self.a is aa)
-        self.assertFalse(self.a.get_coord() is aa.get_coord())
+        self.assertFalse(self.a.coord is aa.coord)
 
     def test_entitity_copy(self):
         """Make a copy of a residue."""
         for e in (self.s, self.m, self.c, self.r):
             ee = e.copy()
             self.assertFalse(e is ee)
-            self.assertFalse(e.get_list()[0] is ee.get_list()[0])
+            self.assertFalse(e.ix[0] is ee.ix[0])
 
 
 def eprint(*args, **kwargs):

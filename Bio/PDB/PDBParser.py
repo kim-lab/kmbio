@@ -232,7 +232,7 @@ class PDBParser(object):
                                              line[49:56], line[56:63], line[63:70])]
                 # U's are scaled by 10^4
                 anisou_array = (numpy.array(anisou, "f") / 10000.0).astype("f")
-                structure_builder.set_anisou(anisou_array)
+                structure_builder.atom.anisou_array = anisou_array
             elif record_type == "MODEL ":
                 try:
                     serial_num = int(line[10:14])
@@ -259,13 +259,13 @@ class PDBParser(object):
                                              line[49:56], line[56:63], line[63:70])]
                 # U sigma's are scaled by 10^4
                 siguij_array = (numpy.array(siguij, "f") / 10000.0).astype("f")
-                structure_builder.set_siguij(siguij_array)
+                structure_builder.atom.set_siguij = siguij_array
             elif record_type == "SIGATM":
                 # standard deviation of atomic positions
                 sigatm = [float(x) for x in (line[30:38], line[38:45], line[46:54],
                                              line[54:60], line[60:66])]
                 sigatm_array = numpy.array(sigatm, "f")
-                structure_builder.set_sigatm(sigatm_array)
+                structure_builder.atom.sigatm_array = sigatm_array
             local_line_counter += 1
         # EOF (does not end in END or CONECT)
         self.line_counter = self.line_counter + local_line_counter
@@ -300,16 +300,16 @@ if __name__ == "__main__":
     s = p.get_structure("scr", filename)
 
     for m in s:
-        p = m.get_parent()
+        p = m.parent
         assert(p is s)
         for c in m:
-            p = c.get_parent()
+            p = c.parent
             assert(p is m)
             for r in c:
                 print(r)
-                p = r.get_parent()
+                p = r.parent
                 assert(p is c)
                 for a in r:
-                    p = a.get_parent()
+                    p = a.parent
                     if p is not r:
                         print("%s %s" % (p, r))
