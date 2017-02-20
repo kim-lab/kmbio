@@ -71,7 +71,7 @@ class Model(Entity):
                 yield a
 
     # Custom
-    def extract_chains(self, chain_ids):
+    def extract(self, chain_ids):
         model = Model(self.id, self.serial_num)
         for chain_id in chain_ids:
             model.add(self[chain_id].copy())

@@ -137,9 +137,6 @@ if __name__ == "__main__":
         def __init__(self):
             self.coord = (100 * random(3))
 
-        def get_coord(self):
-            return self.coord
-
     for i in range(0, 20):
         # Make a list of 100 atoms
         al = [Atom() for j in range(100)]

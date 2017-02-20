@@ -2,6 +2,7 @@
 build
 .cache
 .coverage
+__pycache__
 
 #Ignore the distribution directory
 dist

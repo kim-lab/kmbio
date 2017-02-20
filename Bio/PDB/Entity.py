@@ -24,12 +24,15 @@ class Index:
 
     def __getitem__(self, idx):
         """Return the child with given id."""
+        if not isinstance(idx, (int, slice)):
+            idx = slice(idx.start, idx.stop)
         return self._entity._child_list[idx]
 
     def __delitem__(self, idx):
         """Remove a child."""
-        item = self._entity._child_list[idx]
-        del self._entity[item.id]
+        items = self[idx]
+        for item in items if isinstance(items, list) else (items, ):
+            del self._entity[item.id]
 
 
 class Entity(object):
