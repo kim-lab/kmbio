@@ -31,20 +31,6 @@ build:
     - conda install -yq 'requests<2.12'
     - conda install -yq --use-local $CI_PROJECT_NAME
 
-documentation:
-  <<: *install_conda_package
-  stage: deploy
-  script:
-    - pip install -q sphinx sphinx_rtd_theme
-    - touch kmtools/__init__.py
-    - sphinx-apidoc elaspic -o docs/modules/ -TEMP --force
-    - rm kmtools/__init__.py
-    - mkdir public
-    - sphinx-build docs public
-  artifacts:
-    paths:
-    - public
-
 anaconda:
   <<: *install_conda_package
   stage: deploy
