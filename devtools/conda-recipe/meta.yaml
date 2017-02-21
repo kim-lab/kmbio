@@ -18,6 +18,8 @@ requirements:
     - reportlab
     - mmtf-python
     - cython
+    - setuptools
+    - wheel
   run:
     - python
     - numpy
@@ -63,6 +65,8 @@ test:
     - Bio.Graphics
     - Bio.Graphics.GenomeDiagram
     - Bio.HMM
+    - Bio.KDTree
+    - Bio.KDTree._CKDTree
     - Bio.KEGG
     - Bio.KEGG.Compound
     - Bio.KEGG.Enzyme
@@ -77,6 +81,8 @@ test:
     - Bio.PDB
     - Bio.PDB.QCPSuperimposer
     - Bio.PDB.mmtf
+    - Bio.PDB._mmcif_to_dict
+    - Bio.PDB._shlex
     - Bio.Pathway
     - Bio.Pathway.Rep
     - Bio.Phylo

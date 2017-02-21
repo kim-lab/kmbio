@@ -70,6 +70,5 @@ anaconda:
 pytest:
   <<: *test_job
   script:
-    - conda install -yq pypy
     - pip install -q flake8 pytest pytest-runner pytest-cov pytest-logging hypothesis codecov
     - py.test Tests/test_PDB.py Tests/test_KDTree.py Tests/test_PDB_KDTree.py Tests/test_MMCIF.py
