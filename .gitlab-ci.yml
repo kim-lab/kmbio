@@ -71,4 +71,7 @@ pytest:
   <<: *test_job
   script:
     - pip install -q flake8 pytest pytest-runner pytest-cov pytest-logging hypothesis codecov
+    - echo $(which py.test)
+    - echo $(which python)
+    - python -c "import Bio; print(Bio.__path__)"
     - py.test Tests/test_PDB.py Tests/test_KDTree.py Tests/test_PDB_KDTree.py Tests/test_MMCIF.py
