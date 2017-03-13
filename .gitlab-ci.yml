@@ -39,6 +39,7 @@ build-py27:
   <<: *build
   variables:
     <<: [*py27]
+  allow_failure: true
 
 build-py35:
   <<: *build
@@ -73,6 +74,7 @@ test-py27:
     - build-py27
   variables:
     <<: [*py27]
+  allow_failure: true
 
 test-py35:
   <<: *test
