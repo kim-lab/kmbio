@@ -96,12 +96,12 @@ test-py36:
   stage: deploy
   script:
     - anaconda -t $ANACONDA_TOKEN upload $CI_PROJECT_DIR/conda-bld/linux-64/*.tar.bz2 -u $CI_PROJECT_NAMESPACE --force
-  when: manual
 
 deploy-py27:
   <<: *deploy
   dependencies:
     - build-py27
+  allow_failure: true
 
 deploy-py35:
   <<: *deploy
