@@ -5,15 +5,29 @@ stages:
   - test
   - deploy
 
-build:
+# === Variables ===
+
+.py27: &py27
+  PYTHON_VERSION: "2.7"
+
+.py35: &py35
+  PYTHON_VERSION: "3.5"
+
+.py36: &py36
+  PYTHON_VERSION: "3.6"
+
+# === Build ===
+
+.build: &build
   stage: build
   script:
     # Build conda packages
     - conda config --append channels bioconda
     - conda config --append channels kimlab
     - conda config --append channels ostrokach
+    - conda config --append channels $CI_PROJECT_NAMESPACE
     - cd $CI_PROJECT_DIR/devtools/conda-recipe
-    - conda build .
+    - conda build --python $PYTHON_VERSION .
     # Save built packages as artifacts
     - mkdir $CI_PROJECT_DIR/conda-bld
     - cp -r /opt/conda/conda-bld/{linux-64,noarch} $CI_PROJECT_DIR/conda-bld
@@ -21,40 +35,78 @@ build:
     paths:
     - conda-bld
 
-.install: &install_conda_package
+build-py27:
+  <<: *build
+  variables:
+    <<: [*py27]
+
+build-py35:
+  <<: *build
+  variables:
+    <<: [*py35]
+
+build-py36:
+  <<: *build
+  variables:
+    <<: [*py36]
+
+# === Test ===
+
+.test: &test
+  stage: test
   before_script:
     - conda config --append channels bioconda
     - conda config --append channels kimlab
     - conda config --append channels ostrokach
+    - conda config --append channels $CI_PROJECT_NAMESPACE
     - cp -r $CI_PROJECT_DIR/conda-bld/* /opt/conda/conda-bld/
     - conda index /opt/conda/conda-bld/
     - conda install -yq 'requests<2.12'
-    - conda install -yq --use-local $CI_PROJECT_NAME
-
-anaconda:
-  <<: *install_conda_package
-  stage: deploy
-  script:
-    - anaconda -t $ANACONDA_TOKEN upload $CI_PROJECT_DIR/conda-bld/linux-64/*.tar.bz2 -u $CI_PROJECT_NAMESPACE --no-progress --force
-  # only:
-  #   - master
-
-# anaconda-dev:
-#   <<: *install_conda_package
-#   stage: deploy
-#   script:
-#     - anaconda -t $ANACONDA_TOKEN upload $CI_PROJECT_DIR/conda-bld/linux-64/*.tar.bz2 -u $CI_PROJECT_NAMESPACE -t dev --force
-#   except:
-#     - master
-
-# Tests
-
-.test_template: &test_job
-  <<: *install_conda_package
-  stage: test
-
-pytest:
-  <<: *test_job
+    - conda install -yq --use-local "python=$PYTHON_VERSION" $CI_PROJECT_NAME
   script:
     - pip install -q flake8 pytest pytest-runner pytest-cov pytest-logging hypothesis codecov
     - py.test Tests/test_PDB.py Tests/test_KDTree.py Tests/test_PDB_KDTree.py Tests/test_MMCIF.py
+
+test-py27:
+  <<: *test
+  dependencies:
+    - build-py27
+  variables:
+    <<: [*py27]
+
+test-py35:
+  <<: *test
+  dependencies:
+    - build-py35
+  variables:
+    <<: [*py35]
+
+test-py36:
+  <<: *test
+  dependencies:
+    - build-py36
+  variables:
+    <<: [*py36]
+
+# === Deploy ===
+
+.deploy: &deploy
+  stage: deploy
+  script:
+    - anaconda -t $ANACONDA_TOKEN upload $CI_PROJECT_DIR/conda-bld/linux-64/*.tar.bz2 -u $CI_PROJECT_NAMESPACE --force
+  when: manual
+
+deploy-py27:
+  <<: *deploy
+  dependencies:
+    - build-py27
+
+deploy-py35:
+  <<: *deploy
+  dependencies:
+    - build-py35
+
+deploy-py36:
+  <<: *deploy
+  dependencies:
+    - build-py36
