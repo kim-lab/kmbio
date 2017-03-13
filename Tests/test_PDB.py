@@ -405,7 +405,7 @@ class ParseTest(unittest.TestCase):
                 disorder_lvl = residue.disordered
                 if disorder_lvl == 1:
                     # Check the number of disordered atoms
-                    disordered_count = sum(1 for atom in residue if atom.disordered)
+                    disordered_count = sum(1 for atom in residue.values() if atom.disordered)
                     if disordered_count:
                         self.assertEqual(disordered_count, res[2])
                 elif disorder_lvl == 2:
@@ -426,7 +426,7 @@ class ParseTest(unittest.TestCase):
         self.assertEqual(chain.id, "A")
         self.assertEqual(chain.level, "C")
         self.assertEqual(len(chain), 1)
-        self.assertEqual(" ".join(residue.resname for residue in chain), "PCA")
+        self.assertEqual(" ".join(residue.resname for residue in chain.values()), "PCA")
         self.assertEqual(" ".join(atom.name for atom in chain.get_atoms()),
                          "N CA CB CG CD OE C O CA  ")
         self.assertEqual(" ".join(atom.element for atom in chain.get_atoms()),
@@ -440,7 +440,7 @@ class ParseTest(unittest.TestCase):
         self.assertEqual(chain.id, "A")
         self.assertEqual(chain.level, "C")
         self.assertEqual(len(chain), 86)
-        self.assertEqual(" ".join(residue.resname for residue in chain),
+        self.assertEqual(" ".join(residue.resname for residue in chain.values()),
                          "CYS ARG CYS GLY SER GLN GLY GLY GLY SER THR CYS "
                          "PRO GLY LEU ARG CYS CYS SER ILE TRP GLY TRP CYS "
                          "GLY ASP SER GLU PRO TYR CYS GLY ARG THR CYS GLU "
@@ -609,7 +609,7 @@ class ParseReal(unittest.TestCase):
         self.assertEqual(chain.id, "A")
         self.assertEqual(chain.level, "C")
         self.assertEqual(len(chain), 158)
-        self.assertEqual(" ".join(residue.resname for residue in chain),
+        self.assertEqual(" ".join(residue.resname for residue in chain.values()),
                          "MSE ASP ILE ARG GLN GLY PRO LYS GLU PRO PHE ARG "
                          "ASP TYR VAL ASP ARG PHE TYR LYS THR LEU ARG ALA "
                          "GLU GLN ALA SER GLN GLU VAL LYS ASN TRP MSE THR "
@@ -694,7 +694,7 @@ class ParseReal(unittest.TestCase):
         """Preserve model serial numbers during I/O."""
         def confirm_numbering(struct):
             self.assertEqual(len(struct), 3)
-            for idx, model in enumerate(struct):
+            for idx, model in enumerate(struct.values()):
                 self.assertEqual(model.serial_num, idx + 1)
                 self.assertEqual(model.serial_num, model.id + 1)
 
@@ -848,7 +848,7 @@ class Exposure(unittest.TestCase):
             structure = PDBParser(PERMISSIVE=True).get_structure('X', pdb_filename)
         self.model = structure[1]
         # Look at first chain only
-        a_residues = list(self.model["A"])
+        a_residues = list(self.model["A"].values())
         self.assertEqual(86, len(a_residues))
         self.assertEqual(a_residues[0].resname, "CYS")
         self.assertEqual(a_residues[1].resname, "ARG")
@@ -1008,7 +1008,7 @@ class ChangingIdTests(unittest.TestCase):
 
     def test_change_model_id(self):
         """Change the id of a model"""
-        for model in self.struc:
+        for model in self.struc.values():
             break  # Get first model in structure
         model.id = 2
         self.assertEqual(model.id, 2)
@@ -1017,7 +1017,7 @@ class ChangingIdTests(unittest.TestCase):
 
     def test_change_model_id_raises(self):
         """Cannot change id to a value already in use by another child"""
-        model = next(iter(self.struc))
+        model = next(iter(self.struc.values()))
         with self.assertRaises(ValueError):
             model.id = 1
         # Make sure nothing was changed
@@ -1030,7 +1030,7 @@ class ChangingIdTests(unittest.TestCase):
         chain = next(iter(self.struc.get_chains()))
         chain.id = "R"
         self.assertEqual(chain.id, "R")
-        model = next(iter(self.struc))
+        model = next(iter(self.struc.values()))
         self.assertIn("R", model)
 
     def test_change_residue_id(self):
@@ -1126,7 +1126,7 @@ class TransformTests(unittest.TestCase):
             return o.coord, 1
         total_pos = numpy.array((0.0, 0.0, 0.0))
         total_count = 0
-        for p in o:
+        for p in o.values():
             pos, count = self.get_total_pos(p)
             total_pos += pos
             total_count += count
@@ -1159,10 +1159,10 @@ class CopyTests(unittest.TestCase):
             warnings.simplefilter("ignore", PDBConstructionWarning)
             self.s = PDBParser(PERMISSIVE=True).get_structure(
                 'X', "PDB/a_structure.pdb")
-        self.m = self.s.ix[0]
-        self.c = self.m.ix[0]
-        self.r = self.c.ix[0]
-        self.a = self.r.ix[0]
+        self.m = list(self.s.values())[0]
+        self.c = list(self.m.values())[0]
+        self.r = list(self.c.values())[0]
+        self.a = list(self.r.values())[0]
 
     def test_atom_copy(self):
         aa = self.a.copy()
@@ -1242,8 +1242,8 @@ class DsspTests(unittest.TestCase):
         i = 0
         with open("PDB/dssp_xtra_Sander.txt", 'r') as fh_ref:
             ref_lines = fh_ref.readlines()
-            for chain in m:
-                for res in chain:
+            for chain in m.values():
+                for res in chain.values():
                     # Split the pre-computed values into a list:
                     xtra_list_ref = ref_lines[i].rstrip().split('\t')
                     # Then convert each element to float where possible:
@@ -1273,8 +1273,8 @@ class DsspTests(unittest.TestCase):
         i = 0
         with open("PDB/Sander_RASA.txt", 'r') as fh_ref:
             ref_lines = fh_ref.readlines()
-            for chain in m:
-                for res in chain:
+            for chain in m.values():
+                for res in chain.values():
                     rasa_ref = float(ref_lines[i].rstrip())
                     rasa = float(res.xtra['EXP_DSSP_RASA'])
                     self.assertAlmostEqual(rasa, rasa_ref)
@@ -1287,8 +1287,8 @@ class DsspTests(unittest.TestCase):
         i = 0
         with open("PDB/Wilke_RASA.txt", 'r') as fh_ref:
             ref_lines = fh_ref.readlines()
-            for chain in m:
-                for res in chain:
+            for chain in m.values():
+                for res in chain.values():
                     rasa_ref = float(ref_lines[i].rstrip())
                     rasa = float(res.xtra['EXP_DSSP_RASA'])
                     self.assertAlmostEqual(rasa, rasa_ref)
@@ -1301,8 +1301,8 @@ class DsspTests(unittest.TestCase):
         i = 0
         with open("PDB/Miller_RASA.txt", 'r') as fh_ref:
             ref_lines = fh_ref.readlines()
-            for chain in m:
-                for res in chain:
+            for chain in m.values():
+                for res in chain.values():
                     rasa_ref = float(ref_lines[i].rstrip())
                     rasa = float(res.xtra['EXP_DSSP_RASA'])
                     self.assertAlmostEqual(rasa, rasa_ref)

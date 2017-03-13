@@ -174,7 +174,7 @@ class PDBIO(object):
             model_flag = 1
         else:
             model_flag = 0
-        for model in self.structure:
+        for model in self.structure.values():
             if not select.accept_model(model):
                 continue
             # necessary for ENDMDL
@@ -185,7 +185,7 @@ class PDBIO(object):
                 atom_number = 1
             if model_flag:
                 fp.write("MODEL      %s\n" % model.serial_num)
-            for chain in model:
+            for chain in model.values():
                 if not select.accept_chain(chain):
                     continue
                 chain_id = chain.id
