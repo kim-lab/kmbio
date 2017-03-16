@@ -69,7 +69,7 @@ build-py36:
   stage: test
   <<: *conda_install
   script:
-    - pip install -yq flake8 pytest pytest-cov pytest-runner pytest-logging hypothesis codecov
+    - pip install -q flake8 pytest pytest-cov pytest-runner pytest-logging hypothesis codecov
     - py.test Tests/test_PDB.py Tests/test_KDTree.py Tests/test_PDB_KDTree.py Tests/test_MMCIF.py
 
 test-py27:
