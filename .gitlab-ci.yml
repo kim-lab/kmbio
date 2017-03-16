@@ -53,19 +53,23 @@ build-py36:
 
 # === Test ===
 
-.test: &test
-  stage: test
+.conda_install: &conda_install
   before_script:
+    # Conda configure
     - conda config --append channels bioconda
     - conda config --append channels kimlab
     - conda config --append channels ostrokach
-    - conda config --append channels $CI_PROJECT_NAMESPACE
+    # Conda install
     - cp -r $CI_PROJECT_DIR/conda-bld/* /opt/conda/conda-bld/
     - conda index /opt/conda/conda-bld/
     - conda install -yq 'requests<2.12'
     - conda install -yq --use-local "python=$PYTHON_VERSION" $CI_PROJECT_NAME
+
+.test: &test
+  stage: test
+  <<: *conda_install
   script:
-    - pip install -q flake8 pytest pytest-runner pytest-cov pytest-logging hypothesis codecov
+    - pip install -yq flake8 pytest pytest-cov pytest-runner pytest-logging hypothesis codecov
     - py.test Tests/test_PDB.py Tests/test_KDTree.py Tests/test_PDB_KDTree.py Tests/test_MMCIF.py
 
 test-py27:
