@@ -188,14 +188,14 @@ def _make_fragment_list(pp, length):
         f = Fragment(length, -1)
         for j in range(0, length):
             residue = pp[i + j]
-            resname = residue.get_resname()
-            if residue.has_id("CA"):
+            resname = residue.resname
+            if 'CA' in residue:
                 ca = residue["CA"]
             else:
                 raise PDBException("CHAINBREAK")
-            if ca.is_disordered():
+            if ca.disordered:
                 raise PDBException("CHAINBREAK")
-            ca_coord = ca.get_coord()
+            ca_coord = ca.coord
             f.add_residue(resname, ca_coord)
         frag_list.append(f)
     return frag_list

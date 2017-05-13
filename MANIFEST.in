@@ -33,7 +33,7 @@ recursive-include Doc/images *.png
 recursive-include Doc/images *.jpg # e.g. the logo for the Tutorial
 include Doc/examples/ls_orchid.gbk.gz
 include Doc/examples/ls_orchid.gbk.bz2
-include Doc/examples/ec_5.4.2.2.txt 
+include Doc/examples/ec_5.4.2.2.txt
 
 # Include Bio.Cluster, Bio.Affy, Bio.KDTree, Bio.phenotype
 # Note setup.py will only install these if Numpy is installed.
@@ -53,3 +53,7 @@ include Bio/Entrez/DTDs/*.dtd  # Include DTD files for Entrez
 include Bio/Entrez/DTDs/*.ent  # Include DTD files for Entrez
 include Bio/Entrez/DTDs/*.mod  # Include DTD files for Entrez
 include Bio/PopGen/SimCoal/data/*.par    # Include SimCoal data files
+
+# Cython files
+global-include *.pyx
+global-include *.pxd

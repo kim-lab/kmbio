@@ -76,11 +76,11 @@ class PDBIO(object):
             element = element.rjust(2)
         else:
             element = "  "
-        name = atom.get_fullname()
-        altloc = atom.get_altloc()
-        x, y, z = atom.get_coord()
-        bfactor = atom.get_bfactor()
-        occupancy = atom.get_occupancy()
+        name = atom.fullname
+        altloc = atom.altloc
+        x, y, z = atom.coord
+        bfactor = atom.bfactor
+        occupancy = atom.occupancy
         try:
             occupancy_str = "%6.2f" % occupancy
         except TypeError:
@@ -89,10 +89,10 @@ class PDBIO(object):
                 import warnings
                 from Bio import BiopythonWarning
                 warnings.warn("Missing occupancy in atom %s written as blank" %
-                              repr(atom.get_full_id()), BiopythonWarning)
+                              repr(atom.full_id), BiopythonWarning)
             else:
                 raise TypeError("Invalid occupancy %r in atom %r"
-                                % (occupancy, atom.get_full_id()))
+                                % (occupancy, atom.full_id))
 
         args = (record_type, atom_number, name, altloc, resname, chain_id,
                 resseq, icode, x, y, z, occupancy_str, bfactor, segid,
@@ -134,7 +134,7 @@ class PDBIO(object):
                             sb.structure[0]['A'].id = parent_id
                         except Exception:
                             pass
-                        sb.structure[0]['A'].child_list[0].add(pdb_object)
+                        sb.structure[0]['A'].ix[0].add(pdb_object)
 
             # Return structure
             structure = sb.structure
@@ -174,7 +174,7 @@ class PDBIO(object):
             model_flag = 1
         else:
             model_flag = 0
-        for model in self.structure.get_list():
+        for model in self.structure.values():
             if not select.accept_model(model):
                 continue
             # necessary for ENDMDL
@@ -185,10 +185,10 @@ class PDBIO(object):
                 atom_number = 1
             if model_flag:
                 fp.write("MODEL      %s\n" % model.serial_num)
-            for chain in model.get_list():
+            for chain in model.values():
                 if not select.accept_chain(chain):
                     continue
-                chain_id = chain.get_id()
+                chain_id = chain.id
                 # necessary for TER
                 # do not write TER if no residues were written
                 # for this chain
@@ -196,15 +196,15 @@ class PDBIO(object):
                 for residue in chain.get_unpacked_list():
                     if not select.accept_residue(residue):
                         continue
-                    hetfield, resseq, icode = residue.get_id()
-                    resname = residue.get_resname()
-                    segid = residue.get_segid()
+                    hetfield, resseq, icode = residue.id
+                    resname = residue.resname
+                    segid = residue.segid
                     for atom in residue.get_unpacked_list():
                         if select.accept_atom(atom):
                             chain_residues_written = 1
                             model_residues_written = 1
                             if preserve_atom_numbering:
-                                atom_number = atom.get_serial_number()
+                                atom_number = atom.serial_number
                             s = get_atom_line(atom, hetfield, segid, atom_number, resname,
                                 resseq, icode, chain_id)
                             fp.write(s)

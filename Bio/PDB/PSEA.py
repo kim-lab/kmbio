@@ -70,8 +70,8 @@ def psea2HEC(pseq):
 
 def annotate(m, ss_seq):
     """Apply seconardary structure information to residues in model."""
-    c = m.get_list()[0]
-    all = c.get_list()
+    c = m.ix[0]
+    all = list(c)
     residues = []
     # Now remove HOH etc.
     for res in all:

@@ -34,7 +34,7 @@ class StructureBuilder(object):
         "Return 1 if all atoms in the residue have a non blank altloc."
         atom_list = residue.get_unpacked_list()
         for atom in atom_list:
-            altloc = atom.get_altloc()
+            altloc = atom.altloc
             if altloc == " ":
                 return 0
         return 1
@@ -78,7 +78,7 @@ class StructureBuilder(object):
         Arguments:
         o chain_id - string
         """
-        if self.model.has_id(chain_id):
+        if chain_id in self.model:
             self.chain = self.model[chain_id]
             warnings.warn("WARNING: Chain %s is discontinuous at line %i."
                           % (chain_id, self.line_counter),
@@ -113,7 +113,7 @@ class StructureBuilder(object):
                 field = "H_" + resname
         res_id = (field, resseq, icode)
         if field == " ":
-            if self.chain.has_id(res_id):
+            if res_id in self.chain:
                 # There already is a residue with the id (field, resseq, icode).
                 # This only makes sense in the case of a point mutation.
                 warnings.warn("WARNING: Residue ('%s', %i, '%s') "
@@ -121,7 +121,7 @@ class StructureBuilder(object):
                               % (field, resseq, icode, self.line_counter),
                               PDBConstructionWarning)
                 duplicate_residue = self.chain[res_id]
-                if duplicate_residue.is_disordered() == 2:
+                if isinstance(duplicate_residue, DisorderedResidue):
                     # The residue in the chain is a DisorderedResidue object.
                     # So just add the last Residue object.
                     if duplicate_residue.disordered_has_id(resname):
@@ -153,7 +153,7 @@ class StructureBuilder(object):
                         raise PDBConstructionException(
                             "Blank altlocs in duplicate residue %s ('%s', %i, '%s')"
                             % (resname, field, resseq, icode))
-                    self.chain.detach_child(res_id)
+                    del self.chain[res_id]
                     new_residue = Residue(res_id, resname, self.segid)
                     disordered_residue = DisorderedResidue(res_id)
                     self.chain.add(disordered_residue)
@@ -188,10 +188,10 @@ class StructureBuilder(object):
         # names that differ only in spaces (e.g. "CA.." and ".CA.",
         # where the dots are spaces). If that is so, use all spaces
         # in the atom name of the current atom.
-        if residue.has_id(name):
+        if name in residue:
             duplicate_atom = residue[name]
             # atom name with spaces of duplicate atom
-            duplicate_fullname = duplicate_atom.get_fullname()
+            duplicate_fullname = duplicate_atom.fullname
             if duplicate_fullname != fullname:
                 # name of current atom now includes spaces
                 name = fullname
@@ -204,10 +204,10 @@ class StructureBuilder(object):
                          fullname, serial_number, element)
         if altloc != " ":
             # The atom is disordered
-            if residue.has_id(name):
+            if name in residue:
                 # Residue already contains this atom
                 duplicate_atom = residue[name]
-                if duplicate_atom.is_disordered() == 2:
+                if isinstance(duplicate_atom, DisorderedAtom):
                     duplicate_atom.disordered_add(self.atom)
                 else:
                     # This is an error in the PDB file:
@@ -215,12 +215,12 @@ class StructureBuilder(object):
                     # Detach the duplicate atom, and put it in a
                     # DisorderedAtom object together with the current
                     # atom.
-                    residue.detach_child(name)
+                    del residue[name]
                     disordered_atom = DisorderedAtom(name)
                     residue.add(disordered_atom)
                     disordered_atom.disordered_add(self.atom)
                     disordered_atom.disordered_add(duplicate_atom)
-                    residue.flag_disordered()
+                    residue.disordered = 1
                     warnings.warn("WARNING: disordered atom found "
                                   "with blank altloc before line %i.\n"
                                   % self.line_counter,
@@ -233,22 +233,13 @@ class StructureBuilder(object):
                 # Add the real atom to the disordered atom, and the
                 # disordered atom to the residue
                 disordered_atom.disordered_add(self.atom)
-                residue.flag_disordered()
+                # TODO: Setting `residue.disordered = ` without checking types causes
+                # one of the tests to fail. But the whole disordered = {0, 1, 2} is stupid.
+                if isinstance(residue, Residue):
+                    residue.disordered = 1
         else:
             # The atom is not disordered
             residue.add(self.atom)
-
-    def set_anisou(self, anisou_array):
-        "Set anisotropic B factor of current Atom."
-        self.atom.set_anisou(anisou_array)
-
-    def set_siguij(self, siguij_array):
-        "Set standard deviation of anisotropic B factor of current Atom."
-        self.atom.set_siguij(siguij_array)
-
-    def set_sigatm(self, sigatm_array):
-        "Set standard deviation of atom position of current Atom."
-        self.atom.set_sigatm(sigatm_array)
 
     def get_structure(self):
         "Return the structure."

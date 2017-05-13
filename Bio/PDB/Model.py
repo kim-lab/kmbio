@@ -15,46 +15,44 @@ class Model(Entity):
     model will be present (with some exceptions). NMR structures
     normally contain many different models.
     """
+    level = "M"
 
-    def __init__(self, id, serial_num=None):
+    def __init__(self, id, serial_num=None, **kwargs):
         """
         Arguments:
         o id - int
         o serial_num - int
         """
-        self.level = "M"
         if serial_num is None:
             self.serial_num = id
         else:
             self.serial_num = serial_num
-
-        Entity.__init__(self, id)
+        super().__init__(id, **kwargs)
 
     # Private methods
 
-    def _sort(self, c1, c2):
-        """Sort the Chains instances in the Model instance.
+    def __lt__(self, other):
+        return self.id < other.id
 
-        Chain instances are sorted alphabetically according to
-        their chain id. Blank chains come last, as they often consist
-        of waters.
+    def __le__(self, other):
+        return self.id <= other.id
 
-        Arguments:
-        o c1, c2 - Chain objects
-        """
-        id1 = c1.get_id()
-        id2 = c2.get_id()
-        # make sure blank chains come last (often waters)
-        if id1 == " " and not id2 == " ":
-            return 1
-        elif id2 == " " and not id1 == " ":
-            return -1
-        return cmp(id1, id2)
+    def __eq__(self, other):
+        return self.id == other.id
+
+    def __ne__(self, other):
+        return self.id != other.id
+
+    def __ge__(self, other):
+        return self.id >= other.id
+
+    def __gt__(self, other):
+        return self.id > other.id
 
     # Special methods
 
     def __repr__(self):
-        return "<Model id=%s>" % self.get_id()
+        return "<Model id=%s>" % self.id
 
     # Public
 
@@ -71,3 +69,10 @@ class Model(Entity):
         for r in self.get_residues():
             for a in r:
                 yield a
+
+    # Custom
+    def extract(self, chain_ids):
+        model = Model(self.id, self.serial_num)
+        for chain_id in chain_ids:
+            model.add(self[chain_id].copy())
+        return model

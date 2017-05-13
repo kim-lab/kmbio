@@ -36,9 +36,9 @@ If you want to, you can include non-standard amino acids in the peptides:
 
     >>> for pp in ppb.build_peptides(structure, aa_only=False):
     ...     print(pp.get_sequence())
-    ...     print("%s %s" % (pp.get_sequence()[0], pp[0].get_resname()))
-    ...     print("%s %s" % (pp.get_sequence()[-7], pp[-7].get_resname()))
-    ...     print("%s %s" % (pp.get_sequence()[-6], pp[-6].get_resname()))
+    ...     print("%s %s" % (pp.get_sequence()[0], pp[0].resname))
+    ...     print("%s %s" % (pp.get_sequence()[-7], pp[-7].resname))
+    ...     print("%s %s" % (pp.get_sequence()[-6], pp[-6].resname))
     MDIRQGPKEPFRDYVDRFYKTLRAEQASQEVKNWMTETLLVQNANPDCKTILKALGPGATLEEMMTACQG
     M MSE
     M MSE
@@ -179,7 +179,7 @@ def is_aa(residue, standard=False):
     """
     # TODO - What about special cases like XXX, can they appear in PDB files?
     if not isinstance(residue, basestring):
-        residue = residue.get_resname()
+        residue = residue.resname
     residue = residue.upper()
     if standard:
         return residue in d3_to_index
@@ -256,7 +256,7 @@ class Polypeptide(list):
             tau = calc_dihedral(v1, v2, v3, v4)
             tau_list.append(tau)
             # Put tau in xtra dict of residue
-            res = ca_list[i + 2].get_parent()
+            res = ca_list[i + 2].parent
             res.xtra["TAU"] = tau
         return tau_list
 
@@ -270,7 +270,7 @@ class Polypeptide(list):
             theta = calc_angle(v1, v2, v3)
             theta_list.append(theta)
             # Put tau in xtra dict of residue
-            res = ca_list[i + 1].get_parent()
+            res = ca_list[i + 1].parent
             res.xtra["THETA"] = theta
         return theta_list
 
@@ -282,7 +282,7 @@ class Polypeptide(list):
         """
         s = ""
         for res in self:
-            s += SCOPData.protein_letters_3to1.get(res.get_resname(), 'X')
+            s += SCOPData.protein_letters_3to1.get(res.resname, 'X')
         seq = Seq(s, generic_protein)
         return seq
 
@@ -292,8 +292,8 @@ class Polypeptide(list):
         Return <Polypeptide start=START end=END>, where START
         and END are sequence identifiers of the outer residues.
         """
-        start = self[0].get_id()[1]
-        end = self[-1].get_id()[1]
+        start = self[0].id[1]
+        end = self[-1].id[1]
         s = "<Polypeptide start=%s end=%s>" % (start, end)
         return s
 
@@ -317,12 +317,12 @@ class _PPBuilder(object):
         """Check if the residue is an amino acid (PRIVATE)."""
         if is_aa(residue, standard=standard_aa_only):
             return True
-        elif not standard_aa_only and "CA" in residue.child_dict:
+        elif not standard_aa_only and "CA" in residue:
             # It has an alpha carbon...
             # We probably need to update the hard coded list of
             # non-standard residues, see function is_aa for details.
             warnings.warn("Assuming residue %s is an unknown modified "
-                          "amino acid" % residue.get_resname())
+                          "amino acid" % residue.resname)
             return True
         else:
             # not a standard AA so skip
@@ -339,20 +339,20 @@ class _PPBuilder(object):
         """
         is_connected = self._is_connected
         accept = self._accept
-        level = entity.get_level()
+        level = entity.level
         # Decide which entity we are dealing with
         if level == "S":
             model = entity[0]
-            chain_list = model.get_list()
+            chain_list = model.values()
         elif level == "M":
-            chain_list = entity.get_list()
+            chain_list = entity.values()
         elif level == "C":
             chain_list = [entity]
         else:
             raise PDBException("Entity should be Structure, Model or Chain.")
         pp_list = []
         for chain in chain_list:
-            chain_it = iter(chain)
+            chain_it = iter(chain.values())
             try:
                 prev_res = next(chain_it)
                 while not accept(prev_res, aa_only):
@@ -385,16 +385,16 @@ class CaPPBuilder(_PPBuilder):
 
     def _is_connected(self, prev_res, next_res):
         for r in [prev_res, next_res]:
-            if not r.has_id("CA"):
+            if "CA" not in r:
                 return False
         n = next_res["CA"]
         p = prev_res["CA"]
         # Unpack disordered
-        if n.is_disordered():
+        if n.disordered:
             nlist = n.disordered_get_list()
         else:
             nlist = [n]
-        if p.is_disordered():
+        if p.disordered:
             plist = p.disordered_get_list()
         else:
             plist = [p]
@@ -411,19 +411,19 @@ class PPBuilder(_PPBuilder):
         _PPBuilder.__init__(self, radius)
 
     def _is_connected(self, prev_res, next_res):
-        if not prev_res.has_id("C"):
+        if "C" not in prev_res:
             return False
-        if not next_res.has_id("N"):
+        if "N" not in next_res:
             return False
         test_dist = self._test_dist
         c = prev_res["C"]
         n = next_res["N"]
         # Test all disordered atom positions!
-        if c.is_disordered():
+        if c.disordered:
             clist = c.disordered_get_list()
         else:
             clist = [c]
-        if n.is_disordered():
+        if n.disordered:
             nlist = n.disordered_get_list()
         else:
             nlist = [n]
@@ -432,15 +432,15 @@ class PPBuilder(_PPBuilder):
                 # To form a peptide bond, N and C must be
                 # within radius and have the same altloc
                 # identifier or one altloc blank
-                n_altloc = nn.get_altloc()
-                c_altloc = cc.get_altloc()
+                n_altloc = nn.altloc
+                c_altloc = cc.altloc
                 if n_altloc == c_altloc or n_altloc == " " or c_altloc == " ":
                     if test_dist(nn, cc):
                         # Select the disordered atoms that
                         # are indeed bonded
-                        if c.is_disordered():
+                        if c.disordered:
                             c.disordered_select(c_altloc)
-                        if n.is_disordered():
+                        if n.disordered:
                             n.disordered_select(n_altloc)
                         return True
         return False

@@ -1,0 +1,141 @@
+image: condaforge/linux-anvil:latest
+
+stages:
+  - build
+  - test
+  - deploy
+
+# === Variables ===
+
+variables:
+  PACKAGE_VERSION: 1.69.2.dev0
+
+.py27: &py27
+  PYTHON_VERSION: "2.7"
+
+.py35: &py35
+  PYTHON_VERSION: "3.5"
+
+.py36: &py36
+  PYTHON_VERSION: "3.6"
+
+# === Build ===
+
+.conda_configure: &conda_configure
+  before_script:
+    # Conda configure
+    - conda config --append channels bioconda
+    - conda config --append channels ostrokach-forge
+    - case "${PACKAGE_VERSION}" in
+      *dev*)
+        conda config --append channels kimlab/label/dev;
+        conda config --append channels kimlab;
+        conda config --append channels ostrokach/label/dev;
+        conda config --append channels ostrokach;
+      ;;
+      *)
+        conda config --append channels kimlab;
+        conda config --append channels ostrokach;
+      ;;
+      esac
+
+.build: &build
+  stage: build
+  <<: *conda_configure
+  script:
+    # Build conda packages
+    - cd $CI_PROJECT_DIR/devtools/conda-recipe
+    - conda build --python $PYTHON_VERSION .
+    # Save built packages as artifacts
+    - mkdir $CI_PROJECT_DIR/conda-bld
+    - cp -r /opt/conda/conda-bld/{linux-64,noarch} $CI_PROJECT_DIR/conda-bld
+  artifacts:
+    paths:
+    - conda-bld
+
+build-py27:
+  <<: *build
+  variables:
+    <<: [*py27]
+  allow_failure: true
+
+build-py35:
+  <<: *build
+  variables:
+    <<: [*py35]
+
+build-py36:
+  <<: *build
+  variables:
+    <<: [*py36]
+
+# === Test ===
+
+.test: &test
+  stage: test
+  script:
+    # Conda install
+    - cp -r $CI_PROJECT_DIR/conda-bld/* /opt/conda/conda-bld/
+    - conda index /opt/conda/conda-bld/
+    - conda install -y -q --use-local "python=$PYTHON_VERSION" $CI_PROJECT_NAME
+    # Test
+    - pip install -q flake8 pytest pytest-cov pytest-runner pytest-logging hypothesis codecov
+    - py.test Tests/test_PDB.py Tests/test_KDTree.py Tests/test_PDB_KDTree.py Tests/test_MMCIF.py
+    - codecov -t $CODECOV_TOKEN
+
+test-py27:
+  <<: [*conda_configure, *test]
+  dependencies:
+    - build-py27
+  variables:
+    <<: [*py27]
+  allow_failure: true
+
+test-py35:
+  <<: [*conda_configure, *test]
+  dependencies:
+    - build-py35
+  variables:
+    <<: [*py35]
+
+test-py36:
+  <<: [*conda_configure, *test]
+  dependencies:
+    - build-py36
+  variables:
+    <<: [*py36]
+
+# === Deploy ===
+
+.deploy: &deploy
+  stage: deploy
+  script:
+    # Conda configure
+    - case "${PACKAGE_VERSION}" in
+      *dev*)
+        anaconda -t $ANACONDA_TOKEN upload $CI_PROJECT_DIR/conda-bld/linux-64/*.tar.bz2 -u ${CI_PROJECT_NAMESPACE} --label dev --force
+      ;;
+      *)
+        anaconda -t $ANACONDA_TOKEN upload $CI_PROJECT_DIR/conda-bld/linux-64/*.tar.bz2 -u ${CI_PROJECT_NAMESPACE}
+      ;;
+      esac
+  only:
+    - master
+  except:
+    - triggers
+
+deploy-py27:
+  <<: *deploy
+  dependencies:
+    - build-py27
+  allow_failure: true
+
+deploy-py35:
+  <<: *deploy
+  dependencies:
+    - build-py35
+
+deploy-py36:
+  <<: *deploy
+  dependencies:
+    - build-py36

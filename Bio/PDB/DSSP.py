@@ -335,12 +335,12 @@ class DSSP(AbstractResiduePropertyMap):
             # Here we select the res in which all atoms have altloc blank, A or
             # 1. If no such residues are found, simply use the first one appears
             # (as DSSP does).
-            if res.is_disordered() == 2:
+            if res.disordered == 2:
                 for rk in res.disordered_get_id_list():
                     # All atoms in the disordered residue should have the same
                     # altloc, so it suffices to check the altloc of the first
                     # atom.
-                    altloc = res.child_dict[rk].get_list()[0].get_altloc()
+                    altloc = res[rk].ix[0].altloc
                     if altloc in tuple('A1 '):
                         res.disordered_select(rk)
                         break
@@ -355,19 +355,19 @@ class DSSP(AbstractResiduePropertyMap):
             #   <Residue LYS het=  resseq=273 icode= >
             # DSSP uses the HETATM LLP as it has altloc 'A'
             # We check the altloc code here.
-            elif res.is_disordered() == 1:
+            elif res.disordered == 1:
                 # Check altloc of all atoms in the DisorderedResidue. If it
                 # contains blank, A or 1, then use it.  Otherwise, look for HET
                 # residues of the same seq+icode.  If not such HET residues are
                 # found, just accept the current one.
-                altlocs = set(a.get_altloc() for a in res.get_unpacked_list())
+                altlocs = set(a.altloc for a in res.get_unpacked_list())
                 if altlocs.isdisjoint('A1 '):
                     # Try again with all HETATM other than water
                     res_seq_icode = resid2code(res_id)
                     for r in chain:
                         if r.id[0] not in (' ', 'W'):
                             if resid2code(r.id) == res_seq_icode and \
-                               r.get_list()[0].get_altloc() in tuple('A1 '):
+                               r.ix[0].altloc in tuple('A1 '):
                                 res = r
                                 break
 
@@ -392,7 +392,7 @@ class DSSP(AbstractResiduePropertyMap):
             res.xtra["O_NH_2_ENERGY_DSSP"] = O_NH_2_energy
 
             # Relative accessibility
-            resname = res.get_resname()
+            resname = res.resname
             try:
                 rel_acc = acc / self.residue_max_acc[resname]
             except KeyError:

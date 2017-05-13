@@ -43,10 +43,14 @@ addons:
     - mafft
     - muscle
     - paml
-    - phyml
-    - probcons
+    # http://www.atgc-montpellier.fr/phyml/
+    # - phyml
+    # http://probcons.stanford.edu/
+    # - probcons
     - samtools
-    - wise
+    # http://www.ebi.ac.uk/~birney/wise2/
+    # http://dendrome.ucdavis.edu/resources/tooldocs/wise2/doc_wise2.html
+    # - wise2
 
 #There is a phyml Ubuntu package, but currently too old
 before_install:
