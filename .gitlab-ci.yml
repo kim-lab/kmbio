@@ -7,6 +7,9 @@ stages:
 
 # === Variables ===
 
+variables:
+  PACKAGE_VERSION: 1.69.1
+
 .py27: &py27
   PYTHON_VERSION: "2.7"
 
@@ -18,14 +21,29 @@ stages:
 
 # === Build ===
 
+.conda_configure: &conda_configure
+  before_script:
+    # Conda configure
+    - conda config --append channels bioconda
+    - conda config --append channels ostrokach-forge
+    - case "${PACKAGE_VERSION}" in
+      *dev*)
+        conda config --append channels kimlab/label/dev;
+        conda config --append channels kimlab;
+        conda config --append channels ostrokach/label/dev;
+        conda config --append channels ostrokach;
+      ;;
+      *)
+        conda config --append channels kimlab;
+        conda config --append channels ostrokach;
+      ;;
+      esac
+
 .build: &build
   stage: build
+  <<: *conda_configure
   script:
     # Build conda packages
-    - conda config --append channels bioconda
-    - conda config --append channels kimlab
-    - conda config --append channels ostrokach
-    - conda config --append channels $CI_PROJECT_NAMESPACE
     - cd $CI_PROJECT_DIR/devtools/conda-recipe
     - conda build --python $PYTHON_VERSION .
     # Save built packages as artifacts
@@ -53,27 +71,20 @@ build-py36:
 
 # === Test ===
 
-.conda_install: &conda_install
-  before_script:
-    # Conda configure
-    - conda config --append channels bioconda
-    - conda config --append channels kimlab
-    - conda config --append channels ostrokach
+.test: &test
+  stage: test
+  script:
     # Conda install
     - cp -r $CI_PROJECT_DIR/conda-bld/* /opt/conda/conda-bld/
     - conda index /opt/conda/conda-bld/
-    - conda install -yq 'requests<2.12'
-    - conda install -yq --use-local "python=$PYTHON_VERSION" $CI_PROJECT_NAME
-
-.test: &test
-  stage: test
-  <<: *conda_install
-  script:
+    - conda install -y -q --use-local "python=$PYTHON_VERSION" $CI_PROJECT_NAME
+    # Test
     - pip install -q flake8 pytest pytest-cov pytest-runner pytest-logging hypothesis codecov
     - py.test Tests/test_PDB.py Tests/test_KDTree.py Tests/test_PDB_KDTree.py Tests/test_MMCIF.py
+    - codecov -t $CODECOV_TOKEN
 
 test-py27:
-  <<: *test
+  <<: [*conda_configure, *test]
   dependencies:
     - build-py27
   variables:
@@ -81,14 +92,14 @@ test-py27:
   allow_failure: true
 
 test-py35:
-  <<: *test
+  <<: [*conda_configure, *test]
   dependencies:
     - build-py35
   variables:
     <<: [*py35]
 
 test-py36:
-  <<: *test
+  <<: [*conda_configure, *test]
   dependencies:
     - build-py36
   variables:
@@ -99,7 +110,19 @@ test-py36:
 .deploy: &deploy
   stage: deploy
   script:
-    - anaconda -t $ANACONDA_TOKEN upload $CI_PROJECT_DIR/conda-bld/linux-64/*.tar.bz2 -u $CI_PROJECT_NAMESPACE --force
+    # Conda configure
+    - case "${PACKAGE_VERSION}" in
+      *dev*)
+        anaconda -t $ANACONDA_TOKEN upload $CI_PROJECT_DIR/conda-bld/linux-64/*.tar.bz2 -u ${CI_PROJECT_NAMESPACE} --label dev --force
+      ;;
+      *)
+        anaconda -t $ANACONDA_TOKEN upload $CI_PROJECT_DIR/conda-bld/linux-64/*.tar.bz2 -u ${CI_PROJECT_NAMESPACE}
+      ;;
+      esac
+  only:
+    - master
+  except:
+    - triggers
 
 deploy-py27:
   <<: *deploy
