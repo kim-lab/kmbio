@@ -80,7 +80,7 @@ build-py36:
     - conda install -y -q --use-local "python=$PYTHON_VERSION" $CI_PROJECT_NAME
     # Test
     - pip install -q flake8 pytest pytest-cov pytest-runner pytest-logging hypothesis codecov
-    - py.test Tests/test_PDB.py Tests/test_KDTree.py Tests/test_PDB_KDTree.py Tests/test_MMCIF.py
+    - py.test Tests/test_PDB.py Tests/test_KDTree.py Tests/test_PDB_KDTree.py Tests/test_MMCIF.py Tests/test_mmtf.py
     - codecov -t $CODECOV_TOKEN
 
 test-py27:
