@@ -1,8 +1,8 @@
 import unittest
 import warnings
-from Bio.PDB.mmtf import MMTFParser
-from Bio.PDB.MMCIFParser import MMCIFParser
-from Bio.PDB.PDBExceptions import PDBConstructionWarning
+from kmbio.PDB.mmtf import MMTFParser
+from kmbio.PDB.MMCIFParser import MMCIFParser
+from kmbio.PDB.PDBExceptions import PDBConstructionWarning
 
 
 class ParseMMTF(unittest.TestCase):

@@ -25,10 +25,10 @@ except ImportError:
 
 from Bio.Seq import Seq
 from Bio.Alphabet import generic_protein
-from Bio.PDB.PDBExceptions import PDBConstructionException, PDBConstructionWarning
+from kmbio.PDB.PDBExceptions import PDBConstructionException, PDBConstructionWarning
 
-from Bio.PDB import PPBuilder, CaPPBuilder
-from Bio.PDB.MMCIFParser import MMCIFParser, FastMMCIFParser
+from kmbio.PDB import PPBuilder, CaPPBuilder
+from kmbio.PDB.MMCIFParser import MMCIFParser, FastMMCIFParser
 
 
 class ParseReal(unittest.TestCase):

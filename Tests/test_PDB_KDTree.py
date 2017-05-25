@@ -26,7 +26,7 @@ except ImportError:
     raise MissingExternalDependencyError(
         "C module in Bio.KDTree not compiled")
 
-from Bio.PDB.NeighborSearch import NeighborSearch
+from kmbio.PDB.NeighborSearch import NeighborSearch
 
 
 class NeighborTest(unittest.TestCase):

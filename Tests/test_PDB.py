@@ -32,14 +32,14 @@ except ImportError:
 from Bio import BiopythonWarning
 from Bio.Seq import Seq
 from Bio.Alphabet import generic_protein
-from Bio.PDB import PDBParser, PPBuilder, CaPPBuilder, PDBIO, Select
-from Bio.PDB import HSExposureCA, HSExposureCB, ExposureCN
-from Bio.PDB.PDBExceptions import PDBConstructionException, PDBConstructionWarning
-from Bio.PDB import rotmat, Vector
-from Bio.PDB import Residue, Atom
-from Bio.PDB import make_dssp_dict
-from Bio.PDB import DSSP
-from Bio.PDB.NACCESS import process_asa_data, process_rsa_data
+from kmbio.PDB import PDBParser, PPBuilder, CaPPBuilder, PDBIO, Select
+from kmbio.PDB import HSExposureCA, HSExposureCB, ExposureCN
+from kmbio.PDB.PDBExceptions import PDBConstructionException, PDBConstructionWarning
+from kmbio.PDB import rotmat, Vector
+from kmbio.PDB import Residue, Atom
+from kmbio.PDB import make_dssp_dict
+from kmbio.PDB import DSSP
+from kmbio.PDB.NACCESS import process_asa_data, process_rsa_data
 
 import pytest
 
