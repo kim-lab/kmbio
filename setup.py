@@ -324,89 +324,89 @@ def is_Numpy_installed():
 # --- set up the packages we are going to install
 # standard biopython packages
 PACKAGES = [
-    'Bio',
-    'Bio.Align',
-    'Bio.Align.Applications',
-    'Bio.AlignIO',
-    'Bio.Alphabet',
-    'Bio.Application',
-    'Bio.Blast',
-    'Bio.CAPS',
-    'Bio.codonalign',
-    'Bio.Compass',
-    'Bio.Crystal',
-    'Bio.Data',
-    'Bio.Emboss',
-    'Bio.Entrez',
-    'Bio.ExPASy',
-    'Bio.FSSP',
-    'Bio.GA',
-    'Bio.GA.Crossover',
-    'Bio.GA.Mutation',
-    'Bio.GA.Repair',
-    'Bio.GA.Selection',
-    'Bio.GenBank',
-    'Bio.Geo',
-    'Bio.Graphics',
-    'Bio.Graphics.GenomeDiagram',
-    'Bio.HMM',
-    'Bio.KEGG',
-    'Bio.KEGG.Compound',
-    'Bio.KEGG.Enzyme',
-    'Bio.KEGG.Map',
-    'Bio.PDB.mmtf',
-    'Bio.KEGG.KGML',
-    'Bio.Medline',
-    'Bio.motifs',
-    'Bio.motifs.applications',
-    'Bio.motifs.jaspar',
-    'Bio.NeuralNetwork',
-    'Bio.NeuralNetwork.BackPropagation',
-    'Bio.NeuralNetwork.Gene',
-    'Bio.Nexus',
-    'Bio.NMR',
-    'Bio.Pathway',
-    'Bio.Pathway.Rep',
-    'Bio.PDB',
-    'Bio.PopGen',
-    'Bio.PopGen.Async',
-    'Bio.PopGen.FDist',
-    'Bio.PopGen.GenePop',
-    'Bio.PopGen.SimCoal',
-    'Bio.Restriction',
-    'Bio.SCOP',
-    'Bio.SearchIO',
-    'Bio.SearchIO._model',
-    'Bio.SearchIO.BlastIO',
-    'Bio.SearchIO.HmmerIO',
-    'Bio.SearchIO.ExonerateIO',
-    'Bio.SeqIO',
-    'Bio.SeqUtils',
-    'Bio.Sequencing',
-    'Bio.Sequencing.Applications',
-    'Bio.Statistics',
-    'Bio.SubsMat',
-    'Bio.SVDSuperimposer',
-    'Bio.PDB.QCPSuperimposer',
-    'Bio.SwissProt',
-    'Bio.TogoWS',
-    'Bio.Phylo',
-    'Bio.Phylo.Applications',
-    'Bio.Phylo.PAML',
-    'Bio.UniGene',
-    'Bio.UniProt',
-    'Bio.Wise',
-    'Bio._py3k',
+    'kmbio',
+    'kmbio.Align',
+    'kmbio.Align.Applications',
+    'kmbio.AlignIO',
+    'kmbio.Alphabet',
+    'kmbio.Application',
+    'kmbio.Blast',
+    'kmbio.CAPS',
+    'kmbio.codonalign',
+    'kmbio.Compass',
+    'kmbio.Crystal',
+    'kmbio.Data',
+    'kmbio.Emboss',
+    'kmbio.Entrez',
+    'kmbio.ExPASy',
+    'kmbio.FSSP',
+    'kmbio.GA',
+    'kmbio.GA.Crossover',
+    'kmbio.GA.Mutation',
+    'kmbio.GA.Repair',
+    'kmbio.GA.Selection',
+    'kmbio.GenBank',
+    'kmbio.Geo',
+    'kmbio.Graphics',
+    'kmbio.Graphics.GenomeDiagram',
+    'kmbio.HMM',
+    'kmbio.KEGG',
+    'kmbio.KEGG.Compound',
+    'kmbio.KEGG.Enzyme',
+    'kmbio.KEGG.Map',
+    'kmbio.PDB.mmtf',
+    'kmbio.KEGG.KGML',
+    'kmbio.Medline',
+    'kmbio.motifs',
+    'kmbio.motifs.applications',
+    'kmbio.motifs.jaspar',
+    'kmbio.NeuralNetwork',
+    'kmbio.NeuralNetwork.BackPropagation',
+    'kmbio.NeuralNetwork.Gene',
+    'kmbio.Nexus',
+    'kmbio.NMR',
+    'kmbio.Pathway',
+    'kmbio.Pathway.Rep',
+    'kmbio.PDB',
+    'kmbio.PopGen',
+    'kmbio.PopGen.Async',
+    'kmbio.PopGen.FDist',
+    'kmbio.PopGen.GenePop',
+    'kmbio.PopGen.SimCoal',
+    'kmbio.Restriction',
+    'kmbio.SCOP',
+    'kmbio.SearchIO',
+    'kmbio.SearchIO._model',
+    'kmbio.SearchIO.BlastIO',
+    'kmbio.SearchIO.HmmerIO',
+    'kmbio.SearchIO.ExonerateIO',
+    'kmbio.SeqIO',
+    'kmbio.SeqUtils',
+    'kmbio.Sequencing',
+    'kmbio.Sequencing.Applications',
+    'kmbio.Statistics',
+    'kmbio.SubsMat',
+    'kmbio.SVDSuperimposer',
+    'kmbio.PDB.QCPSuperimposer',
+    'kmbio.SwissProt',
+    'kmbio.TogoWS',
+    'kmbio.Phylo',
+    'kmbio.Phylo.Applications',
+    'kmbio.Phylo.PAML',
+    'kmbio.UniGene',
+    'kmbio.UniProt',
+    'kmbio.Wise',
+    'kmbio._py3k',
     # Other top level packages,
-    'BioSQL',
+    'kmbioSQL',
 ]
 
 # packages that require Numeric Python
 NUMPY_PACKAGES = [
-    'Bio.Affy',
-    'Bio.Cluster',
-    'Bio.KDTree',
-    'Bio.phenotype',
+    'kmbio.Affy',
+    'kmbio.Cluster',
+    'kmbio.KDTree',
+    'kmbio.phenotype',
 ]
 
 if os.name == 'java':
@@ -417,16 +417,16 @@ elif is_pypy() or is_ironpython():
     EXTENSIONS = []
 else:
     EXTENSIONS = [
-        Extension('Bio.cpairwise2',
-                  ['Bio/cpairwise2module.c'],
+        Extension('kmbio.cpairwise2',
+                  ['kmbio/cpairwise2module.c'],
                   ),
-        Extension('Bio.trie',
-                  ['Bio/triemodule.c',
-                   'Bio/trie.c'],
-                  include_dirs=["Bio"]
+        Extension('kmbio.trie',
+                  ['kmbio/triemodule.c',
+                   'kmbio/trie.c'],
+                  include_dirs=["kmbio"]
                   ),
-        Extension('Bio.Nexus.cnexus',
-                  ['Bio/Nexus/cnexus.c']
+        Extension('kmbio.Nexus.cnexus',
+                  ['kmbio/Nexus/cnexus.c']
                   ),
     ]
 
@@ -435,25 +435,25 @@ if is_Numpy_installed():
     import numpy
     numpy_include_dir = numpy.get_include()
     EXTENSIONS.append(
-        Extension('Bio.Cluster.cluster',
-                  ['Bio/Cluster/clustermodule.c',
-                   'Bio/Cluster/cluster.c'],
+        Extension('kmbio.Cluster.cluster',
+                  ['kmbio/Cluster/clustermodule.c',
+                   'kmbio/Cluster/cluster.c'],
                   include_dirs=[numpy_include_dir],
                   ))
     EXTENSIONS.append(
-        Extension('Bio.KDTree._CKDTree',
-                  ["Bio/KDTree/KDTree.c",
-                   "Bio/KDTree/KDTreemodule.c"],
+        Extension('kmbio.KDTree._CKDTree',
+                  ["kmbio/KDTree/KDTree.c",
+                   "kmbio/KDTree/KDTreemodule.c"],
                   include_dirs=[numpy_include_dir],
                   ))
     EXTENSIONS.append(
-        Extension('Bio.motifs._pwm',
-                  ["Bio/motifs/_pwm.c"],
+        Extension('kmbio.motifs._pwm',
+                  ["kmbio/motifs/_pwm.c"],
                   include_dirs=[numpy_include_dir],
                   ))
     EXTENSIONS.append(
-        Extension('Bio.PDB.QCPSuperimposer.qcprotmodule',
-                  ["Bio/PDB/QCPSuperimposer/qcprotmodule.c"],
+        Extension('kmbio.PDB.QCPSuperimposer.qcprotmodule',
+                  ["kmbio/PDB/QCPSuperimposer/qcprotmodule.c"],
                   include_dirs=[numpy_include_dir],
                   ))
 
@@ -462,14 +462,14 @@ try:
 except ImportError:
     pass
 else:
-    EXTENSIONS.extend(cythonize("Bio/PDB/*.pyx"))
+    EXTENSIONS.extend(cythonize("kmbio/PDB/*.pyx"))
 
 
 # We now define the Biopython version number in Bio/__init__.py
 # Here we can't use "import Bio" then "Bio.__version__" as that would
 # tell us the version of Biopython already installed (if any).
 __version__ = "Undefined"
-for line in open('Bio/__init__.py'):
+for line in open('kmbio/__init__.py'):
     if (line.startswith('__version__')):
         exec(line.strip())
 
@@ -502,8 +502,8 @@ setup_args = {
     "packages": PACKAGES,
     "ext_modules": EXTENSIONS,
     "package_data": {
-        'Bio.Entrez': ['DTDs/*.dtd', 'DTDs/*.ent', 'DTDs/*.mod'],
-        'Bio.PopGen': ['SimCoal/data/*.par'],
+        'kmbio.Entrez': ['DTDs/*.dtd', 'DTDs/*.ent', 'DTDs/*.mod'],
+        'kmbio.PopGen': ['SimCoal/data/*.par'],
     },
 }
 
