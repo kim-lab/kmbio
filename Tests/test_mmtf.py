@@ -1,7 +1,9 @@
+import os.path as op
 import unittest
 import warnings
-from kmbio.PDB.mmtf import MMTFParser
+
 from kmbio.PDB.MMCIFParser import MMCIFParser
+from kmbio.PDB.mmtf import MMTFParser
 from kmbio.PDB.PDBExceptions import PDBConstructionWarning
 
 
@@ -47,7 +49,7 @@ class ParseMMTF(unittest.TestCase):
             warnings.simplefilter('ignore', PDBConstructionWarning)
             mmtf_struct = MMTFParser.get_structure(mmtf_filename)
         mmcif_parser = MMCIFParser()
-        mmcif_struct = mmcif_parser.get_structure("example", cif_filename)
+        mmcif_struct = mmcif_parser.get_structure(op.basename(op.splitext(cif_filename)[0]), cif_filename)
         self.mmcif_atoms = [x for x in mmcif_struct.get_atoms()]
         self.mmtf_atoms = [x for x in mmtf_struct.get_atoms()]
         self.check_atoms()
