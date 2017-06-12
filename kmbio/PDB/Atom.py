@@ -9,10 +9,10 @@ import numpy as np
 import warnings
 import copy
 
-from Bio.PDB.Entity import DisorderedEntityWrapper
-from Bio.PDB.PDBExceptions import PDBConstructionWarning
-from Bio.PDB.Vector import Vector
-from Bio.PDB.Entity import Entity
+from kmbio.PDB.Entity import DisorderedEntityWrapper
+from kmbio.PDB.PDBExceptions import PDBConstructionWarning
+from kmbio.PDB.Vector import Vector
+from kmbio.PDB.Entity import Entity
 from Bio.Data import IUPACData
 
 

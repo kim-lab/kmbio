@@ -1,4 +1,4 @@
-from Bio.PDB.StructureBuilder import StructureBuilder
+from kmbio.PDB.StructureBuilder import StructureBuilder
 
 
 class StructureDecoder(object):

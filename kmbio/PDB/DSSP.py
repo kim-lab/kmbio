@@ -48,9 +48,9 @@ import warnings
 
 from Bio.Data import SCOPData
 
-from Bio.PDB.AbstractPropertyMap import AbstractResiduePropertyMap
-from Bio.PDB.PDBExceptions import PDBException
-from Bio.PDB.PDBParser import PDBParser
+from kmbio.PDB.AbstractPropertyMap import AbstractResiduePropertyMap
+from kmbio.PDB.PDBExceptions import PDBException
+from kmbio.PDB.PDBParser import PDBParser
 
 
 # Match C in DSSP

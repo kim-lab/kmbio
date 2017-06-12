@@ -6,8 +6,8 @@
 """Chain class, used in Structure objects."""
 import string
 
-from Bio.PDB.Entity import Entity
-from Bio.PDB.Residue import DisorderedResidue
+from kmbio.PDB.Entity import Entity
+from kmbio.PDB.Residue import DisorderedResidue
 
 CHAIN_IDS = list(string.ascii_uppercase + string.digits + string.ascii_lowercase)
 CHAIN_IDS += [(a + b) for a in CHAIN_IDS for b in CHAIN_IDS if a != b]

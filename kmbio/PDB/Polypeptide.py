@@ -7,8 +7,8 @@
 
 Simple example with multiple chains,
 
-    >>> from Bio.PDB.PDBParser import PDBParser
-    >>> from Bio.PDB.Polypeptide import PPBuilder
+    >>> from kmbio.PDB.PDBParser import PDBParser
+    >>> from kmbio.PDB.Polypeptide import PPBuilder
     >>> structure = PDBParser().get_structure('2BEG', 'PDB/2BEG.pdb')
     >>> ppb=PPBuilder()
     >>> for pp in ppb.build_peptides(structure):
@@ -22,8 +22,8 @@ Simple example with multiple chains,
 Example with non-standard amino acids using HETATM lines in the PDB file,
 in this case selenomethionine (MSE):
 
-    >>> from Bio.PDB.PDBParser import PDBParser
-    >>> from Bio.PDB.Polypeptide import PPBuilder
+    >>> from kmbio.PDB.PDBParser import PDBParser
+    >>> from kmbio.PDB.Polypeptide import PPBuilder
     >>> structure = PDBParser().get_structure('1A8O', 'PDB/1A8O.pdb')
     >>> ppb=PPBuilder()
     >>> for pp in ppb.build_peptides(structure):
@@ -56,8 +56,8 @@ import warnings
 from Bio.Alphabet import generic_protein
 from Bio.Data import SCOPData
 from Bio.Seq import Seq
-from Bio.PDB.PDBExceptions import PDBException
-from Bio.PDB.Vector import calc_dihedral, calc_angle
+from kmbio.PDB.PDBExceptions import PDBException
+from kmbio.PDB.Vector import calc_dihedral, calc_angle
 
 
 standard_aa_names = ["ALA", "CYS", "ASP", "GLU", "PHE", "GLY", "HIS", "ILE", "LYS",
@@ -455,7 +455,7 @@ class PPBuilder(_PPBuilder):
 
 if __name__ == "__main__":
     import sys
-    from Bio.PDB.PDBParser import PDBParser
+    from kmbio.PDB.PDBParser import PDBParser
 
     p = PDBParser(PERMISSIVE=True)
 

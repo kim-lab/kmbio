@@ -5,7 +5,7 @@
 
 """The structure class, representing a macromolecular structure."""
 
-from Bio.PDB.Entity import Entity
+from kmbio.PDB.Entity import Entity
 
 
 class Structure(Entity):

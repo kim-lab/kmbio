@@ -3,7 +3,7 @@
 # license.  Please see the LICENSE file that should have been included
 # as part of this package.
 
-"""Some Bio.PDB-specific exceptions."""
+"""Some kmbio.PDB-specific exceptions."""
 
 from Bio import BiopythonWarning
 

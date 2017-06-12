@@ -23,8 +23,8 @@ import tempfile
 import shutil
 import subprocess
 import warnings
-from Bio.PDB.PDBIO import PDBIO
-from Bio.PDB.AbstractPropertyMap import AbstractResiduePropertyMap, AbstractAtomPropertyMap
+from kmbio.PDB.PDBIO import PDBIO
+from kmbio.PDB.AbstractPropertyMap import AbstractResiduePropertyMap, AbstractAtomPropertyMap
 
 
 def run_naccess(model, pdb_file, probe_size=None, z_slice=None,
@@ -184,7 +184,7 @@ class NACCESS_atomic(AbstractAtomPropertyMap):
 
 if __name__ == "__main__":
     import sys
-    from Bio.PDB import PDBParser
+    from kmbio.PDB import PDBParser
 
     p = PDBParser()
     s = p.get_structure('X', sys.argv[1])

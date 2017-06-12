@@ -9,8 +9,8 @@ from __future__ import print_function
 
 import numpy
 
-from Bio.SVDSuperimposer import SVDSuperimposer
-from Bio.PDB.PDBExceptions import PDBException
+from kmbio.SVDSuperimposer import SVDSuperimposer
+from kmbio.PDB.PDBExceptions import PDBException
 
 
 class Superimposer(object):
@@ -61,7 +61,7 @@ class Superimposer(object):
 if __name__ == "__main__":
     import sys
 
-    from Bio.PDB import PDBParser, Selection
+    from kmbio.PDB import PDBParser, Selection
 
     p = PDBParser()
     s1 = p.get_structure("FIXED", sys.argv[1])

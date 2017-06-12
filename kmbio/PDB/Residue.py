@@ -6,9 +6,9 @@
 """Residue class, used by Structure objects."""
 
 # My Stuff
-from Bio.PDB.PDBExceptions import PDBConstructionException
-from Bio.PDB.Entity import Entity, DisorderedEntityWrapper
-from Bio.PDB.Atom import DisorderedAtom
+from kmbio.PDB.PDBExceptions import PDBConstructionException
+from kmbio.PDB.Entity import Entity, DisorderedEntityWrapper
+from kmbio.PDB.Atom import DisorderedAtom
 
 _atom_name_dict = {}
 _atom_name_dict["N"] = 1

@@ -7,7 +7,7 @@
 
 from Bio._py3k import basestring
 
-from Bio.PDB.StructureBuilder import StructureBuilder  # To allow saving of chains, residues, etc..
+from kmbio.PDB.StructureBuilder import StructureBuilder  # To allow saving of chains, residues, etc..
 from Bio.Data.IUPACData import atom_weights  # Allowed Elements
 
 
@@ -221,7 +221,7 @@ class PDBIO(object):
 
 if __name__ == "__main__":
 
-    from Bio.PDB.PDBParser import PDBParser
+    from kmbio.PDB.PDBParser import PDBParser
 
     import sys
 

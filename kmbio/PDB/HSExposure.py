@@ -10,10 +10,10 @@ from __future__ import print_function
 import warnings
 from math import pi
 
-from Bio.PDB.AbstractPropertyMap import AbstractPropertyMap
-from Bio.PDB.PDBParser import PDBParser
-from Bio.PDB.Polypeptide import CaPPBuilder, is_aa
-from Bio.PDB.Vector import rotaxis
+from kmbio.PDB.AbstractPropertyMap import AbstractPropertyMap
+from kmbio.PDB.PDBParser import PDBParser
+from kmbio.PDB.Polypeptide import CaPPBuilder, is_aa
+from kmbio.PDB.Vector import rotaxis
 
 
 class _AbstractHSExposure(AbstractPropertyMap):
@@ -24,8 +24,7 @@ class _AbstractHSExposure(AbstractPropertyMap):
     vector based on three consecutive CA atoms. This is done by two separate
     subclasses.
     """
-    def __init__(self, model, radius, offset, hse_up_key, hse_down_key,
-            angle_key=None):
+    def __init__(self, model, radius, offset, hse_up_key, hse_down_key, angle_key=None):
         """
         @param model: model
         @type model: L{Model}

@@ -5,7 +5,7 @@
 
 """Model class, used in Structure objects."""
 
-from Bio.PDB.Entity import Entity
+from kmbio.PDB.Entity import Entity
 
 
 class Model(Entity):

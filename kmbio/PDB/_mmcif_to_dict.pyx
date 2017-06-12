@@ -10,7 +10,7 @@ from __future__ import print_function
 from Bio.File import as_handle
 from Bio._py3k import input as _input
 
-import Bio.PDB._shlex as shlex
+import kmbio.PDB._shlex as shlex
 
 
 class MMCIF2Dict(dict):

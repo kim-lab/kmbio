@@ -9,9 +9,9 @@ from __future__ import print_function
 
 import itertools
 
-from Bio.PDB.Atom import Atom
-from Bio.PDB.Entity import Entity
-from Bio.PDB.PDBExceptions import PDBException
+from kmbio.PDB.Atom import Atom
+from kmbio.PDB.Entity import Entity
+from kmbio.PDB.PDBExceptions import PDBException
 
 
 entity_levels = ["A", "R", "C", "M", "S"]
@@ -81,7 +81,7 @@ def unfold_entities(entity_list, target_level):
 
 
 def _test():
-    """Run the Bio.PDB.Selection module's doctests (PRIVATE)."""
+    """Run the kmbio.PDB.Selection module's doctests (PRIVATE)."""
     import doctest
     print("Running doctests ...")
     doctest.testmod()

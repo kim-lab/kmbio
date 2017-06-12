@@ -12,7 +12,7 @@ import logging
 from copy import copy
 from collections.abc import MutableMapping
 
-from Bio.PDB.PDBExceptions import PDBConstructionException
+from kmbio.PDB.PDBExceptions import PDBConstructionException
 
 logger = logging.getLogger(__name__)
 

@@ -11,8 +11,8 @@ import numpy
 
 from Bio.KDTree import KDTree
 
-from Bio.PDB.PDBExceptions import PDBException
-from Bio.PDB.Selection import unfold_entities, entity_levels, uniqueify
+from kmbio.PDB.PDBExceptions import PDBException
+from kmbio.PDB.Selection import unfold_entities, entity_levels, uniqueify
 
 
 class NeighborSearch(object):

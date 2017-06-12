@@ -11,8 +11,8 @@ from __future__ import print_function
 
 from Bio.Data import SCOPData
 
-from Bio.PDB import Selection
-from Bio.PDB.Polypeptide import is_aa
+from kmbio.PDB import Selection
+from kmbio.PDB.Polypeptide import is_aa
 
 
 class StructureAlignment(object):
@@ -104,7 +104,7 @@ if __name__ == "__main__":
     import sys
     from Bio.Alphabet import generic_protein
     from Bio import AlignIO
-    from Bio.PDB import PDBParser
+    from kmbio.PDB import PDBParser
 
     if len(sys.argv) != 4:
         print("Expects three arguments,")

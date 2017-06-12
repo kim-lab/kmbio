@@ -14,14 +14,14 @@ from Bio.File import as_handle
 from Bio._py3k import range
 
 try:
-    from Bio.PDB._mmcif_to_dict import MMCIF2Dict
+    from kmbio.PDB._mmcif_to_dict import MMCIF2Dict
 except ImportError:
     warnings.warn("Cound not import cythonized MMCIF2Dict module. Performance will suffer!")
-    from Bio.PDB.MMCIF2Dict import MMCIF2Dict
+    from kmbio.PDB.MMCIF2Dict import MMCIF2Dict
 
-from Bio.PDB.StructureBuilder import StructureBuilder
-from Bio.PDB.PDBExceptions import PDBConstructionException
-from Bio.PDB.PDBExceptions import PDBConstructionWarning
+from kmbio.PDB.StructureBuilder import StructureBuilder
+from kmbio.PDB.PDBExceptions import PDBConstructionException
+from kmbio.PDB.PDBExceptions import PDBConstructionWarning
 
 
 class MMCIFParser(object):

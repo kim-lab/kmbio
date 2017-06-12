@@ -18,11 +18,11 @@ except ImportError:
 
 from Bio.File import as_handle
 
-from Bio.PDB.PDBExceptions import PDBConstructionException
-from Bio.PDB.PDBExceptions import PDBConstructionWarning
+from kmbio.PDB.PDBExceptions import PDBConstructionException
+from kmbio.PDB.PDBExceptions import PDBConstructionWarning
 
-from Bio.PDB.StructureBuilder import StructureBuilder
-from Bio.PDB.parse_pdb_header import _parse_pdb_header_list
+from kmbio.PDB.StructureBuilder import StructureBuilder
+from kmbio.PDB.parse_pdb_header import _parse_pdb_header_list
 
 
 # If PDB spec says "COLUMNS 18-20" this means line[17:20]
