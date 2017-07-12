@@ -326,7 +326,10 @@ def is_Numpy_installed():
 PACKAGES = [
     'kmbio',
     'kmbio.PDB',
-    'kmbio.SVDSuperimposer'
+    'kmbio.PDB.mmCIF',
+    'kmbio.PDB.mmtf',
+    'kmbio.PDB.QCPSuperimposer',
+    'kmbio.SVDSuperimposer',
 ]
 
 # packages that require Numeric Python
