@@ -97,3 +97,9 @@ Doc/*/*/hevea.sty
 
 #Ignore NFS lock files
 .nfs*
+
+# Ignore compiled Cython code
+*.so
+*.c
+*.h
+
