@@ -2,6 +2,8 @@ import os.path as op
 import unittest
 import warnings
 
+import pytest
+
 from kmbio.PDB.MMCIFParser import MMCIFParser
 from kmbio.PDB.mmtf import MMTFParser
 from kmbio.PDB.PDBExceptions import PDBConstructionWarning
@@ -66,6 +68,7 @@ class ParseMMTF(unittest.TestCase):
         self.check_residues()
         self.assertEqual(len([x for x in mmcif_struct.get_models()]), len([x for x in mmtf_struct.get_models()]))
 
+    @pytest.mark.xfail
     def test_4CUP(self):
         """Compare parsing 4CUP.mmtf and 4CUP.cif"""
         self.check_mmtf_vs_cif("PDB/4CUP.mmtf", "PDB/4CUP.cif")

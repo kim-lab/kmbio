@@ -325,88 +325,16 @@ def is_Numpy_installed():
 # standard biopython packages
 PACKAGES = [
     'kmbio',
-    'kmbio.Align',
-    'kmbio.Align.Applications',
-    'kmbio.AlignIO',
-    'kmbio.Alphabet',
-    'kmbio.Application',
-    'kmbio.Blast',
-    'kmbio.CAPS',
-    'kmbio.codonalign',
-    'kmbio.Compass',
-    'kmbio.Crystal',
-    'kmbio.Data',
-    'kmbio.Emboss',
-    'kmbio.Entrez',
-    'kmbio.ExPASy',
-    'kmbio.FSSP',
-    'kmbio.GA',
-    'kmbio.GA.Crossover',
-    'kmbio.GA.Mutation',
-    'kmbio.GA.Repair',
-    'kmbio.GA.Selection',
-    'kmbio.GenBank',
-    'kmbio.Geo',
-    'kmbio.Graphics',
-    'kmbio.Graphics.GenomeDiagram',
-    'kmbio.HMM',
-    'kmbio.KEGG',
-    'kmbio.KEGG.Compound',
-    'kmbio.KEGG.Enzyme',
-    'kmbio.KEGG.Map',
-    'kmbio.PDB.mmtf',
-    'kmbio.KEGG.KGML',
-    'kmbio.Medline',
-    'kmbio.motifs',
-    'kmbio.motifs.applications',
-    'kmbio.motifs.jaspar',
-    'kmbio.NeuralNetwork',
-    'kmbio.NeuralNetwork.BackPropagation',
-    'kmbio.NeuralNetwork.Gene',
-    'kmbio.Nexus',
-    'kmbio.NMR',
-    'kmbio.Pathway',
-    'kmbio.Pathway.Rep',
     'kmbio.PDB',
-    'kmbio.PopGen',
-    'kmbio.PopGen.Async',
-    'kmbio.PopGen.FDist',
-    'kmbio.PopGen.GenePop',
-    'kmbio.PopGen.SimCoal',
-    'kmbio.Restriction',
-    'kmbio.SCOP',
-    'kmbio.SearchIO',
-    'kmbio.SearchIO._model',
-    'kmbio.SearchIO.BlastIO',
-    'kmbio.SearchIO.HmmerIO',
-    'kmbio.SearchIO.ExonerateIO',
-    'kmbio.SeqIO',
-    'kmbio.SeqUtils',
-    'kmbio.Sequencing',
-    'kmbio.Sequencing.Applications',
-    'kmbio.Statistics',
-    'kmbio.SubsMat',
-    'kmbio.SVDSuperimposer',
+    'kmbio.PDB.mmCIF',
+    'kmbio.PDB.mmtf',
     'kmbio.PDB.QCPSuperimposer',
-    'kmbio.SwissProt',
-    'kmbio.TogoWS',
-    'kmbio.Phylo',
-    'kmbio.Phylo.Applications',
-    'kmbio.Phylo.PAML',
-    'kmbio.UniGene',
-    'kmbio.UniProt',
-    'kmbio.Wise',
-    'kmbio._py3k',
-    # Other top level packages,
-    'kmbioSQL',
+    'kmbio.SVDSuperimposer',
 ]
 
 # packages that require Numeric Python
 NUMPY_PACKAGES = [
-    'kmbio.Affy',
-    'kmbio.Cluster',
     'kmbio.KDTree',
-    'kmbio.phenotype',
 ]
 
 if os.name == 'java':
@@ -416,39 +344,16 @@ elif is_pypy() or is_ironpython():
     # Skip C extensions for now
     EXTENSIONS = []
 else:
-    EXTENSIONS = [
-        Extension('kmbio.cpairwise2',
-                  ['kmbio/cpairwise2module.c'],
-                  ),
-        Extension('kmbio.trie',
-                  ['kmbio/triemodule.c',
-                   'kmbio/trie.c'],
-                  include_dirs=["kmbio"]
-                  ),
-        Extension('kmbio.Nexus.cnexus',
-                  ['kmbio/Nexus/cnexus.c']
-                  ),
-    ]
+    EXTENSIONS = []
 
 # Add extensions that requires NumPy to build
 if is_Numpy_installed():
     import numpy
     numpy_include_dir = numpy.get_include()
     EXTENSIONS.append(
-        Extension('kmbio.Cluster.cluster',
-                  ['kmbio/Cluster/clustermodule.c',
-                   'kmbio/Cluster/cluster.c'],
-                  include_dirs=[numpy_include_dir],
-                  ))
-    EXTENSIONS.append(
         Extension('kmbio.KDTree._CKDTree',
                   ["kmbio/KDTree/KDTree.c",
                    "kmbio/KDTree/KDTreemodule.c"],
-                  include_dirs=[numpy_include_dir],
-                  ))
-    EXTENSIONS.append(
-        Extension('kmbio.motifs._pwm',
-                  ["kmbio/motifs/_pwm.c"],
                   include_dirs=[numpy_include_dir],
                   ))
     EXTENSIONS.append(

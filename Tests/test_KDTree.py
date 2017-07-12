@@ -18,7 +18,7 @@ except ImportError:
     raise MissingExternalDependencyError(
         "C module in Bio.KDTree not compiled")
 
-from Bio.KDTree.KDTree import _neighbor_test, _test
+from kmbio.KDTree.KDTree import _neighbor_test, _test
 
 nr_points = 5000
 dim = 3
