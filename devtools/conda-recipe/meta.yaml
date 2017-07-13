@@ -21,6 +21,7 @@ requirements:
   run:
     - python
     - numpy
+    - pandas
     - reportlab
     - biopython
     - mmtf-python
