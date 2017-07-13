@@ -10,9 +10,6 @@ stages:
 variables:
   PACKAGE_VERSION: 1.69.5.dev0
 
-.py27: &py27
-  PYTHON_VERSION: "2.7"
-
 .py35: &py35
   PYTHON_VERSION: "3.5"
 
@@ -53,12 +50,6 @@ variables:
     paths:
     - conda-bld
 
-build-py27:
-  <<: *build
-  variables:
-    <<: [*py27]
-  allow_failure: true
-
 build-py35:
   <<: *build
   variables:
@@ -81,14 +72,6 @@ build-py36:
     # Test
     - pip install -q flake8 pytest pytest-cov pytest-runner pytest-logging hypothesis
     - py.test Tests/test_PDB.py Tests/test_KDTree.py Tests/test_PDB_KDTree.py Tests/test_MMCIF.py
-
-test-py27:
-  <<: [*conda_configure, *test]
-  dependencies:
-    - build-py27
-  variables:
-    <<: [*py27]
-  allow_failure: true
 
 test-py35:
   <<: [*conda_configure, *test]
@@ -122,12 +105,6 @@ test-py36:
     - master
   except:
     - triggers
-
-deploy-py27:
-  <<: *deploy
-  dependencies:
-    - build-py27
-  allow_failure: true
 
 deploy-py35:
   <<: *deploy
