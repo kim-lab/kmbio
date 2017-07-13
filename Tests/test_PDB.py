@@ -12,36 +12,23 @@
 """Unit tests for the Bio.PDB module."""
 from __future__ import print_function
 
+import logging
 import os
 import sys
 import tempfile
 import unittest
-import warnings
+
+import numpy as np
 from Bio._py3k import StringIO
-
-try:
-    import numpy
-    from numpy import dot  # Missing on old PyPy's micronumpy
-    del dot
-    from numpy.linalg import svd, det  # Missing in PyPy 2.0 numpypy
-except ImportError:
-    from Bio import MissingPythonDependencyError
-    raise MissingPythonDependencyError(
-        "Install NumPy if you want to use Bio.PDB.")
-
-from Bio import BiopythonWarning
-from Bio.Seq import Seq
 from Bio.Alphabet import generic_protein
-from kmbio.PDB import PDBParser, PPBuilder, CaPPBuilder, PDBIO, Select
-from kmbio.PDB import HSExposureCA, HSExposureCB, ExposureCN
-from kmbio.PDB.PDBExceptions import PDBConstructionException, PDBConstructionWarning
-from kmbio.PDB import rotmat, Vector
-from kmbio.PDB import Residue, Atom
-from kmbio.PDB import make_dssp_dict
-from kmbio.PDB import DSSP
-from kmbio.PDB.NACCESS import process_asa_data, process_rsa_data
+from Bio.Seq import Seq
 
-import pytest
+from kmbio.PDB import (DSSP, PDBIO, Atom, CaPPBuilder, ExposureCN, HSExposureCA, HSExposureCB,
+                       PDBParser, PPBuilder, Residue, Select, Vector, make_dssp_dict, rotmat)
+from kmbio.PDB.NACCESS import process_asa_data, process_rsa_data
+from kmbio.PDB.PDBExceptions import PDBConstructionException
+
+logger = logging.getLogger(__name__)
 
 
 # NB: the 'A_' prefix ensures this test case is run first
@@ -51,50 +38,18 @@ class A_ExceptionTest(unittest.TestCase):
     These tests must be executed because of the way Python's warnings module
     works -- a warning is only logged the first time it is encountered.
     """
-    @pytest.mark.skip(reason="Haven't updated the error messages for kmbio.")
-    def test_1_warnings(self):
-        """Check warnings: Parse a flawed PDB file in permissive mode."""
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter('always', PDBConstructionWarning)
-
-            # Trigger warnings
-            p = PDBParser(PERMISSIVE=True)
-            p.get_structure("PDB/a_structure.pdb", "example")
-
-            self.assertEqual(len(w), 14)
-            for wrn, msg in zip(w, [
-                    # Expected warning messages:
-                    "Used element 'N' for Atom (name=N) with given element ''",
-                    "Used element 'C' for Atom (name=CA) with given element ''",
-                    "Atom names ' CA ' and 'CA  ' differ only in spaces at line 17.",
-                    "Used element 'CA' for Atom (name=CA  ) with given element ''",
-                    'Atom N defined twice in residue <Residue ARG het=  resseq=2 icode= > at line 21.',
-                    'disordered atom found with blank altloc before line 33.',
-                    "Residue (' ', 4, ' ') redefined at line 43.",
-                    "Blank altlocs in duplicate residue SER (' ', 4, ' ') at line 43.",
-                    "Residue (' ', 10, ' ') redefined at line 75.",
-                    "Residue (' ', 14, ' ') redefined at line 106.",
-                    "Residue (' ', 16, ' ') redefined at line 135.",
-                    "Residue (' ', 80, ' ') redefined at line 633.",
-                    "Residue (' ', 81, ' ') redefined at line 646.",
-                    'Atom O defined twice in residue <Residue HOH het=W resseq=67 icode= > at line 822.'
-                    ]):
-                self.assertIn(msg, str(wrn))
-
     def test_2_strict(self):
         """Check error: Parse a flawed PDB file in strict mode."""
         parser = PDBParser(PERMISSIVE=False)
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always", PDBConstructionWarning)
-            self.assertRaises(PDBConstructionException,
-                              parser.get_structure, "PDB/a_structure.pdb", "example")
-            self.assertEqual(len(w), 4, w)
+        self.assertRaises(PDBConstructionException,
+                          parser.get_structure, "PDB/a_structure.pdb", "example")
 
     def test_3_bad_xyz(self):
         """Check error: Parse an entry with bad x,y,z value."""
         data = "ATOM      9  N   ASP A 152      21.554  34.953  27.691  1.00 19.26           N\n"
         parser = PDBParser(PERMISSIVE=False)
         s = parser.get_structure(StringIO(data), "example")
+        assert s
         data = "ATOM      9  N   ASP A 152      21.ish  34.953  27.691  1.00 19.26           N\n"
         self.assertRaises(PDBConstructionException,
                           parser.get_structure, StringIO(data), "example")
@@ -102,10 +57,7 @@ class A_ExceptionTest(unittest.TestCase):
     def test_4_occupancy(self):
         """Parse file with missing occupancy"""
         permissive = PDBParser(PERMISSIVE=True)
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always", PDBConstructionWarning)
-            structure = permissive.get_structure("PDB/occupancy.pdb", "test")
-            self.assertEqual(len(w), 3, w)
+        structure = permissive.get_structure("PDB/occupancy.pdb", "test")
         atoms = structure[0]['A'][(' ', 152, ' ')]
         # Blank occupancy behavior set in Bio/PDB/PDBParser
         self.assertEqual(atoms['N'].occupancy, None)
@@ -161,10 +113,8 @@ class HeaderTests(unittest.TestCase):
 
 class ParseTest(unittest.TestCase):
     def setUp(self):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", PDBConstructionWarning)
-            p = PDBParser(PERMISSIVE=1)
-            self.structure = p.get_structure("PDB/a_structure.pdb", "example")
+        p = PDBParser(PERMISSIVE=1)
+        self.structure = p.get_structure("PDB/a_structure.pdb", "example")
 
     def test_c_n(self):
         """Extract polypeptides using C-N."""
@@ -708,7 +658,7 @@ class ParseReal(unittest.TestCase):
             self.assertEqual(len(end_stment), 1)  # Only one?
             self.assertEqual(end_stment[0][1], iline)  # Last line of the file?
 
-        parser = PDBParser(QUIET=1)
+        parser = PDBParser()
         struct1 = parser.get_structure("PDB/1LCD.pdb", "1lcd")
         confirm_numbering(struct1)
 
@@ -728,10 +678,8 @@ class ParseReal(unittest.TestCase):
 
 class WriteTest(unittest.TestCase):
     def setUp(self):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", PDBConstructionWarning)
-            self.parser = PDBParser(PERMISSIVE=1)
-            self.structure = self.parser.get_structure("PDB/1A8O.pdb", "example")
+        self.parser = PDBParser(PERMISSIVE=1)
+        self.structure = self.parser.get_structure("PDB/1A8O.pdb", "example")
 
     def test_pdbio_write_structure(self):
         """Write a full structure using PDBIO"""
@@ -819,20 +767,13 @@ class WriteTest(unittest.TestCase):
     def test_pdbio_missing_occupancy(self):
         """Write PDB file with missing occupancy"""
         io = PDBIO()
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", PDBConstructionWarning)
-            structure = self.parser.get_structure("PDB/occupancy.pdb", "test")
+        structure = self.parser.get_structure("PDB/occupancy.pdb", "test")
         io.set_structure(structure)
         filenumber, filename = tempfile.mkstemp()
         os.close(filenumber)
         try:
-            with warnings.catch_warnings(record=True) as w:
-                warnings.simplefilter("always", BiopythonWarning)
-                io.save(filename)
-                self.assertEqual(len(w), 1, w)
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore", PDBConstructionWarning)
-                struct2 = self.parser.get_structure(filename, "test")
+            io.save(filename)
+            struct2 = self.parser.get_structure(filename, "test")
             atoms = struct2[0]['A'][(' ', 152, ' ')]
             self.assertEqual(atoms['N'].occupancy, None)
         finally:
@@ -843,9 +784,7 @@ class Exposure(unittest.TestCase):
     "Testing Bio.PDB.HSExposure."
     def setUp(self):
         pdb_filename = "PDB/a_structure.pdb"
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", PDBConstructionWarning)
-            structure = PDBParser(PERMISSIVE=True).get_structure(pdb_filename, 'X')
+        structure = PDBParser(PERMISSIVE=True).get_structure(pdb_filename, 'X')
         self.model = structure[1]
         # Look at first chain only
         a_residues = list(self.model["A"].values())
@@ -864,6 +803,7 @@ class Exposure(unittest.TestCase):
     def test_HSExposureCA(self):
         """HSExposureCA."""
         hse = HSExposureCA(self.model, self.radius)
+        assert hse
         residues = self.a_residues
         self.assertEqual(0, len(residues[0].xtra))
         self.assertEqual(0, len(residues[1].xtra))
@@ -885,6 +825,7 @@ class Exposure(unittest.TestCase):
     def test_HSExposureCB(self):
         """HSExposureCB."""
         hse = HSExposureCB(self.model, self.radius)
+        assert hse
         residues = self.a_residues
         self.assertEqual(0, len(residues[0].xtra))
         self.assertEqual(2, len(residues[1].xtra))
@@ -907,6 +848,7 @@ class Exposure(unittest.TestCase):
     def test_ExposureCN(self):
         """HSExposureCN."""
         hse = ExposureCN(self.model, self.radius)
+        assert hse
         residues = self.a_residues
         self.assertEqual(0, len(residues[0].xtra))
         self.assertEqual(1, len(residues[1].xtra))
@@ -927,9 +869,7 @@ class Atom_Element(unittest.TestCase):
 
     def setUp(self):
         pdb_filename = "PDB/a_structure.pdb"
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", PDBConstructionWarning)
-            structure = PDBParser(PERMISSIVE=True).get_structure(pdb_filename, 'X')
+        structure = PDBParser(PERMISSIVE=True).get_structure(pdb_filename, 'X')
         self.residue = structure[0]['A'][('H_PCA', 1, ' ')]
 
     def test_AtomElement(self):
@@ -968,19 +908,14 @@ class Atom_Element(unittest.TestCase):
 
         for element, atom_names in pdb_elements.items():
             for fullname in atom_names:
-                with warnings.catch_warnings():
-                    warnings.simplefilter("ignore", PDBConstructionWarning)
-                    e = quick_assign(fullname)
-                # warnings.warn("%s %s" % (fullname, e))
+                e = quick_assign(fullname)
                 self.assertEqual(e, element)
 
 
 class IterationTests(unittest.TestCase):
 
     def setUp(self):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", PDBConstructionWarning)
-            self.struc = PDBParser(PERMISSIVE=True).get_structure("PDB/a_structure.pdb", 'X')
+        self.struc = PDBParser(PERMISSIVE=True).get_structure("PDB/a_structure.pdb", 'X')
 
     def test_get_chains(self):
         """Yields chains from different models separately."""
@@ -1001,9 +936,7 @@ class IterationTests(unittest.TestCase):
 class ChangingIdTests(unittest.TestCase):
 
     def setUp(self):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", PDBConstructionWarning)
-            self.struc = PDBParser(PERMISSIVE=True).get_structure("PDB/a_structure.pdb", 'X')
+        self.struc = PDBParser(PERMISSIVE=True).get_structure("PDB/a_structure.pdb", 'X')
 
     def test_change_model_id(self):
         """Change the id of a model"""
@@ -1107,9 +1040,7 @@ class ChangingIdTests(unittest.TestCase):
 class TransformTests(unittest.TestCase):
 
     def setUp(self):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", PDBConstructionWarning)
-            self.s = PDBParser(PERMISSIVE=True).get_structure("PDB/a_structure.pdb", 'X')
+        self.s = PDBParser(PERMISSIVE=True).get_structure("PDB/a_structure.pdb", 'X')
         self.m = self.s.ix[0]
         self.c = self.m.ix[0]
         self.r = self.c.ix[0]
@@ -1122,7 +1053,7 @@ class TransformTests(unittest.TestCase):
         """
         if hasattr(o, "coord"):
             return o.coord, 1
-        total_pos = numpy.array((0.0, 0.0, 0.0))
+        total_pos = np.array((0.0, 0.0, 0.0))
         total_count = 0
         for p in o.values():
             pos, count = self.get_total_pos(p)
@@ -1141,11 +1072,11 @@ class TransformTests(unittest.TestCase):
         """Transform entities (rotation and translation)."""
         for o in (self.s, self.m, self.c, self.r, self.a):
             rotation = rotmat(Vector(1, 3, 5), Vector(1, 0, 0))
-            translation = numpy.array((2.4, 0, 1), 'f')
+            translation = np.array((2.4, 0, 1), 'f')
             oldpos = self.get_pos(o)
             o.transform(rotation, translation)
             newpos = self.get_pos(o)
-            newpos_check = numpy.dot(oldpos, rotation) + translation
+            newpos_check = np.dot(oldpos, rotation) + translation
             for i in range(0, 3):
                 self.assertAlmostEqual(newpos[i], newpos_check[i])
 
@@ -1153,9 +1084,7 @@ class TransformTests(unittest.TestCase):
 class CopyTests(unittest.TestCase):
 
     def setUp(self):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", PDBConstructionWarning)
-            self.s = PDBParser(PERMISSIVE=True).get_structure("PDB/a_structure.pdb", 'X')
+        self.s = PDBParser(PERMISSIVE=True).get_structure("PDB/a_structure.pdb", 'X')
         self.m = list(self.s.values())[0]
         self.c = list(self.m.values())[0]
         self.r = list(self.c.values())[0]
@@ -1234,6 +1163,7 @@ class DsspTests(unittest.TestCase):
         m = s[0]
         # Read the DSSP data into the pdb object:
         trash_var = DSSP(m, "PDB/2BEG.dssp", 'dssp', 'Sander', 'DSSP')
+        assert trash_var
         # Now compare the xtra attribute of the pdb object
         # residue by residue with the pre-computed values:
         i = 0
@@ -1295,6 +1225,7 @@ class DsspTests(unittest.TestCase):
         s = p.get_structure("PDB/2BEG.pdb", "example")
         m = s[0]
         trash_var = DSSP(m, "PDB/2BEG.dssp", 'dssp', 'Miller', 'DSSP')
+        assert trash_var
         i = 0
         with open("PDB/Miller_RASA.txt", 'r') as fh_ref:
             ref_lines = fh_ref.readlines()
@@ -1322,7 +1253,3 @@ class NACCESSTests(unittest.TestCase):
         with open("PDB/1A8O.asa") as asa:
             naccess = process_asa_data(asa)
         self.assertEqual(len(naccess), 524)
-
-if __name__ == '__main__':
-    runner = unittest.TextTestRunner(verbosity=2)
-    unittest.main(testRunner=runner)

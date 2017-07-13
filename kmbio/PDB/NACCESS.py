@@ -22,9 +22,11 @@ import os
 import tempfile
 import shutil
 import subprocess
-import warnings
+import logging
 from kmbio.PDB.PDBIO import PDBIO
 from kmbio.PDB.AbstractPropertyMap import AbstractResiduePropertyMap, AbstractAtomPropertyMap
+
+logger = logging.getLogger(__name__)
 
 
 def run_naccess(model, pdb_file, probe_size=None, z_slice=None,
@@ -67,7 +69,7 @@ def run_naccess(model, pdb_file, probe_size=None, z_slice=None,
     asa_file = tmp_pdb_file[:-4] + '.asa'
     # Alert user for errors
     if err.strip():
-        warnings.warn(err)
+        logger.warning(err)
 
     if (not os.path.exists(rsa_file)) or (not os.path.exists(asa_file)):
         raise Exception('NACCESS did not execute or finish properly.')

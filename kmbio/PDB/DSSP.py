@@ -44,13 +44,15 @@ from __future__ import print_function
 import re
 from Bio._py3k import StringIO
 import subprocess
-import warnings
+import logging
 
 from Bio.Data import SCOPData
 
 from kmbio.PDB.AbstractPropertyMap import AbstractResiduePropertyMap
 from kmbio.PDB.PDBExceptions import PDBException
 from kmbio.PDB.PDBParser import PDBParser
+
+logger = logging.getLogger(__name__)
 
 
 # Match C in DSSP
@@ -134,7 +136,7 @@ def dssp_dict_from_pdb_file(in_file, DSSP="dssp"):
 
     # Alert user for errors
     if err.strip():
-        warnings.warn(err)
+        logger.warning(err)
         if not out.strip():
             raise Exception('DSSP failed to produce an output')
 
