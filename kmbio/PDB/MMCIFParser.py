@@ -19,13 +19,19 @@ except ImportError:
     warnings.warn("Cound not import cythonized MMCIF2Dict module. Performance will suffer!")
     from kmbio.PDB.MMCIF2Dict import MMCIF2Dict
 
+from kmbio.PDB.Parser import Parser
 from kmbio.PDB.StructureBuilder import StructureBuilder
 from kmbio.PDB.PDBExceptions import PDBConstructionException
 from kmbio.PDB.PDBExceptions import PDBConstructionWarning
 
 
-class MMCIFParser(object):
-    """Parse a mmCIF file and return a Structure object."""
+class MMCIFParser(Parser):
+    """Parse a mmCIF file and return a Structure object.
+
+    Attributes
+    ----------
+    _structure_builder : StructureBuilder
+    """
 
     def __init__(self, structure_builder=None, QUIET=False):
         """Create a PDBParser object.
@@ -37,9 +43,6 @@ class MMCIFParser(object):
 
         Arguments:
          - structure_builder - an optional user implemented StructureBuilder class.
-         - QUIET - Evaluated as a Boolean. If true, warnings issued in constructing
-           the SMCRA data will be suppressed. If false (DEFAULT), they will be shown.
-           These warnings might be indicative of problems in the mmCIF file!
         """
         if structure_builder is not None:
             self._structure_builder = structure_builder
@@ -49,16 +52,20 @@ class MMCIFParser(object):
         # self.trailer = None
         self.line_counter = 0
         self.build_structure = None
+        self._mmcif_dict = None
         self.QUIET = bool(QUIET)
 
     # Public methods
 
-    def get_structure(self, structure_id, filename):
+    def get_structure(self, filename, structure_id=None):
         """Return the structure.
 
-        Arguments:
-         - structure_id - string, the id that will be used for the structure
-         - filename - name of the mmCIF file OR an open filehandle
+        Parameters
+        ----------
+        filename : str
+            Name of the mmCIF file OR an open filehandle
+        structure_id : str
+            The id that will be used for the structure
         """
         with warnings.catch_warnings():
             if self.QUIET:
@@ -66,12 +73,15 @@ class MMCIFParser(object):
             self._mmcif_dict = MMCIF2Dict(filename)
             self._build_structure(structure_id)
 
-        return self._structure_builder.get_structure()
+        structure = self._structure_builder.get_structure()
+        return structure
 
     # Private methods
 
-    def _build_structure(self, structure_id):
+    def _build_structure(self, structure_id=None):
         mmcif_dict = self._mmcif_dict
+        if structure_id is None:
+            structure_id = mmcif_dict['_pdbx_database_status.entry_id']
         atom_id_list = mmcif_dict["_atom_site.label_atom_id"]
         residue_id_list = mmcif_dict["_atom_site.label_comp_id"]
         try:
@@ -215,7 +225,7 @@ class MMCIFParser(object):
             pass    # no cell found, so just ignore
 
 
-class FastMMCIFParser(object):
+class FastMMCIFParser(Parser):
     """Parse an MMCIF file and return a Structure object."""
 
     def __init__(self, structure_builder=None, QUIET=False):
@@ -247,7 +257,7 @@ class FastMMCIFParser(object):
 
     # Public methods
 
-    def get_structure(self, structure_id, filename):
+    def get_structure(self, filename, structure_id=None):
         """Return the structure.
 
         Arguments:
@@ -258,20 +268,22 @@ class FastMMCIFParser(object):
             if self.QUIET:
                 warnings.filterwarnings("ignore", category=PDBConstructionWarning)
             with as_handle(filename) as handle:
-                self._build_structure(structure_id, handle)
+                self._build_structure(handle, structure_id)
 
         return self._structure_builder.get_structure()
 
     # Private methods
 
-    def _build_structure(self, structure_id, filehandle):
+    def _build_structure(self, filehandle, structure_id):
 
         # Read only _atom_site. and atom_site_anisotrop entries
         read_atom, read_aniso = False, False
         _fields, _records = [], []
         _anisof, _anisors = [], []
         for line in filehandle:
-            if line.startswith('_atom_site.'):
+            if structure_id is None and line.startswith('_pdbx_database_status.entry_id'):
+                structure_id = line.strip().split()[-1]
+            elif line.startswith('_atom_site.'):
                 read_atom = True
                 _fields.append(line.strip())
             elif line.startswith('_atom_site_anisotrop.'):

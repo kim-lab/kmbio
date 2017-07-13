@@ -4,9 +4,5 @@ from abc import ABC, abstractmethod
 class Parser(ABC):
 
     @abstractmethod
-    def get_structure(self, structure_id, filename):
+    def get_structure(self, filename, structure_id=None, biological_assembly_id=None):
         raise NotImplementedError
-
-    @abstractmethod
-    def get_biological_assembly(self, structure_id, filename, biological_assembly_index):
-        structure = self.get_structure(structure_id, filename)

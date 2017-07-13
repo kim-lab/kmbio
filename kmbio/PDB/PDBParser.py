@@ -18,9 +18,9 @@ except ImportError:
 
 from Bio.File import as_handle
 
+from kmbio.PDB.Parser import Parser
 from kmbio.PDB.PDBExceptions import PDBConstructionException
 from kmbio.PDB.PDBExceptions import PDBConstructionWarning
-
 from kmbio.PDB.StructureBuilder import StructureBuilder
 from kmbio.PDB.parse_pdb_header import _parse_pdb_header_list
 
@@ -28,7 +28,7 @@ from kmbio.PDB.parse_pdb_header import _parse_pdb_header_list
 # If PDB spec says "COLUMNS 18-20" this means line[17:20]
 
 
-class PDBParser(object):
+class PDBParser(Parser):
     """Parse a PDB file and return a Structure object."""
 
     def __init__(self, PERMISSIVE=True, get_header=False,
@@ -62,7 +62,7 @@ class PDBParser(object):
 
     # Public methods
 
-    def get_structure(self, id, file):
+    def get_structure(self, filename, structure_id=None):
         """Return the structure.
 
         Arguments:
@@ -75,10 +75,14 @@ class PDBParser(object):
 
             self.header = None
             self.trailer = None
-            # Make a StructureBuilder instance (pass id of structure as parameter)
-            self.structure_builder.init_structure(id)
 
-            with as_handle(file, mode='rU') as handle:
+            # Make a StructureBuilder instance (pass id of structure as parameter)
+            if structure_id is None:
+                with open(filename, mode='rU') as handle:
+                    structure_id = next(handle)[62:66]
+            self.structure_builder.init_structure(structure_id)
+
+            with as_handle(filename, mode='rU') as handle:
                 self._parse(handle.readlines())
 
             self.structure_builder.set_header(self.header)

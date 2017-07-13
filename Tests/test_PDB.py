@@ -59,7 +59,7 @@ class A_ExceptionTest(unittest.TestCase):
 
             # Trigger warnings
             p = PDBParser(PERMISSIVE=True)
-            p.get_structure("example", "PDB/a_structure.pdb")
+            p.get_structure("PDB/a_structure.pdb", "example")
 
             self.assertEqual(len(w), 14)
             for wrn, msg in zip(w, [
@@ -87,24 +87,24 @@ class A_ExceptionTest(unittest.TestCase):
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always", PDBConstructionWarning)
             self.assertRaises(PDBConstructionException,
-                              parser.get_structure, "example", "PDB/a_structure.pdb")
+                              parser.get_structure, "PDB/a_structure.pdb", "example")
             self.assertEqual(len(w), 4, w)
 
     def test_3_bad_xyz(self):
         """Check error: Parse an entry with bad x,y,z value."""
         data = "ATOM      9  N   ASP A 152      21.554  34.953  27.691  1.00 19.26           N\n"
         parser = PDBParser(PERMISSIVE=False)
-        s = parser.get_structure("example", StringIO(data))
+        s = parser.get_structure(StringIO(data), "example")
         data = "ATOM      9  N   ASP A 152      21.ish  34.953  27.691  1.00 19.26           N\n"
         self.assertRaises(PDBConstructionException,
-                          parser.get_structure, "example", StringIO(data))
+                          parser.get_structure, StringIO(data), "example")
 
     def test_4_occupancy(self):
         """Parse file with missing occupancy"""
         permissive = PDBParser(PERMISSIVE=True)
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always", PDBConstructionWarning)
-            structure = permissive.get_structure("test", "PDB/occupancy.pdb")
+            structure = permissive.get_structure("PDB/occupancy.pdb", "test")
             self.assertEqual(len(w), 3, w)
         atoms = structure[0]['A'][(' ', 152, ' ')]
         # Blank occupancy behavior set in Bio/PDB/PDBParser
@@ -114,7 +114,7 @@ class A_ExceptionTest(unittest.TestCase):
 
         strict = PDBParser(PERMISSIVE=False)
         self.assertRaises(PDBConstructionException,
-                          strict.get_structure, "test", "PDB/occupancy.pdb")
+                          strict.get_structure, "PDB/occupancy.pdb", "test")
 
 
 class HeaderTests(unittest.TestCase):
@@ -123,7 +123,7 @@ class HeaderTests(unittest.TestCase):
     def test_capsid(self):
         """Parse the header of a known PDB file (1A8O)."""
         parser = PDBParser()
-        struct = parser.get_structure('1A8O', 'PDB/1A8O.pdb')
+        struct = parser.get_structure('PDB/1A8O.pdb', '1A8O')
         self.assertAlmostEqual(struct.header['resolution'], 1.7)
         # Case-insensitive string comparisons
         known_strings = {
@@ -143,7 +143,7 @@ class HeaderTests(unittest.TestCase):
     def test_fibril(self):
         """Parse the header of another PDB file (2BEG)."""
         parser = PDBParser()
-        struct = parser.get_structure('2BEG', 'PDB/2BEG.pdb')
+        struct = parser.get_structure('PDB/2BEG.pdb', '2BEG')
         known_strings = {
             'author': 'T.Luhrs,C.Ritter,M.Adrian,D.Riek-Loher,B.Bohrmann,H.Dobeli,D.Schubert,R.Riek',
             'deposition_date': '2005-10-24',
@@ -164,7 +164,7 @@ class ParseTest(unittest.TestCase):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", PDBConstructionWarning)
             p = PDBParser(PERMISSIVE=1)
-            self.structure = p.get_structure("example", "PDB/a_structure.pdb")
+            self.structure = p.get_structure("PDB/a_structure.pdb", "example")
 
     def test_c_n(self):
         """Extract polypeptides using C-N."""
@@ -538,7 +538,7 @@ class ParseReal(unittest.TestCase):
         filenumber, filename = tempfile.mkstemp()
         os.close(filenumber)
         try:
-            struct = parser.get_structure('MT', filename)
+            struct = parser.get_structure(filename, 'MT')
             # Structure has no children (models)
             self.assertFalse(len(struct))
         finally:
@@ -547,7 +547,7 @@ class ParseReal(unittest.TestCase):
     def test_c_n(self):
         """Extract polypeptides from 1A80."""
         parser = PDBParser(PERMISSIVE=False)
-        structure = parser.get_structure("example", "PDB/1A8O.pdb")
+        structure = parser.get_structure("PDB/1A8O.pdb", "example")
         self.assertEqual(len(structure), 1)
         for ppbuild in [PPBuilder(), CaPPBuilder()]:
             # ==========================================================
@@ -599,7 +599,7 @@ class ParseReal(unittest.TestCase):
     def test_strict(self):
         """Parse 1A8O.pdb file in strict mode."""
         parser = PDBParser(PERMISSIVE=False)
-        structure = parser.get_structure("example", "PDB/1A8O.pdb")
+        structure = parser.get_structure("PDB/1A8O.pdb", "example")
         self.assertEqual(len(structure), 1)
         model = structure[0]
         self.assertEqual(model.id, 0)
@@ -709,7 +709,7 @@ class ParseReal(unittest.TestCase):
             self.assertEqual(end_stment[0][1], iline)  # Last line of the file?
 
         parser = PDBParser(QUIET=1)
-        struct1 = parser.get_structure("1lcd", "PDB/1LCD.pdb")
+        struct1 = parser.get_structure("PDB/1LCD.pdb", "1lcd")
         confirm_numbering(struct1)
 
         # Round trip: serialize and parse again
@@ -719,7 +719,7 @@ class ParseReal(unittest.TestCase):
         os.close(filenumber)
         try:
             io.save(filename)
-            struct2 = parser.get_structure("1lcd", filename)
+            struct2 = parser.get_structure(filename, "1lcd")
             confirm_numbering(struct2)
             confirm_single_end(filename)
         finally:
@@ -731,7 +731,7 @@ class WriteTest(unittest.TestCase):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", PDBConstructionWarning)
             self.parser = PDBParser(PERMISSIVE=1)
-            self.structure = self.parser.get_structure("example", "PDB/1A8O.pdb")
+            self.structure = self.parser.get_structure("PDB/1A8O.pdb", "example")
 
     def test_pdbio_write_structure(self):
         """Write a full structure using PDBIO"""
@@ -743,7 +743,7 @@ class WriteTest(unittest.TestCase):
         os.close(filenumber)
         try:
             io.save(filename)
-            struct2 = self.parser.get_structure("1a8o", filename)
+            struct2 = self.parser.get_structure(filename, "1a8o")
             nresidues = len(list(struct2.get_residues()))
             self.assertEqual(len(struct2), 1)
             self.assertEqual(nresidues, 158)
@@ -761,7 +761,7 @@ class WriteTest(unittest.TestCase):
         os.close(filenumber)
         try:
             io.save(filename)
-            struct2 = self.parser.get_structure("1a8o", filename)
+            struct2 = self.parser.get_structure(filename, "1a8o")
             nresidues = len(list(struct2.get_residues()))
             self.assertEqual(nresidues, 1)
         finally:
@@ -781,7 +781,7 @@ class WriteTest(unittest.TestCase):
         os.close(filenumber)
         try:
             io.save(filename)
-            struct2 = self.parser.get_structure("res", filename)
+            struct2 = self.parser.get_structure(filename, "res")
             latoms = list(struct2.get_atoms())
             self.assertEqual(len(latoms), 1)
             self.assertEqual(latoms[0].name, 'CA')
@@ -810,7 +810,7 @@ class WriteTest(unittest.TestCase):
         os.close(filenumber)
         try:
             io.save(filename, CAonly())
-            struct2 = self.parser.get_structure("1a8o", filename)
+            struct2 = self.parser.get_structure(filename, "1a8o")
             nresidues = len(list(struct2.get_residues()))
             self.assertEqual(nresidues, 70)
         finally:
@@ -821,7 +821,7 @@ class WriteTest(unittest.TestCase):
         io = PDBIO()
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", PDBConstructionWarning)
-            structure = self.parser.get_structure("test", "PDB/occupancy.pdb")
+            structure = self.parser.get_structure("PDB/occupancy.pdb", "test")
         io.set_structure(structure)
         filenumber, filename = tempfile.mkstemp()
         os.close(filenumber)
@@ -832,7 +832,7 @@ class WriteTest(unittest.TestCase):
                 self.assertEqual(len(w), 1, w)
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", PDBConstructionWarning)
-                struct2 = self.parser.get_structure("test", filename)
+                struct2 = self.parser.get_structure(filename, "test")
             atoms = struct2[0]['A'][(' ', 152, ' ')]
             self.assertEqual(atoms['N'].occupancy, None)
         finally:
@@ -845,7 +845,7 @@ class Exposure(unittest.TestCase):
         pdb_filename = "PDB/a_structure.pdb"
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", PDBConstructionWarning)
-            structure = PDBParser(PERMISSIVE=True).get_structure('X', pdb_filename)
+            structure = PDBParser(PERMISSIVE=True).get_structure(pdb_filename, 'X')
         self.model = structure[1]
         # Look at first chain only
         a_residues = list(self.model["A"].values())
@@ -929,7 +929,7 @@ class Atom_Element(unittest.TestCase):
         pdb_filename = "PDB/a_structure.pdb"
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", PDBConstructionWarning)
-            structure = PDBParser(PERMISSIVE=True).get_structure('X', pdb_filename)
+            structure = PDBParser(PERMISSIVE=True).get_structure(pdb_filename, 'X')
         self.residue = structure[0]['A'][('H_PCA', 1, ' ')]
 
     def test_AtomElement(self):
@@ -942,7 +942,7 @@ class Atom_Element(unittest.TestCase):
     def test_ions(self):
         """Element for magnesium is assigned correctly."""
         pdb_filename = "PDB/ions.pdb"
-        structure = PDBParser(PERMISSIVE=True).get_structure('X', pdb_filename)
+        structure = PDBParser(PERMISSIVE=True).get_structure(pdb_filename, 'X')
         # check magnesium atom
         atoms = structure[0]['A'][('H_ MG', 1, ' ')].ix[:]
         self.assertEqual('MG', atoms[0].element)
@@ -980,7 +980,7 @@ class IterationTests(unittest.TestCase):
     def setUp(self):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", PDBConstructionWarning)
-            self.struc = PDBParser(PERMISSIVE=True).get_structure('X', "PDB/a_structure.pdb")
+            self.struc = PDBParser(PERMISSIVE=True).get_structure("PDB/a_structure.pdb", 'X')
 
     def test_get_chains(self):
         """Yields chains from different models separately."""
@@ -1003,8 +1003,7 @@ class ChangingIdTests(unittest.TestCase):
     def setUp(self):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", PDBConstructionWarning)
-            self.struc = PDBParser(PERMISSIVE=True).get_structure(
-                                                  'X', "PDB/a_structure.pdb")
+            self.struc = PDBParser(PERMISSIVE=True).get_structure("PDB/a_structure.pdb", 'X')
 
     def test_change_model_id(self):
         """Change the id of a model"""
@@ -1110,8 +1109,7 @@ class TransformTests(unittest.TestCase):
     def setUp(self):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", PDBConstructionWarning)
-            self.s = PDBParser(PERMISSIVE=True).get_structure(
-                'X', "PDB/a_structure.pdb")
+            self.s = PDBParser(PERMISSIVE=True).get_structure("PDB/a_structure.pdb", 'X')
         self.m = self.s.ix[0]
         self.c = self.m.ix[0]
         self.r = self.c.ix[0]
@@ -1157,8 +1155,7 @@ class CopyTests(unittest.TestCase):
     def setUp(self):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", PDBConstructionWarning)
-            self.s = PDBParser(PERMISSIVE=True).get_structure(
-                'X', "PDB/a_structure.pdb")
+            self.s = PDBParser(PERMISSIVE=True).get_structure("PDB/a_structure.pdb", 'X')
         self.m = list(self.s.values())[0]
         self.c = list(self.m.values())[0]
         self.r = list(self.c.values())[0]
@@ -1233,7 +1230,7 @@ class DsspTests(unittest.TestCase):
         Test that all the elements are added correctly to the xtra attribute of the input model object.
         '''
         p = PDBParser()
-        s = p.get_structure("example", "PDB/2BEG.pdb")
+        s = p.get_structure("PDB/2BEG.pdb", "example")
         m = s[0]
         # Read the DSSP data into the pdb object:
         trash_var = DSSP(m, "PDB/2BEG.dssp", 'dssp', 'Sander', 'DSSP')
@@ -1265,7 +1262,7 @@ class DsspTests(unittest.TestCase):
         # Tests include Sander/default, Wilke and Miller
         p = PDBParser()
         # Sander/default:
-        s = p.get_structure("example", "PDB/2BEG.pdb")
+        s = p.get_structure("PDB/2BEG.pdb", "example")
         m = s[0]
         # Read the DSSP data into the pdb object:
         trash_var = DSSP(m, "PDB/2BEG.dssp", 'dssp', 'Sander', 'DSSP')
@@ -1281,7 +1278,7 @@ class DsspTests(unittest.TestCase):
                     i += 1
 
         # Wilke (procedure similar as for the Sander values above):
-        s = p.get_structure("example", "PDB/2BEG.pdb")
+        s = p.get_structure("PDB/2BEG.pdb", "example")
         m = s[0]
         trash_var = DSSP(m, "PDB/2BEG.dssp", 'dssp', 'Wilke', 'DSSP')
         i = 0
@@ -1295,7 +1292,7 @@ class DsspTests(unittest.TestCase):
                     i += 1
 
         # Miller (procedure similar as for the Sander values above):
-        s = p.get_structure("example", "PDB/2BEG.pdb")
+        s = p.get_structure("PDB/2BEG.pdb", "example")
         m = s[0]
         trash_var = DSSP(m, "PDB/2BEG.dssp", 'dssp', 'Miller', 'DSSP')
         i = 0
