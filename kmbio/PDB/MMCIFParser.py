@@ -8,7 +8,7 @@
 from __future__ import print_function
 
 import numpy
-import warnings
+import logging
 
 from Bio.File import as_handle
 from Bio._py3k import range
@@ -16,13 +16,12 @@ from Bio._py3k import range
 try:
     from kmbio.PDB._mmcif_to_dict import MMCIF2Dict
 except ImportError:
-    warnings.warn("Cound not import cythonized MMCIF2Dict module. Performance will suffer!")
+    logging.warn("Cound not import cythonized MMCIF2Dict module. Performance will suffer!")
     from kmbio.PDB.MMCIF2Dict import MMCIF2Dict
 
 from kmbio.PDB.Parser import Parser
 from kmbio.PDB.StructureBuilder import StructureBuilder
 from kmbio.PDB.PDBExceptions import PDBConstructionException
-from kmbio.PDB.PDBExceptions import PDBConstructionWarning
 
 
 class MMCIFParser(Parser):
@@ -33,7 +32,7 @@ class MMCIFParser(Parser):
     _structure_builder : StructureBuilder
     """
 
-    def __init__(self, structure_builder=None, QUIET=False):
+    def __init__(self, structure_builder=None):
         """Create a PDBParser object.
 
         The mmCIF parser calls a number of standard methods in an aggregated
@@ -53,7 +52,6 @@ class MMCIFParser(Parser):
         self.line_counter = 0
         self.build_structure = None
         self._mmcif_dict = None
-        self.QUIET = bool(QUIET)
 
     # Public methods
 
@@ -67,11 +65,8 @@ class MMCIFParser(Parser):
         structure_id : str
             The id that will be used for the structure
         """
-        with warnings.catch_warnings():
-            if self.QUIET:
-                warnings.filterwarnings("ignore", category=PDBConstructionWarning)
-            self._mmcif_dict = MMCIF2Dict(filename)
-            self._build_structure(structure_id)
+        self._mmcif_dict = MMCIF2Dict(filename)
+        self._build_structure(structure_id)
 
         structure = self._structure_builder.get_structure()
         return structure
@@ -228,7 +223,7 @@ class MMCIFParser(Parser):
 class FastMMCIFParser(Parser):
     """Parse an MMCIF file and return a Structure object."""
 
-    def __init__(self, structure_builder=None, QUIET=False):
+    def __init__(self, structure_builder=None):
         """Create a FastMMCIFParser object.
 
         The mmCIF parser calls a number of standard methods in an aggregated
@@ -242,9 +237,6 @@ class FastMMCIFParser(Parser):
 
         Arguments:
          - structure_builder - an optional user implemented StructureBuilder class.
-         - QUIET - Evaluated as a Boolean. If true, warnings issued in constructing
-           the SMCRA data will be suppressed. If false (DEFAULT), they will be shown.
-           These warnings might be indicative of problems in the mmCIF file!
         """
         if structure_builder is not None:
             self._structure_builder = structure_builder
@@ -253,7 +245,6 @@ class FastMMCIFParser(Parser):
 
         self.line_counter = 0
         self.build_structure = None
-        self.QUIET = bool(QUIET)
 
     # Public methods
 
@@ -264,11 +255,8 @@ class FastMMCIFParser(Parser):
          - structure_id - string, the id that will be used for the structure
          - filename - name of the mmCIF file OR an open filehandle
         """
-        with warnings.catch_warnings():
-            if self.QUIET:
-                warnings.filterwarnings("ignore", category=PDBConstructionWarning)
-            with as_handle(filename) as handle:
-                self._build_structure(handle, structure_id)
+        with as_handle(filename) as handle:
+            self._build_structure(handle, structure_id)
 
         return self._structure_builder.get_structure()
 

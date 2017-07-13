@@ -79,9 +79,6 @@ class AbstractPropertyMap(object):
         @param res_id: residue id
         @type res_id: char
         """
-        import warnings
-        from Bio import BiopythonDeprecationWarning
-        warnings.warn("This function is deprecated; use 'id in mapping' instead", BiopythonDeprecationWarning)
         return (id in self)
 
     def keys(self):

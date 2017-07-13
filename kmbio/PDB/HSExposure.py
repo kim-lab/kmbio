@@ -7,13 +7,15 @@
 
 from __future__ import print_function
 
-import warnings
+import logging
 from math import pi
 
 from kmbio.PDB.AbstractPropertyMap import AbstractPropertyMap
 from kmbio.PDB.PDBParser import PDBParser
 from kmbio.PDB.Polypeptide import CaPPBuilder, is_aa
 from kmbio.PDB.Vector import rotaxis
+
+logger = logging.getLogger(__name__)
 
 
 class _AbstractHSExposure(AbstractPropertyMap):
@@ -206,7 +208,7 @@ class HSExposureCA(_AbstractHSExposure):
         @type filename: string
         """
         if len(self.ca_cb_list) == 0:
-            warnings.warn("Nothing to draw.", RuntimeWarning)
+            logger.warning("Nothing to draw.")
             return
         with open(filename, "w") as fp:
             fp.write("from pymol.cgo import *\n")

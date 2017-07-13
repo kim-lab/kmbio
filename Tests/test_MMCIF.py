@@ -10,22 +10,9 @@
 """Unit tests for the MMCIF portion of the Bio.PDB module."""
 
 import unittest
-import warnings
-
-try:
-    import numpy as np # flake8: noqa
-    from numpy import dot  # Missing on old PyPy's micronumpy
-    del dot
-    from numpy.linalg import svd, det  # Missing in PyPy 2.0 numpypy
-except ImportError:
-    from Bio import MissingPythonDependencyError
-    raise MissingPythonDependencyError(
-        "Install NumPy if you want to use Bio.PDB.")
-
 
 from Bio.Seq import Seq
 from Bio.Alphabet import generic_protein
-from kmbio.PDB.PDBExceptions import PDBConstructionWarning
 
 from kmbio.PDB import PPBuilder, CaPPBuilder
 from kmbio.PDB.MMCIFParser import MMCIFParser, FastMMCIFParser
@@ -119,12 +106,10 @@ class ParseReal(unittest.TestCase):
     def testModels(self):
         """Test file with multiple models"""
 
-        parser = MMCIFParser(QUIET=1)
-        f_parser = FastMMCIFParser(QUIET=1)
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore', PDBConstructionWarning)
-            structure = parser.get_structure("PDB/1LCD.cif", "example")
-            f_structure = f_parser.get_structure("PDB/1LCD.cif", "example")
+        parser = MMCIFParser()
+        f_parser = FastMMCIFParser()
+        structure = parser.get_structure("PDB/1LCD.cif", "example")
+        f_structure = f_parser.get_structure("PDB/1LCD.cif", "example")
 
         self.assertEqual(len(structure), 3)
         self.assertEqual(len(f_structure), 3)
@@ -171,10 +156,8 @@ class ParseReal(unittest.TestCase):
 
     def test_insertions(self):
         """Test file with residue insertion codes"""
-        parser = MMCIFParser(QUIET=1)
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore', PDBConstructionWarning)
-            structure = parser.get_structure("PDB/4ZHL.cif", "example")
+        parser = MMCIFParser()
+        structure = parser.get_structure("PDB/4ZHL.cif", "example")
         for ppbuild in [PPBuilder(), CaPPBuilder()]:
             # First try allowing non-standard amino acids,
             polypeptides = ppbuild.build_peptides(structure[0], False)
@@ -205,11 +188,11 @@ class ParseReal(unittest.TestCase):
 
     def test_point_mutations_main(self):
         """Test if MMCIFParser parse point mutations correctly."""
-        self._run_point_mutation_tests(MMCIFParser(QUIET=True))
+        self._run_point_mutation_tests(MMCIFParser())
 
     def test_point_mutations_fast(self):
         """Test if FastMMCIFParser can parse point mutations correctly."""
-        self._run_point_mutation_tests(FastMMCIFParser(QUIET=True))
+        self._run_point_mutation_tests(FastMMCIFParser())
 
     def _run_point_mutation_tests(self, parser):
         """Common test code for testing point mutations."""

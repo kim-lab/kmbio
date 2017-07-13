@@ -51,7 +51,7 @@ last residues) have been shown as M (methionine) by the get_sequence method.
 from __future__ import print_function
 from Bio._py3k import basestring
 
-import warnings
+import logging
 
 from Bio.Alphabet import generic_protein
 from Bio.Data import SCOPData
@@ -59,6 +59,7 @@ from Bio.Seq import Seq
 from kmbio.PDB.PDBExceptions import PDBException
 from kmbio.PDB.Vector import calc_dihedral, calc_angle
 
+logger = logging.getLogger(__name__)
 
 standard_aa_names = ["ALA", "CYS", "ASP", "GLU", "PHE", "GLY", "HIS", "ILE", "LYS",
                      "LEU", "MET", "ASN", "PRO", "GLN", "ARG", "SER", "THR", "VAL",
@@ -321,7 +322,7 @@ class _PPBuilder(object):
             # It has an alpha carbon...
             # We probably need to update the hard coded list of
             # non-standard residues, see function is_aa for details.
-            warnings.warn("Assuming residue %s is an unknown modified "
+            logger.warning("Assuming residue %s is an unknown modified "
                           "amino acid" % residue.resname)
             return True
         else:
