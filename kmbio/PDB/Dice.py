@@ -4,10 +4,11 @@
 # as part of this package.
 
 import re
-import warnings
+import logging
 
 from kmbio.PDB.PDBIO import PDBIO
 
+logger = logging.getLogger(__name__)
 
 _hydrogen = re.compile("[123 ]*H.*")
 
@@ -42,8 +43,7 @@ class ChainSelector(object):
             # skip HETATMS
             return 0
         if icode != " ":
-            warnings.warn("WARNING: Icode at %s" % residue.id,
-                          RuntimeWarning)
+            logger.warning("WARNING: Icode at %s", residue.id)
         if self.start <= resseq <= self.end:
             return 1
         return 0

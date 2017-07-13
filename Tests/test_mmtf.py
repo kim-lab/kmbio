@@ -1,12 +1,13 @@
 import os.path as op
 import unittest
-import warnings
+import logging
 
 import pytest
 
 from kmbio.PDB.MMCIFParser import MMCIFParser
 from kmbio.PDB.mmtf import MMTFParser
-from kmbio.PDB.PDBExceptions import PDBConstructionWarning
+
+logger = logging.getLogger(__name__)
 
 
 class ParseMMTF(unittest.TestCase):
@@ -18,18 +19,22 @@ class ParseMMTF(unittest.TestCase):
         for i, e in enumerate(self.mmcif_atoms):
             mmtf_atom = self.mmtf_atoms[i]
             mmcif_atom = self.mmcif_atoms[i]
-            self.assertEqual(mmtf_atom.name, mmcif_atom.name)  # eg. CA, spaces are removed from atom name
-            self.assertEqual(mmtf_atom.fullname, mmcif_atom.fullname)  # e.g. " CA ", spaces included
+            # eg. CA, spaces are removed from atom name
+            self.assertEqual(mmtf_atom.name, mmcif_atom.name)
+            # e.g. " CA ", spaces included
+            self.assertEqual(mmtf_atom.fullname, mmcif_atom.fullname)
             self.assertAlmostEqual(mmtf_atom.coord[0], mmcif_atom.coord[0], places=3)
             self.assertAlmostEqual(mmtf_atom.coord[1], mmcif_atom.coord[1], places=3)
             self.assertAlmostEqual(mmtf_atom.coord[2], mmcif_atom.coord[2], places=3)
             self.assertEqual(mmtf_atom.bfactor, mmcif_atom.bfactor)
             self.assertEqual(mmtf_atom.occupancy, mmcif_atom.occupancy)
             self.assertEqual(mmtf_atom.altloc, mmcif_atom.altloc)
-            self.assertEqual(mmtf_atom.full_id,
-                                   mmcif_atom.full_id)  # (structure id, model id, chain id, residue id, atom id)
-            self.assertEqual(mmtf_atom.id, mmcif_atom.name)  # id of atom is the atom name (e.g. "CA")
-            # self.assertEqual(mmtf_atom.serial_number,mmcif_atom.serial_number) # mmCIF serial number is none
+            # (structure id, model id, chain id, residue id, atom id)
+            self.assertEqual(mmtf_atom.full_id, mmcif_atom.full_id)
+            # id of atom is the atom name (e.g. "CA")
+            self.assertEqual(mmtf_atom.id, mmcif_atom.name)
+            # mmCIF serial number is none
+            # self.assertEqual(mmtf_atom.serial_number,mmcif_atom.serial_number)
 
     def check_residues(self):
         """Check all residues in self.mmcif_res and self.mmtf_res are equivalent"""
@@ -47,11 +52,10 @@ class ParseMMTF(unittest.TestCase):
 
     def check_mmtf_vs_cif(self, mmtf_filename, cif_filename):
         """Compare parsed structures for MMTF and CIF files."""
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore', PDBConstructionWarning)
-            mmtf_struct = MMTFParser.get_structure(mmtf_filename)
+        mmtf_struct = MMTFParser.get_structure(mmtf_filename)
         mmcif_parser = MMCIFParser()
-        mmcif_struct = mmcif_parser.get_structure(op.basename(op.splitext(cif_filename)[0]), cif_filename)
+        mmcif_struct = mmcif_parser.get_structure(
+            op.basename(op.splitext(cif_filename)[0]), cif_filename)
         self.mmcif_atoms = [x for x in mmcif_struct.get_atoms()]
         self.mmtf_atoms = [x for x in mmtf_struct.get_atoms()]
         self.check_atoms()
@@ -66,7 +70,9 @@ class ParseMMTF(unittest.TestCase):
         self.mmcif_res = [x for x in mmcif_struct.get_residues()]
         self.mmtf_res = [x for x in mmtf_struct.get_residues()]
         self.check_residues()
-        self.assertEqual(len([x for x in mmcif_struct.get_models()]), len([x for x in mmtf_struct.get_models()]))
+        self.assertEqual(
+            len([x for x in mmcif_struct.get_models()]),
+            len([x for x in mmtf_struct.get_models()]))
 
     @pytest.mark.xfail
     def test_4CUP(self):
@@ -89,17 +95,10 @@ class SimpleParseMMTF(unittest.TestCase):
 
     def test_4ZHL(self):
         """Parse 4ZHL.mmtf"""
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore', PDBConstructionWarning)
-            structure = MMTFParser.get_structure("PDB/4ZHL.mmtf")
+        structure = MMTFParser.get_structure("PDB/4ZHL.mmtf")
+        assert len(structure)
 
     def test_1A80(self):
         """Parse 1A8O.mmtf"""
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore', PDBConstructionWarning)
-            structure = MMTFParser.get_structure("PDB/1A8O.mmtf")
-
-
-if __name__ == "__main__":
-    runner = unittest.TextTestRunner(verbosity=2)
-    unittest.main(testRunner=runner)
+        structure = MMTFParser.get_structure("PDB/1A8O.mmtf")
+        assert len(structure)

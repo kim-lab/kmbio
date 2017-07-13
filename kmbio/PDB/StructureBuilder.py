@@ -7,18 +7,17 @@
 
 This is used by the PDBParser and MMCIFparser classes.
 """
+import logging
 
-import warnings
-
+from kmbio.PDB.Atom import Atom, DisorderedAtom
+from kmbio.PDB.Chain import Chain
+from kmbio.PDB.Model import Model
+from kmbio.PDB.PDBExceptions import PDBConstructionException
+from kmbio.PDB.Residue import DisorderedResidue, Residue
 # SMCRA hierarchy
 from kmbio.PDB.Structure import Structure
-from kmbio.PDB.Model import Model
-from kmbio.PDB.Chain import Chain
-from kmbio.PDB.Residue import Residue, DisorderedResidue
-from kmbio.PDB.Atom import Atom, DisorderedAtom
 
-from kmbio.PDB.PDBExceptions import PDBConstructionException
-from kmbio.PDB.PDBExceptions import PDBConstructionWarning
+logger = logging.getLogger(__name__)
 
 
 class StructureBuilder(object):
@@ -80,9 +79,8 @@ class StructureBuilder(object):
         """
         if chain_id in self.model:
             self.chain = self.model[chain_id]
-            warnings.warn("WARNING: Chain %s is discontinuous at line %i."
-                          % (chain_id, self.line_counter),
-                          PDBConstructionWarning)
+            logger.warning(
+                "WARNING: Chain %s is discontinuous at line %i.", chain_id, self.line_counter)
         else:
             self.chain = Chain(chain_id)
             self.model.add(self.chain)
@@ -116,10 +114,9 @@ class StructureBuilder(object):
             if res_id in self.chain:
                 # There already is a residue with the id (field, resseq, icode).
                 # This only makes sense in the case of a point mutation.
-                warnings.warn("WARNING: Residue ('%s', %i, '%s') "
-                              "redefined at line %i."
-                              % (field, resseq, icode, self.line_counter),
-                              PDBConstructionWarning)
+                logger.warning(
+                    "WARNING: Residue ('%s', %i, '%s') redefined at line %i.",
+                    field, resseq, icode, self.line_counter)
                 duplicate_residue = self.chain[res_id]
                 if isinstance(duplicate_residue, DisorderedResidue):
                     # The residue in the chain is a DisorderedResidue object.
@@ -137,10 +134,10 @@ class StructureBuilder(object):
                         return
                 else:
                     if resname == duplicate_residue.resname:
-                        warnings.warn("WARNING: Residue ('%s', %i, '%s','%s')"
-                                      " already defined with the same name at line  %i."
-                              % (field, resseq, icode, resname, self.line_counter),
-                              PDBConstructionWarning)
+                        logger.warning(
+                            "WARNING: Residue ('%s', %i, '%s','%s') already defined "
+                            "with the same name at line %i.",
+                            field, resseq, icode, resname, self.line_counter)
                         self.residue = duplicate_residue
                         return
                     # Make a new DisorderedResidue object and put all
@@ -195,11 +192,9 @@ class StructureBuilder(object):
             if duplicate_fullname != fullname:
                 # name of current atom now includes spaces
                 name = fullname
-                warnings.warn("Atom names %r and %r differ "
-                              "only in spaces at line %i."
-                              % (duplicate_fullname, fullname,
-                                 self.line_counter),
-                              PDBConstructionWarning)
+                logger.warning(
+                    "Atom names %r and %r differ only in spaces at line %i.",
+                    duplicate_fullname, fullname, self.line_counter)
         self.atom = Atom(name, coord, b_factor, occupancy, altloc,
                          fullname, serial_number, element)
         if altloc != " ":
@@ -221,10 +216,9 @@ class StructureBuilder(object):
                     disordered_atom.disordered_add(self.atom)
                     disordered_atom.disordered_add(duplicate_atom)
                     residue.disordered = 1
-                    warnings.warn("WARNING: disordered atom found "
-                                  "with blank altloc before line %i.\n"
-                                  % self.line_counter,
-                                  PDBConstructionWarning)
+                    logger.warning(
+                        "WARNING: disordered atom found with blank altloc before line %i.",
+                        self.line_counter)
             else:
                 # The residue does not contain this disordered atom
                 # so we create a new one.

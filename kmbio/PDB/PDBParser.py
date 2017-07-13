@@ -4,26 +4,17 @@
 # as part of this package.
 
 """Parser for PDB files."""
+import logging
 
-from __future__ import print_function
-
-import warnings
-
-try:
-    import numpy
-except ImportError:
-    from Bio import MissingPythonDependencyError
-    raise MissingPythonDependencyError(
-        "Install NumPy if you want to use the PDB parser.")
-
+import numpy as np
 from Bio.File import as_handle
 
+from kmbio.PDB.parse_pdb_header import _parse_pdb_header_list
 from kmbio.PDB.Parser import Parser
 from kmbio.PDB.PDBExceptions import PDBConstructionException
-from kmbio.PDB.PDBExceptions import PDBConstructionWarning
 from kmbio.PDB.StructureBuilder import StructureBuilder
-from kmbio.PDB.parse_pdb_header import _parse_pdb_header_list
 
+logger = logging.getLogger(__name__)
 
 # If PDB spec says "COLUMNS 18-20" this means line[17:20]
 
@@ -32,7 +23,7 @@ class PDBParser(Parser):
     """Parse a PDB file and return a Structure object."""
 
     def __init__(self, PERMISSIVE=True, get_header=False,
-                 structure_builder=None, QUIET=False):
+                 structure_builder=None):
         """Create a PDBParser object.
 
         The PDB parser call a number of standard methods in an aggregated
@@ -46,9 +37,6 @@ class PDBParser(Parser):
            the exceptions are caught, but some residues or atoms will be missing.
            THESE EXCEPTIONS ARE DUE TO PROBLEMS IN THE PDB FILE!.
          - structure_builder - an optional user implemented StructureBuilder class.
-         - QUIET - Evaluated as a Boolean. If true, warnings issued in constructing
-           the SMCRA data will be suppressed. If false (DEFAULT), they will be shown.
-           These warnings might be indicative of problems in the PDB file!
         """
         if structure_builder is not None:
             self.structure_builder = structure_builder
@@ -58,7 +46,6 @@ class PDBParser(Parser):
         self.trailer = None
         self.line_counter = 0
         self.PERMISSIVE = bool(PERMISSIVE)
-        self.QUIET = bool(QUIET)
 
     # Public methods
 
@@ -69,25 +56,21 @@ class PDBParser(Parser):
          - id - string, the id that will be used for the structure
          - file - name of the PDB file OR an open filehandle
         """
-        with warnings.catch_warnings():
-            if self.QUIET:
-                warnings.filterwarnings("ignore", category=PDBConstructionWarning)
+        self.header = None
+        self.trailer = None
 
-            self.header = None
-            self.trailer = None
+        # Make a StructureBuilder instance (pass id of structure as parameter)
+        if structure_id is None:
+            with open(filename, mode='rU') as handle:
+                structure_id = next(handle)[62:66]
+        self.structure_builder.init_structure(structure_id)
 
-            # Make a StructureBuilder instance (pass id of structure as parameter)
-            if structure_id is None:
-                with open(filename, mode='rU') as handle:
-                    structure_id = next(handle)[62:66]
-            self.structure_builder.init_structure(structure_id)
+        with as_handle(filename, mode='rU') as handle:
+            self._parse(handle.readlines())
 
-            with as_handle(filename, mode='rU') as handle:
-                self._parse(handle.readlines())
-
-            self.structure_builder.set_header(self.header)
-            # Return the Structure instance
-            structure = self.structure_builder.get_structure()
+        self.structure_builder.set_header(self.header)
+        # Return the Structure instance
+        structure = self.structure_builder.get_structure()
 
         return structure
 
@@ -184,7 +167,7 @@ class PDBParser(Parser):
                     # If so, what coordinates should we default to?  Easier to abort!
                     raise PDBConstructionException("Invalid or missing coordinate(s) at line %i."
                                                    % global_line_counter)
-                coord = numpy.array((x, y, z), "f")
+                coord = np.array((x, y, z), "f")
                 # occupancy & B factor
                 try:
                     occupancy = float(line[54:60])
@@ -197,7 +180,7 @@ class PDBParser(Parser):
                     # self._handle_PDB_exception("Negative occupancy",
                     #                            global_line_counter)
                     # This uses fixed text so the warning occurs once only:
-                    warnings.warn("Negative occupancy in one or more atoms", PDBConstructionWarning)
+                    logger.warning("Negative occupancy in one or more atoms")
                 try:
                     bfactor = float(line[60:66])
                 except Exception:
@@ -235,7 +218,7 @@ class PDBParser(Parser):
                 anisou = [float(x) for x in (line[28:35], line[35:42], line[43:49],
                                              line[49:56], line[56:63], line[63:70])]
                 # U's are scaled by 10^4
-                anisou_array = (numpy.array(anisou, "f") / 10000.0).astype("f")
+                anisou_array = (np.array(anisou, "f") / 10000.0).astype("f")
                 structure_builder.atom.anisou_array = anisou_array
             elif record_type == "MODEL ":
                 try:
@@ -262,13 +245,13 @@ class PDBParser(Parser):
                 siguij = [float(x) for x in (line[28:35], line[35:42], line[42:49],
                                              line[49:56], line[56:63], line[63:70])]
                 # U sigma's are scaled by 10^4
-                siguij_array = (numpy.array(siguij, "f") / 10000.0).astype("f")
+                siguij_array = (np.array(siguij, "f") / 10000.0).astype("f")
                 structure_builder.atom.set_siguij = siguij_array
             elif record_type == "SIGATM":
                 # standard deviation of atomic positions
                 sigatm = [float(x) for x in (line[30:38], line[38:45], line[46:54],
                                              line[54:60], line[60:66])]
-                sigatm_array = numpy.array(sigatm, "f")
+                sigatm_array = np.array(sigatm, "f")
                 structure_builder.atom.sigatm_array = sigatm_array
             local_line_counter += 1
         # EOF (does not end in END or CONECT)
@@ -285,10 +268,10 @@ class PDBParser(Parser):
         message = "%s at line %i." % (message, line_counter)
         if self.PERMISSIVE:
             # just print a warning - some residues/atoms may be missing
-            warnings.warn("PDBConstructionException: %s\n"
+            logger.warning("PDBConstructionException: %s\n"
                           "Exception ignored.\n"
-                          "Some atoms or residues may be missing in the data structure."
-                          % message, PDBConstructionWarning)
+                          "Some atoms or residues may be missing in the data structure.",
+                          message)
         else:
             # exceptions are fatal - raise again with new message (including line nr)
             raise PDBConstructionException(message)

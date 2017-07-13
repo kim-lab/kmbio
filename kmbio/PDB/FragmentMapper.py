@@ -299,9 +299,6 @@ class FragmentMapper(object):
 
         @type res: L{Residue}
         """
-        import warnings
-        from Bio import BiopythonDeprecationWarning
-        warnings.warn("has_key is deprecated; use 'res in object' instead", BiopythonDeprecationWarning)
         return (res in self)
 
     def __contains__(self, res):

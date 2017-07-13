@@ -6,14 +6,15 @@
 """Atom class, used in Structure objects."""
 
 import numpy as np
-import warnings
 import copy
+import logging
 
 from kmbio.PDB.Entity import DisorderedEntityWrapper
-from kmbio.PDB.PDBExceptions import PDBConstructionWarning
 from kmbio.PDB.Vector import Vector
 from kmbio.PDB.Entity import Entity
 from Bio.Data import IUPACData
+
+logger = logging.getLogger(__name__)
 
 
 class Atom(Entity):
@@ -97,7 +98,7 @@ class Atom(Entity):
                 msg = "Could not assign element %r for Atom (name=%s) with given element %r" \
                       % (putative_element, self.name, element)
                 element = ""
-            warnings.warn(msg, PDBConstructionWarning)
+            logger.warning(msg)
 
         return element
 
