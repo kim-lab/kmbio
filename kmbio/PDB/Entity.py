@@ -10,7 +10,6 @@ It is a simple container class, with list and dictionary like properties.
 from abc import abstractmethod
 import logging
 from copy import copy
-from collections.abc import MutableMapping
 
 from kmbio.PDB.PDBExceptions import PDBConstructionException
 
@@ -34,7 +33,7 @@ class Index:
             del self._entity[item.id]
 
 
-class Entity(MutableMapping):
+class Entity(object):
     """
     Basic container object. Structure, Model, Chain and Residue
     are subclasses of Entity. It deals with storage and lookup.
@@ -316,6 +315,7 @@ class DisorderedEntityWrapper(object):
 
     @property
     def parent(self):
+        """Return parent."""
         return self._parent
 
     @parent.setter
@@ -327,11 +327,6 @@ class DisorderedEntityWrapper(object):
                 child.parent = None
         else:
             self._parent = parent
-
-    @property
-    def parent(self):
-        """Return parent."""
-        return self._parent
 
     @parent.setter
     def parent(self, parent):
