@@ -27,7 +27,7 @@ from kmbio.PDB.PDBExceptions import PDBConstructionWarning
 class MMCIFParser(object):
     """Parse a mmCIF file and return a Structure object."""
 
-    def __init__(self, structure_builder=None, QUIET=False):
+    def __init__(self, structure_builder=None, ignore_authorId=False, QUIET=False):
         """Create a PDBParser object.
 
         The mmCIF parser calls a number of standard methods in an aggregated
@@ -37,6 +37,8 @@ class MMCIFParser(object):
 
         Arguments:
          - structure_builder - an optional user implemented StructureBuilder class.
+         - ignore_authorId - (BOOL). If false (default) the author chain and sequence id
+         is used (match with PDB information). If True, the mmCIF id, rmore rational, it is used.
          - QUIET - Evaluated as a Boolean. If true, warnings issued in constructing
            the SMCRA data will be suppressed. If false (DEFAULT), they will be shown.
            These warnings might be indicative of problems in the mmCIF file!
@@ -50,6 +52,12 @@ class MMCIFParser(object):
         self.line_counter = 0
         self.build_structure = None
         self.QUIET = bool(QUIET)
+
+        # Author ids is an alternative label provided by the author
+        # in order to match the identification used in the publication
+        # this is what it is used by default in the PDB format
+        # however it can be confusing for other purposes
+        self.ignore_authorId = ignore_authorId
 
     # Public methods
 
@@ -74,12 +82,18 @@ class MMCIFParser(object):
         mmcif_dict = self._mmcif_dict
         atom_id_list = mmcif_dict["_atom_site.label_atom_id"]
         residue_id_list = mmcif_dict["_atom_site.label_comp_id"]
+
         try:
             element_list = mmcif_dict["_atom_site.type_symbol"]
         except KeyError:
             element_list = None
-        seq_id_list = mmcif_dict["_atom_site.label_seq_id"]
-        chain_id_list = mmcif_dict["_atom_site.auth_asym_id"]
+
+        # ignore_authorId
+        if self.ignore_authorId:
+            chain_id_list = mmcif_dict["_atom_site.label_asym_id"]
+        else:
+            chain_id_list = mmcif_dict["_atom_site.auth_asym_id"]
+        # coords
         x_list = [float(x) for x in mmcif_dict["_atom_site.Cartn_x"]]
         y_list = [float(x) for x in mmcif_dict["_atom_site.Cartn_y"]]
         z_list = [float(x) for x in mmcif_dict["_atom_site.Cartn_z"]]
@@ -109,10 +123,13 @@ class MMCIFParser(object):
             aniso_flag = 0
         # if auth_seq_id is present, we use this.
         # Otherwise label_seq_id is used.
-        if "_atom_site.auth_seq_id" in mmcif_dict:
+        # ignore_authorId:
+        if "_atom_site.auth_seq_id" in mmcif_dict and not self.ignore_authorId:
+        # if "_atom_site.auth_seq_id" in mmcif_dict:
             seq_id_list = mmcif_dict["_atom_site.auth_seq_id"]
         else:
             seq_id_list = mmcif_dict["_atom_site.label_seq_id"]
+            seq_id_auth_list = mmcif_dict["_atom_site.auth_seq_id"]
         # Now loop over atoms and build the structure
         current_chain_id = None
         current_residue_id = None
@@ -124,6 +141,7 @@ class MMCIFParser(object):
         # so serial_id means the Model ID specified in the file
         current_model_id = -1
         current_serial_id = -1
+
         for i in range(0, len(atom_id_list)):
 
             # set the line_counter for 'ATOM' lines only and not
@@ -139,7 +157,14 @@ class MMCIFParser(object):
             altloc = alt_list[i]
             if altloc == ".":
                 altloc = " "
-            int_resseq = int(seq_id_list[i])
+            # hetero atoms do not have seq_id number in seq_label only '.'
+            # use the auth_seq number
+            if self.ignore_authorId and seq_id_list[i] == '.':
+                int_resseq = int(seq_id_auth_list[i])
+            else:
+                int_resseq = int(seq_id_list[i])
+
+
             icode = icode_list[i]
             if icode == "?":
                 icode = " "
@@ -218,7 +243,7 @@ class MMCIFParser(object):
 class FastMMCIFParser(object):
     """Parse an MMCIF file and return a Structure object."""
 
-    def __init__(self, structure_builder=None, QUIET=False):
+    def __init__(self, structure_builder=None, ignore_authorId=False, QUIET=False):
         """Create a FastMMCIFParser object.
 
         The mmCIF parser calls a number of standard methods in an aggregated
@@ -244,6 +269,12 @@ class FastMMCIFParser(object):
         self.line_counter = 0
         self.build_structure = None
         self.QUIET = bool(QUIET)
+
+        # Author ids is an alternative label provided by the author
+        # in order to match the identification used in the publication
+        # this is what it is used by default in the PDB format
+        # however it can be confusing for other purposes
+        self.ignore_authorId = ignore_authorId
 
     # Public methods
 
@@ -304,8 +335,20 @@ class FastMMCIFParser(object):
         except KeyError:
             element_list = None
 
-        seq_id_list = mmcif_dict["_atom_site.label_seq_id"]
-        chain_id_list = mmcif_dict["_atom_site.auth_asym_id"]
+        # ignore_authorId:
+        if "_atom_site.auth_seq_id" in mmcif_dict and not self.ignore_authorId:
+        # if "_atom_site.auth_seq_id" in mmcif_dict:
+            seq_id_list = mmcif_dict["_atom_site.auth_seq_id"]
+        else:
+            seq_id_list = mmcif_dict["_atom_site.label_seq_id"]
+            seq_id_auth_list = mmcif_dict["_atom_site.auth_seq_id"]
+
+        # ignore_authorId
+        if self.ignore_authorId:
+            chain_id_list = mmcif_dict["_atom_site.label_asym_id"]
+        else:
+            chain_id_list = mmcif_dict["_atom_site.auth_asym_id"]
+        # coords
 
         x_list = [float(x) for x in mmcif_dict["_atom_site.Cartn_x"]]
         y_list = [float(x) for x in mmcif_dict["_atom_site.Cartn_y"]]
@@ -337,12 +380,6 @@ class FastMMCIFParser(object):
             # no anisotropic B factors
             aniso_flag = 0
 
-        # if auth_seq_id is present, we use this.
-        # Otherwise label_seq_id is used.
-        if "_atom_site.auth_seq_id" in mmcif_dict:
-            seq_id_list = mmcif_dict["_atom_site.auth_seq_id"]
-        else:
-            seq_id_list = mmcif_dict["_atom_site.label_seq_id"]
 
         # Now loop over atoms and build the structure
         current_chain_id = None
@@ -371,7 +408,14 @@ class FastMMCIFParser(object):
             altloc = alt_list[i]
             if altloc == ".":
                 altloc = " "
-            int_resseq = int(seq_id_list[i])
+
+            # hetero atoms do not have seq_id number in seq_label only '.'
+            # use the auth_seq number
+            if self.ignore_authorId and seq_id_list[i] == '.':
+                int_resseq = int(seq_id_auth_list[i])
+            else:
+                int_resseq = int(seq_id_list[i])
+
             icode = icode_list[i]
             if icode == "?":
                 icode = " "
