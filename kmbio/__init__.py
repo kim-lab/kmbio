@@ -10,12 +10,7 @@ of freely available Python tools for computational molecular biology.
 
 http://biopython.org
 """
-<<<<<<< 7b6395e4f1b4c0fda54a52b277ad68c9d865672b
-
 __version__ = "1.69.4"
-=======
-__version__ = "1.69.4.dev0"
->>>>>>> Automatically import all modules and move exceptions to a new file
 
 from .exc import *
 
