@@ -2,26 +2,25 @@
 # This code is part of the Biopython distribution and governed by its
 # license.  Please see the LICENSE file that should have been included
 # as part of this package.
+"""mmCIF parsers."""
 
-"""mmCIF parsers"""
-
-from __future__ import print_function
-
-import numpy
 import logging
 
-from Bio.File import as_handle
+import numpy
 from Bio._py3k import range
+from Bio.File import as_handle
+
+from kmbio.PDB.Parser import Parser
+from kmbio.PDB.PDBExceptions import PDBConstructionException
+from kmbio.PDB.StructureBuilder import StructureBuilder
 
 try:
     from kmbio.PDB._mmcif_to_dict import MMCIF2Dict
 except ImportError:
-    logging.warn("Cound not import cythonized MMCIF2Dict module. Performance will suffer!")
+    logging.warning("Cound not import cythonized MMCIF2Dict module. Performance will suffer!")
     from kmbio.PDB.MMCIF2Dict import MMCIF2Dict
 
-from kmbio.PDB.Parser import Parser
-from kmbio.PDB.StructureBuilder import StructureBuilder
-from kmbio.PDB.PDBExceptions import PDBConstructionException
+logger = logging.getLogger(__name__)
 
 
 class MMCIFParser(Parser):
