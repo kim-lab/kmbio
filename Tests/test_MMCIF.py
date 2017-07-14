@@ -21,7 +21,7 @@ from kmbio.PDB.MMCIFParser import MMCIFParser, FastMMCIFParser
 class ParseReal(unittest.TestCase):
     """Testing with real CIF file(s)."""
 
-    def test_parsers(self):
+    def test_parsers(self, ignore_authorId=False):
         """Extract polypeptides from 1A80."""
 
         parser = MMCIFParser()
@@ -29,6 +29,7 @@ class ParseReal(unittest.TestCase):
 
         structure = parser.get_structure("PDB/1A8O.cif", "example")
         f_structure = fast_parser.get_structure("PDB/1A8O.cif", "example")
+
 
         self.assertEqual(len(structure), 1)
         self.assertEqual(len(f_structure), 1)
@@ -234,6 +235,8 @@ class ParseReal(unittest.TestCase):
         self.assertAlmostEqual(
             res_1["CA"].occupancy,
             0.17, 2, "Residue 1 serine occupancy correcy")
+
+
 
 
 if __name__ == '__main__':
