@@ -2,26 +2,25 @@
 # This code is part of the Biopython distribution and governed by its
 # license.  Please see the LICENSE file that should have been included
 # as part of this package.
+"""mmCIF parsers."""
 
-"""mmCIF parsers"""
-
-from __future__ import print_function
-
-import numpy
 import logging
 
-from Bio.File import as_handle
+import numpy
 from Bio._py3k import range
+from Bio.File import as_handle
+
+from kmbio.PDB.Parser import Parser
+from kmbio.PDB.PDBExceptions import PDBConstructionException
+from kmbio.PDB.StructureBuilder import StructureBuilder
 
 try:
     from kmbio.PDB._mmcif_to_dict import MMCIF2Dict
 except ImportError:
-    logging.warn("Cound not import cythonized MMCIF2Dict module. Performance will suffer!")
+    logging.warning("Cound not import cythonized MMCIF2Dict module. Performance will suffer!")
     from kmbio.PDB.MMCIF2Dict import MMCIF2Dict
 
-from kmbio.PDB.Parser import Parser
-from kmbio.PDB.StructureBuilder import StructureBuilder
-from kmbio.PDB.PDBExceptions import PDBConstructionException
+logger = logging.getLogger(__name__)
 
 
 class MMCIFParser(Parser):
@@ -32,7 +31,7 @@ class MMCIFParser(Parser):
     _structure_builder : StructureBuilder
     """
 
-    def __init__(self, structure_builder=None):
+    def __init__(self, structure_builder=None, use_label_ids=False):
         """Create a PDBParser object.
 
         The mmCIF parser calls a number of standard methods in an aggregated
@@ -40,8 +39,10 @@ class MMCIFParser(Parser):
         MMCIParser object itself, but if the user provides his/her own
         StructureBuilder object, the latter is used instead.
 
-        Arguments:
-         - structure_builder - an optional user implemented StructureBuilder class.
+        Parameters
+        ----------
+        structure_builder : StructureBuilder
+            An optional user implemented StructureBuilder class.
         """
         if structure_builder is not None:
             self._structure_builder = structure_builder
@@ -52,6 +53,7 @@ class MMCIFParser(Parser):
         self.line_counter = 0
         self.build_structure = None
         self._mmcif_dict = None
+        self.use_label_ids = use_label_ids
 
     # Public methods
 
@@ -83,8 +85,16 @@ class MMCIFParser(Parser):
             element_list = mmcif_dict["_atom_site.type_symbol"]
         except KeyError:
             element_list = None
-        seq_id_list = mmcif_dict["_atom_site.label_seq_id"]
-        chain_id_list = mmcif_dict["_atom_site.auth_asym_id"]
+
+        if self.use_label_ids:
+            seq_id_list = mmcif_dict["_atom_site.label_seq_id"]
+            chain_id_list = mmcif_dict["_atom_site.label_asym_id"]
+        else:
+            seq_id_list = mmcif_dict["_atom_site.auth_seq_id"]
+            chain_id_list = mmcif_dict["_atom_site.auth_asym_id"]
+        logger.debug('seq_id_list: %s', seq_id_list)
+        logger.debug('chain_id_list: %s', chain_id_list)
+
         x_list = [float(x) for x in mmcif_dict["_atom_site.Cartn_x"]]
         y_list = [float(x) for x in mmcif_dict["_atom_site.Cartn_y"]]
         z_list = [float(x) for x in mmcif_dict["_atom_site.Cartn_z"]]
@@ -112,12 +122,7 @@ class MMCIFParser(Parser):
         except KeyError:
             # no anisotropic B factors
             aniso_flag = 0
-        # if auth_seq_id is present, we use this.
-        # Otherwise label_seq_id is used.
-        if "_atom_site.auth_seq_id" in mmcif_dict:
-            seq_id_list = mmcif_dict["_atom_site.auth_seq_id"]
-        else:
-            seq_id_list = mmcif_dict["_atom_site.label_seq_id"]
+
         # Now loop over atoms and build the structure
         current_chain_id = None
         current_residue_id = None
