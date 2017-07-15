@@ -43,7 +43,7 @@ class ChainSelector(object):
             # skip HETATMS
             return 0
         if icode != " ":
-            logger.warning("WARNING: Icode at %s", residue.id)
+            logger.info("WARNING: Icode at %s", residue.id)
         if self.start <= resseq <= self.end:
             return 1
         return 0

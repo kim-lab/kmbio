@@ -160,7 +160,7 @@ class Entity(object):
         """Add a child to the Entity."""
         # Single entity
         if entities is None:
-            logger.warning("Trying to add a 'None' child to {}".format(self))
+            logger.info("Trying to add a 'None' child to {}".format(self))
             return
         if isinstance(entities, (Entity, DisorderedEntityWrapper)):
             entities = [entities]

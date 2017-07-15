@@ -182,7 +182,7 @@ class PDBParser(Parser):
                     # self._handle_PDB_exception("Negative occupancy",
                     #                            global_line_counter)
                     # This uses fixed text so the warning occurs once only:
-                    logger.warning("Negative occupancy in one or more atoms")
+                    logger.info("Negative occupancy in one or more atoms")
                 try:
                     bfactor = float(line[60:66])
                 except Exception:

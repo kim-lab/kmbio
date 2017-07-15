@@ -69,7 +69,7 @@ def run_naccess(model, pdb_file, probe_size=None, z_slice=None,
     asa_file = tmp_pdb_file[:-4] + '.asa'
     # Alert user for errors
     if err.strip():
-        logger.warning(err)
+        logger.info(err)
 
     if (not os.path.exists(rsa_file)) or (not os.path.exists(asa_file)):
         raise Exception('NACCESS did not execute or finish properly.')
