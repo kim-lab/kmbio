@@ -98,7 +98,7 @@ class Atom(Entity):
                 msg = "Could not assign element %r for Atom (name=%s) with given element %r" \
                       % (putative_element, self.name, element)
                 element = ""
-            logger.warning(msg)
+            logger.info(msg)
 
         return element
 

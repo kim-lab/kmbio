@@ -136,7 +136,7 @@ def dssp_dict_from_pdb_file(in_file, DSSP="dssp"):
 
     # Alert user for errors
     if err.strip():
-        logger.warning(err)
+        logger.info(err)
         if not out.strip():
             raise Exception('DSSP failed to produce an output')
 

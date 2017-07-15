@@ -180,7 +180,7 @@ class PDBParser(Parser):
                     # self._handle_PDB_exception("Negative occupancy",
                     #                            global_line_counter)
                     # This uses fixed text so the warning occurs once only:
-                    logger.warning("Negative occupancy in one or more atoms")
+                    logger.info("Negative occupancy in one or more atoms")
                 try:
                     bfactor = float(line[60:66])
                 except Exception:
@@ -268,7 +268,7 @@ class PDBParser(Parser):
         message = "%s at line %i." % (message, line_counter)
         if self.PERMISSIVE:
             # just print a warning - some residues/atoms may be missing
-            logger.warning("PDBConstructionException: %s\n"
+            logger.info("PDBConstructionException: %s\n"
                           "Exception ignored.\n"
                           "Some atoms or residues may be missing in the data structure.",
                           message)

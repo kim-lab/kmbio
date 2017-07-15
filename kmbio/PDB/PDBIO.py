@@ -89,7 +89,7 @@ class PDBIO(object):
         except TypeError:
             if occupancy is None:
                 occupancy_str = " " * 6
-                logger.warning("Missing occupancy in atom %s written as blank", repr(atom.full_id))
+                logger.info("Missing occupancy in atom %s written as blank", repr(atom.full_id))
             else:
                 raise TypeError("Invalid occupancy %r in atom %r"
                                 % (occupancy, atom.full_id))

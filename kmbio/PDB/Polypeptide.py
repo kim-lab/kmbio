@@ -322,7 +322,7 @@ class _PPBuilder(object):
             # It has an alpha carbon...
             # We probably need to update the hard coded list of
             # non-standard residues, see function is_aa for details.
-            logger.warning("Assuming residue %s is an unknown modified "
+            logger.info("Assuming residue %s is an unknown modified "
                           "amino acid" % residue.resname)
             return True
         else:

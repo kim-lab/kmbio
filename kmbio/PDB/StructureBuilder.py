@@ -79,7 +79,7 @@ class StructureBuilder(object):
         """
         if chain_id in self.model:
             self.chain = self.model[chain_id]
-            logger.warning(
+            logger.info(
                 "WARNING: Chain %s is discontinuous at line %i.", chain_id, self.line_counter)
         else:
             self.chain = Chain(chain_id)
@@ -114,7 +114,7 @@ class StructureBuilder(object):
             if res_id in self.chain:
                 # There already is a residue with the id (field, resseq, icode).
                 # This only makes sense in the case of a point mutation.
-                logger.warning(
+                logger.info(
                     "WARNING: Residue ('%s', %i, '%s') redefined at line %i.",
                     field, resseq, icode, self.line_counter)
                 duplicate_residue = self.chain[res_id]
@@ -134,7 +134,7 @@ class StructureBuilder(object):
                         return
                 else:
                     if resname == duplicate_residue.resname:
-                        logger.warning(
+                        logger.info(
                             "WARNING: Residue ('%s', %i, '%s','%s') already defined "
                             "with the same name at line %i.",
                             field, resseq, icode, resname, self.line_counter)
@@ -192,7 +192,7 @@ class StructureBuilder(object):
             if duplicate_fullname != fullname:
                 # name of current atom now includes spaces
                 name = fullname
-                logger.warning(
+                logger.info(
                     "Atom names %r and %r differ only in spaces at line %i.",
                     duplicate_fullname, fullname, self.line_counter)
         self.atom = Atom(name, coord, b_factor, occupancy, altloc,
@@ -216,7 +216,7 @@ class StructureBuilder(object):
                     disordered_atom.disordered_add(self.atom)
                     disordered_atom.disordered_add(duplicate_atom)
                     residue.disordered = 1
-                    logger.warning(
+                    logger.info(
                         "WARNING: disordered atom found with blank altloc before line %i.",
                         self.line_counter)
             else:

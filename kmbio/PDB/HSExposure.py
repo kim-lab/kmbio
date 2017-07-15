@@ -208,7 +208,7 @@ class HSExposureCA(_AbstractHSExposure):
         @type filename: string
         """
         if len(self.ca_cb_list) == 0:
-            logger.warning("Nothing to draw.")
+            logger.info("Nothing to draw.")
             return
         with open(filename, "w") as fp:
             fp.write("from pymol.cgo import *\n")
