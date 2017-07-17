@@ -30,8 +30,8 @@ class ParseReal(unittest.TestCase):
     def _test_parsers(self, ignore):
         """Extract polypeptides from 1A80."""
 
-        parser = MMCIFParser(ignore_authorId=ignore)
-        fast_parser = FastMMCIFParser(ignore_authorId=ignore)
+        parser = MMCIFParser(ignore_auth_id=ignore)
+        fast_parser = FastMMCIFParser(ignore_auth_id=ignore)
 
         structure = parser.get_structure("PDB/1A8O.cif", "example")
         f_structure = fast_parser.get_structure("PDB/1A8O.cif", "example")
@@ -143,8 +143,8 @@ class ParseReal(unittest.TestCase):
     def _testModels(self, ignore):
         """Test file with multiple models"""
 
-        parser = MMCIFParser(ignore_authorId=ignore)
-        f_parser = FastMMCIFParser(ignore_authorId=ignore)
+        parser = MMCIFParser(ignore_auth_id=ignore)
+        f_parser = FastMMCIFParser(ignore_auth_id=ignore)
         structure = parser.get_structure("PDB/1LCD.cif", "example")
         f_structure = f_parser.get_structure("PDB/1LCD.cif", "example")
 
@@ -201,7 +201,7 @@ class ParseReal(unittest.TestCase):
     def _test_insertions(self, ignore):
         """Test file with residue insertion codes"""
 
-        parser = MMCIFParser(ignore_authorId=ignore)
+        parser = MMCIFParser(ignore_auth_id=ignore)
         structure = parser.get_structure("PDB/4ZHL.cif", "example")
         for ppbuild in [PPBuilder(), CaPPBuilder()]:
             # First try allowing non-standard amino acids,
@@ -235,7 +235,7 @@ class ParseReal(unittest.TestCase):
 
     def _test_filehandle(self, ignore):
         """Test if the parser can handle file handle as well as filename"""
-        parser = MMCIFParser(ignore_authorId=ignore)
+        parser = MMCIFParser(ignore_auth_id=ignore)
         structure = parser.get_structure("PDB/1A8O.cif", "example")
         self.assertEqual(len(structure), 1)
 
@@ -247,33 +247,33 @@ class ParseReal(unittest.TestCase):
     def test_point_mutations_main_PDB(self):
         """Test if MMCIFParser parse point mutations correctly."""
 
-        self._run_point_mutation_tests(MMCIFParser(ignore_authorId=False), ignore=False)
+        self._run_point_mutation_tests(MMCIFParser(ignore_auth_id=False))
 
     def test_point_mutations_main_MMCIF(self):
         """Test if MMCIFParser parse point mutations correctly."""
 
-        self._run_point_mutation_tests(MMCIFParser(ignore_authorId=True), ignore=True)
+        self._run_point_mutation_tests(MMCIFParser(ignore_auth_id=True))
 
 
     def test_point_mutations_fast_PDB(self):
         """Test if MMCIFParser parse point mutations correctly."""
 
-        self._run_point_mutation_tests(FastMMCIFParser(ignore_authorId=False), ignore=False)
+        self._run_point_mutation_tests(FastMMCIFParser(ignore_auth_id=False))
 
     def test_point_mutations_fast_MMCIF(self):
         """Test if MMCIFParser parse point mutations correctly."""
 
-        self._run_point_mutation_tests(FastMMCIFParser(ignore_authorId=True), ignore=True)
+        self._run_point_mutation_tests(FastMMCIFParser(ignore_auth_id=True))
 
 
-    def _run_point_mutation_tests(self, parser, ignore):
+    def _run_point_mutation_tests(self, parser):
 
 
         """Common test code for testing point mutations."""
         structure = parser.get_structure("PDB/3JQH.cif", "example")
 
         # Residue 1 and 15 should be disordered.
-        if ignore:
+        if parser.ignore_auth_id:
             res_1 = structure[0]["A"][4]
             res_15 = structure[0]["A"][18]
         else:
