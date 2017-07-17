@@ -21,119 +21,129 @@ from kmbio.PDB.MMCIFParser import MMCIFParser, FastMMCIFParser
 class ParseReal(unittest.TestCase):
     """Testing with real CIF file(s)."""
 
-    def test_parsers(self, ignore_authorId=False):
+    def test_parsers_PDB_num(self):
+        self._test_parsers(ignore=False)
+
+    def test_parsers_CIF_num(self):
+        self._test_parsers(ignore=True)
+
+    def _test_parsers(self, ignore):
         """Extract polypeptides from 1A80."""
 
+        parser = MMCIFParser(ignore_authorId=ignore)
+        fast_parser = FastMMCIFParser(ignore_authorId=ignore)
 
-        for ignore in [False, True]:
-
-            parser = MMCIFParser(ignore_authorId=ignore)
-            fast_parser = FastMMCIFParser(ignore_authorId=ignore)
-
-            structure = parser.get_structure("PDB/1A8O.cif", "example")
-            f_structure = fast_parser.get_structure("PDB/1A8O.cif", "example")
+        structure = parser.get_structure("PDB/1A8O.cif", "example")
+        f_structure = fast_parser.get_structure("PDB/1A8O.cif", "example")
 
 
-            self.assertEqual(len(structure), 1)
-            self.assertEqual(len(f_structure), 1)
+        self.assertEqual(len(structure), 1)
+        self.assertEqual(len(f_structure), 1)
 
-            for ppbuild in [PPBuilder(), CaPPBuilder()]:
-                # ==========================================================
-                # Check that serial_num (model column) is stored properly
-                self.assertEqual(structure[0].serial_num, 1)
-                self.assertEqual(f_structure[0].serial_num, structure[0].serial_num)
+        for ppbuild in [PPBuilder(), CaPPBuilder()]:
+            # ==========================================================
+            # Check that serial_num (model column) is stored properly
+            self.assertEqual(structure[0].serial_num, 1)
+            self.assertEqual(f_structure[0].serial_num, structure[0].serial_num)
 
-                # First try allowing non-standard amino acids,
-                polypeptides = ppbuild.build_peptides(structure[0], False)
-                f_polypeptides = ppbuild.build_peptides(f_structure[0], False)
+            # First try allowing non-standard amino acids,
+            polypeptides = ppbuild.build_peptides(structure[0], False)
+            f_polypeptides = ppbuild.build_peptides(f_structure[0], False)
 
-                self.assertEqual(len(polypeptides), 1)
-                self.assertEqual(len(f_polypeptides), 1)
+            self.assertEqual(len(polypeptides), 1)
+            self.assertEqual(len(f_polypeptides), 1)
 
-                pp = polypeptides[0]
-                f_pp = f_polypeptides[0]
+            pp = polypeptides[0]
+            f_pp = f_polypeptides[0]
 
-                # Check the start and end positions
-                if ignore:
-                    self.assertEqual(pp[0].id[1], 1)
-                    self.assertEqual(pp[-1].id[1], 70)
+            # Check the start and end positions
+            if ignore:
+                self.assertEqual(pp[0].id[1], 1)
+                self.assertEqual(pp[-1].id[1], 70)
 
-                    self.assertEqual(f_pp[0].id[1], 1)
-                    self.assertEqual(f_pp[-1].id[1], 70)
+                self.assertEqual(f_pp[0].id[1], 1)
+                self.assertEqual(f_pp[-1].id[1], 70)
 
-                else:
-                    self.assertEqual(pp[0].id[1], 151)
-                    self.assertEqual(pp[-1].id[1], 220)
+            else:
+                self.assertEqual(pp[0].id[1], 151)
+                self.assertEqual(pp[-1].id[1], 220)
 
-                    self.assertEqual(f_pp[0].id[1], 151)
-                    self.assertEqual(f_pp[-1].id[1], 220)
+                self.assertEqual(f_pp[0].id[1], 151)
+                self.assertEqual(f_pp[-1].id[1], 220)
 
-                # Check the sequence
-                s = pp.get_sequence()
-                f_s = f_pp.get_sequence()
+            # Check the sequence
+            s = pp.get_sequence()
+            f_s = f_pp.get_sequence()
 
-                self.assertEqual(s, f_s)  # enough to test this
+            self.assertEqual(s, f_s)  # enough to test this
 
-                self.assertTrue(isinstance(s, Seq))
-                self.assertEqual(s.alphabet, generic_protein)
+            self.assertTrue(isinstance(s, Seq))
+            self.assertEqual(s.alphabet, generic_protein)
 
-                # Here non-standard MSE are shown as M
-                self.assertEqual("MDIRQGPKEPFRDYVDRFYKTLRAEQASQEVKNWMTETLLVQ"
-                                 "NANPDCKTILKALGPGATLEEMMTACQG", str(s))
+            # Here non-standard MSE are shown as M
+            self.assertEqual("MDIRQGPKEPFRDYVDRFYKTLRAEQASQEVKNWMTETLLVQ"
+                             "NANPDCKTILKALGPGATLEEMMTACQG", str(s))
 
-                # ==========================================================
-                # Now try strict version with only standard amino acids
-                # Should ignore MSE 151 at start, and then break the chain
-                # at MSE 185, and MSE 214,215
-                polypeptides = ppbuild.build_peptides(structure[0], True)
-                self.assertEqual(len(polypeptides), 3)
+            # ==========================================================
+            # Now try strict version with only standard amino acids
+            # Should ignore MSE 151 at start, and then break the chain
+            # at MSE 185, and MSE 214,215
+            polypeptides = ppbuild.build_peptides(structure[0], True)
+            self.assertEqual(len(polypeptides), 3)
 
-                # First fragment
-                pp = polypeptides[0]
-                if ignore:
-                    self.assertEqual(pp[0].id[1], 2)
-                    self.assertEqual(pp[-1].id[1], 34)
-                else:
-                    self.assertEqual(pp[0].id[1], 152)
-                    self.assertEqual(pp[-1].id[1], 184)
-                s = pp.get_sequence()
-                self.assertTrue(isinstance(s, Seq))
-                self.assertEqual(s.alphabet, generic_protein)
-                self.assertEqual("DIRQGPKEPFRDYVDRFYKTLRAEQASQEVKNW", str(s))
+            # First fragment
+            pp = polypeptides[0]
+            if ignore:
+                self.assertEqual(pp[0].id[1], 2)
+                self.assertEqual(pp[-1].id[1], 34)
+            else:
+                self.assertEqual(pp[0].id[1], 152)
+                self.assertEqual(pp[-1].id[1], 184)
+            s = pp.get_sequence()
+            self.assertTrue(isinstance(s, Seq))
+            self.assertEqual(s.alphabet, generic_protein)
+            self.assertEqual("DIRQGPKEPFRDYVDRFYKTLRAEQASQEVKNW", str(s))
 
-                # Second fragment
-                pp = polypeptides[1]
-                if ignore:
-                    self.assertEqual(pp[0].id[1], 36)
-                    self.assertEqual(pp[-1].id[1], 63)
-                else:
-                    self.assertEqual(pp[0].id[1], 186)
-                    self.assertEqual(pp[-1].id[1], 213)
+            # Second fragment
+            pp = polypeptides[1]
+            if ignore:
+                self.assertEqual(pp[0].id[1], 36)
+                self.assertEqual(pp[-1].id[1], 63)
+            else:
+                self.assertEqual(pp[0].id[1], 186)
+                self.assertEqual(pp[-1].id[1], 213)
 
-                s = pp.get_sequence()
-                self.assertTrue(isinstance(s, Seq))
-                self.assertEqual(s.alphabet, generic_protein)
-                self.assertEqual("TETLLVQNANPDCKTILKALGPGATLEE", str(s))
+            s = pp.get_sequence()
+            self.assertTrue(isinstance(s, Seq))
+            self.assertEqual(s.alphabet, generic_protein)
+            self.assertEqual("TETLLVQNANPDCKTILKALGPGATLEE", str(s))
 
-                # Third fragment
-                pp = polypeptides[2]
-                if ignore:
-                    self.assertEqual(pp[0].id[1], 66)
-                    self.assertEqual(pp[-1].id[1], 70)
-                else:
-                    self.assertEqual(pp[0].id[1], 216)
-                    self.assertEqual(pp[-1].id[1], 220)
+            # Third fragment
+            pp = polypeptides[2]
+            if ignore:
+                self.assertEqual(pp[0].id[1], 66)
+                self.assertEqual(pp[-1].id[1], 70)
+            else:
+                self.assertEqual(pp[0].id[1], 216)
+                self.assertEqual(pp[-1].id[1], 220)
 
-                s = pp.get_sequence()
-                self.assertTrue(isinstance(s, Seq))
-                self.assertEqual(s.alphabet, generic_protein)
-                self.assertEqual("TACQG", str(s))
+            s = pp.get_sequence()
+            self.assertTrue(isinstance(s, Seq))
+            self.assertEqual(s.alphabet, generic_protein)
+            self.assertEqual("TACQG", str(s))
 
-    def testModels(self):
+
+    def test_models_PDB_num(self):
+        self._testModels(ignore=False)
+
+    def test_models_CIF_num(self):
+        self._testModels(ignore=True)
+
+    def _testModels(self, ignore):
         """Test file with multiple models"""
 
-        parser = MMCIFParser()
-        f_parser = FastMMCIFParser()
+        parser = MMCIFParser(ignore_authorId=ignore)
+        f_parser = FastMMCIFParser(ignore_authorId=ignore)
         structure = parser.get_structure("PDB/1LCD.cif", "example")
         f_structure = f_parser.get_structure("PDB/1LCD.cif", "example")
 
@@ -180,9 +190,17 @@ class ParseReal(unittest.TestCase):
         structure = parser.get_structure("PDB/2OFG.cif", "example")
         self.assertEqual(len(structure), 3)
 
-    def test_insertions(self):
+    def test_interations_PDB_num(self):
+        self._test_insertions(ignore=False)
+
+    def test_interations_CIF_num(self):
+        self._test_insertions(ignore=True)
+
+
+    def _test_insertions(self, ignore):
         """Test file with residue insertion codes"""
-        parser = MMCIFParser()
+
+        parser = MMCIFParser(ignore_authorId=ignore)
         structure = parser.get_structure("PDB/4ZHL.cif", "example")
         for ppbuild in [PPBuilder(), CaPPBuilder()]:
             # First try allowing non-standard amino acids,
@@ -190,8 +208,12 @@ class ParseReal(unittest.TestCase):
             self.assertEqual(len(polypeptides), 2)
             pp = polypeptides[0]
             # Check the start and end positions (first segment only)
-            self.assertEqual(pp[0].id[1], 16)
-            self.assertEqual(pp[-1].id[1], 244)
+            if ignore:
+                self.assertEqual(pp[0].id[1], 1)
+                self.assertEqual(pp[-1].id[1], 247)
+            else:
+                self.assertEqual(pp[0].id[1], 16)
+                self.assertEqual(pp[-1].id[1], 244)
             # Check the sequence
             refseq = "IIGGEFTTIENQPWFAAIYRRHRGGSVTYVCGGSLISPCWVISATHCFIDYPKKEDYIVYLGR" \
                      "SRLNSNTQGEMKFEVENLILHKDYSADTLAYHNDIALLKIRSKEGRCAQPSRTIQTIALPSMY" \
@@ -205,16 +227,19 @@ class ParseReal(unittest.TestCase):
 
     def test_filehandle(self):
         """Test if the parser can handle file handle as well as filename"""
-        parser = MMCIFParser()
-        structure = parser.get_structure("PDB/1A8O.cif", "example")
-        self.assertEqual(len(structure), 1)
+        for ignore in [False, True]:
+            parser = MMCIFParser(ignore_authorId=ignore)
+            structure = parser.get_structure("PDB/1A8O.cif", "example")
+            self.assertEqual(len(structure), 1)
 
-        structure = parser.get_structure(open("PDB/1A8O.cif"), "example")
-        self.assertEqual(len(structure), 1)
+            structure = parser.get_structure(open("PDB/1A8O.cif"), "example")
+            self.assertEqual(len(structure), 1)
 
     def test_point_mutations_main(self):
         """Test if MMCIFParser parse point mutations correctly."""
-        self._run_point_mutation_tests(MMCIFParser())
+        for ignore in [False, True]:
+
+            self._run_point_mutation_tests(MMCIFParser(ignore_authorId=ignore))
 
     def test_point_mutations_fast(self):
         """Test if FastMMCIFParser can parse point mutations correctly."""
