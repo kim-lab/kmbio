@@ -37,6 +37,7 @@ class ParseReal(unittest.TestCase):
         f_structure = fast_parser.get_structure("PDB/1A8O.cif", "example")
 
 
+
         self.assertEqual(len(structure), 1)
         self.assertEqual(len(f_structure), 1)
 

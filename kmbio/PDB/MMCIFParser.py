@@ -66,6 +66,7 @@ class MMCIFParser(Parser):
         # however it can be confusing for other purposes
         self.ignore_authorId = ignore_authorId
 
+
     # Public methods
 
     def get_structure(self, filename, structure_id=None):
@@ -111,7 +112,7 @@ class MMCIFParser(Parser):
             chain_id_list = mmcif_dict["_atom_site.label_asym_id"]
         else:
             chain_id_list = mmcif_dict["_atom_site.auth_asym_id"]
-
+        # coords
         x_list = [float(x) for x in mmcif_dict["_atom_site.Cartn_x"]]
         y_list = [float(x) for x in mmcif_dict["_atom_site.Cartn_y"]]
         z_list = [float(x) for x in mmcif_dict["_atom_site.Cartn_z"]]
@@ -139,6 +140,7 @@ class MMCIFParser(Parser):
         except KeyError:
             # no anisotropic B factors
             aniso_flag = 0
+
         # Now loop over atoms and build the structure
         current_chain_id = None
         current_residue_id = None
@@ -280,6 +282,7 @@ class FastMMCIFParser(Parser):
         # this is what it is used by default in the PDB format
         # however it can be confusing for other purposes
         self.ignore_authorId = ignore_authorId
+
 
     # Public methods
 
