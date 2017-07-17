@@ -225,33 +225,59 @@ class ParseReal(unittest.TestCase):
             self.assertEqual(s.alphabet, generic_protein)
             self.assertEqual(refseq, str(s))
 
-    def test_filehandle(self):
+    def test_filehandle_PDB_num(self):
+        self._test_filehandle(ignore=False)
+
+    def test_filehandle_CIF_num(self):
+        self._test_filehandle(ignore=True)
+
+
+    def _test_filehandle(self, ignore):
         """Test if the parser can handle file handle as well as filename"""
-        for ignore in [False, True]:
-            parser = MMCIFParser(ignore_authorId=ignore)
-            structure = parser.get_structure("PDB/1A8O.cif", "example")
-            self.assertEqual(len(structure), 1)
+        parser = MMCIFParser(ignore_authorId=ignore)
+        structure = parser.get_structure("PDB/1A8O.cif", "example")
+        self.assertEqual(len(structure), 1)
 
-            structure = parser.get_structure(open("PDB/1A8O.cif"), "example")
-            self.assertEqual(len(structure), 1)
+        structure = parser.get_structure(open("PDB/1A8O.cif"), "example")
+        self.assertEqual(len(structure), 1)
 
-    def test_point_mutations_main(self):
+
+
+    def test_point_mutations_main_PDB(self):
         """Test if MMCIFParser parse point mutations correctly."""
-        for ignore in [False, True]:
 
-            self._run_point_mutation_tests(MMCIFParser(ignore_authorId=ignore))
+        self._run_point_mutation_tests(MMCIFParser(ignore_authorId=False), ignore=False)
 
-    def test_point_mutations_fast(self):
-        """Test if FastMMCIFParser can parse point mutations correctly."""
-        self._run_point_mutation_tests(FastMMCIFParser())
+    def test_point_mutations_main_MMCIF(self):
+        """Test if MMCIFParser parse point mutations correctly."""
 
-    def _run_point_mutation_tests(self, parser):
+        self._run_point_mutation_tests(MMCIFParser(ignore_authorId=True), ignore=True)
+
+
+    def test_point_mutations_fast_PDB(self):
+        """Test if MMCIFParser parse point mutations correctly."""
+
+        self._run_point_mutation_tests(FastMMCIFParser(ignore_authorId=False), ignore=False)
+
+    def test_point_mutations_fast_MMCIF(self):
+        """Test if MMCIFParser parse point mutations correctly."""
+
+        self._run_point_mutation_tests(FastMMCIFParser(ignore_authorId=True), ignore=True)
+
+
+    def _run_point_mutation_tests(self, parser, ignore):
+
+
         """Common test code for testing point mutations."""
         structure = parser.get_structure("PDB/3JQH.cif", "example")
 
         # Residue 1 and 15 should be disordered.
-        res_1 = structure[0]["A"][1]
-        res_15 = structure[0]["A"][15]
+        if ignore:
+            res_1 = structure[0]["A"][4]
+            res_15 = structure[0]["A"][18]
+        else:
+            res_1 = structure[0]["A"][1]
+            res_15 = structure[0]["A"][15]
 
         # Cursory check -- this would be true even if the residue just
         # contained some disordered atoms.
