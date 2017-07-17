@@ -98,6 +98,20 @@ class MMCIFParser(Parser):
         except KeyError:
             element_list = None
 
+        # ignore_authorId:
+        if "_atom_site.auth_seq_id" in mmcif_dict and not self.ignore_authorId:
+        # if "_atom_site.auth_seq_id" in mmcif_dict:
+            seq_id_list = mmcif_dict["_atom_site.auth_seq_id"]
+        else:
+            seq_id_list = mmcif_dict["_atom_site.label_seq_id"]
+            seq_id_auth_list = mmcif_dict["_atom_site.auth_seq_id"]
+
+        # ignore_authorId
+        if self.ignore_authorId:
+            chain_id_list = mmcif_dict["_atom_site.label_asym_id"]
+        else:
+            chain_id_list = mmcif_dict["_atom_site.auth_asym_id"]
+
         x_list = [float(x) for x in mmcif_dict["_atom_site.Cartn_x"]]
         y_list = [float(x) for x in mmcif_dict["_atom_site.Cartn_y"]]
         z_list = [float(x) for x in mmcif_dict["_atom_site.Cartn_z"]]
