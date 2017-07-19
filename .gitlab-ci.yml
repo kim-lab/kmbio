@@ -87,6 +87,46 @@ test-py36:
   variables:
     <<: [*py36]
 
+# === Pages ===
+
+.docs: &docs
+  stage: test
+  script:
+    # Conda install
+    - cp -r $CI_PROJECT_DIR/conda-bld/* /opt/conda/conda-bld/
+    - conda index /opt/conda/conda-bld/
+    - conda install -y -q --use-local "python=$PYTHON_VERSION" $CI_PROJECT_NAME >/dev/null
+    # Build docs
+    - conda install -yq nbconvert ipython ipykernel pandoc
+    - pip install -q sphinx sphinx_rtd_theme recommonmark nbsphinx
+    - (cd docs && sphinx-apidoc ../kmbio -o api/generated -TeMP)
+    - sphinx-build docs public
+
+test-pages:
+  <<: [*conda_configure, *docs]
+  dependencies:
+    - build-py36
+  variables:
+    <<: [*py36]
+  except:
+    - master
+    - tags
+
+pages:
+  <<: [*conda_configure, *docs]
+  dependencies:
+    - build-py36
+  variables:
+    <<: [*py36]
+  only:
+    - master
+    - tags
+  except:
+    - triggers
+  artifacts:
+    paths:
+    - public
+
 # === Deploy ===
 
 .deploy: &deploy

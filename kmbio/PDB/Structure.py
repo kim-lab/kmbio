@@ -66,13 +66,13 @@ class Structure(Entity):
         """Convert this structure into a pandas DataFrame
 
         The output of this method is intended to be compatible
-        with the :mdtraj:`Topology.from_dataframe` method.
+        with :meth:`mdtraj.Topology.from_dataframe`.
 
         Returns
         -------
-        atoms : pandas.DataFrame
+        atoms : :class:`pandas.DataFrame`
             The atoms in the structure, represented as a data frame.
-        bonds : np.ndarray
+        bonds : :class:`numpy.ndarray`
             The bonds in this structure, represented as an n_bonds x 2 array
             of the indices of the atoms involved in each bond.
         """
