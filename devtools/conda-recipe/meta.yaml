@@ -1,6 +1,6 @@
 package:
   name: kmbio
-  version: 1.69.5.dev0
+  version: 1.69.5
 
 source:
   path: ../../
