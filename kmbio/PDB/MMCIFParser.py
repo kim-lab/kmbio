@@ -65,10 +65,9 @@ class MMCIFParser(Parser):
         # however it can be confusing for other purposes
         self.ignore_auth_id = ignore_auth_id
 
-
     # Public methods
 
-    def get_structure(self, filename, structure_id=None):
+    def get_structure(self, filename, structure_id=None, bioassembly=0):
         """Return the structure.
 
         Parameters
@@ -100,7 +99,6 @@ class MMCIFParser(Parser):
 
         # ignore_auth_id:
         if "_atom_site.auth_seq_id" in mmcif_dict and not self.ignore_auth_id:
-        # if "_atom_site.auth_seq_id" in mmcif_dict:
             seq_id_list = mmcif_dict["_atom_site.auth_seq_id"]
         else:
             seq_id_list = mmcif_dict["_atom_site.label_seq_id"]
@@ -284,7 +282,6 @@ class FastMMCIFParser(Parser):
         # however it can be confusing for other purposes
         self.ignore_auth_id = ignore_auth_id
 
-
     # Public methods
 
     def get_structure(self, filename, structure_id=None):
@@ -345,7 +342,6 @@ class FastMMCIFParser(Parser):
 
         # ignore_auth_id:
         if "_atom_site.auth_seq_id" in mmcif_dict and not self.ignore_auth_id:
-        # if "_atom_site.auth_seq_id" in mmcif_dict:
             seq_id_list = mmcif_dict["_atom_site.auth_seq_id"]
         else:
             seq_id_list = mmcif_dict["_atom_site.label_seq_id"]
@@ -387,7 +383,6 @@ class FastMMCIFParser(Parser):
         except KeyError:
             # no anisotropic B factors
             aniso_flag = 0
-
 
         # Now loop over atoms and build the structure
         current_chain_id = None
