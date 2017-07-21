@@ -7,24 +7,11 @@
 # This code is part of the Biopython distribution and governed by its
 # license. Please see the LICENSE file that should have been included
 # as part of this package.
-
 """Unit tests for those parts of the Bio.PDB module using Bio.KDTree."""
 import unittest
 
-try:
-    from numpy import array
-    from numpy.random import random
-except ImportError:
-    from Bio import MissingExternalDependencyError
-    raise MissingExternalDependencyError(
-        "Install NumPy if you want to use Bio.PDB.")
-
-try:
-    from Bio.KDTree import _CKDTree
-except ImportError:
-    from Bio import MissingExternalDependencyError
-    raise MissingExternalDependencyError(
-        "C module in Bio.KDTree not compiled")
+from numpy import array
+from numpy.random import random
 
 from kmbio.PDB.NeighborSearch import NeighborSearch
 

@@ -20,11 +20,7 @@
 # Renamed some clearly private functions to _something (ie. parse_pdb_header_list
 # is now _parse_pdb_header_list)
 # Thomas 9/05/04
-
 """Parse the header of a PDB file."""
-
-from __future__ import print_function
-
 import re
 
 from Bio import File
@@ -73,8 +69,10 @@ def _format_date(pdb_date):
     else:
         century = 1900
     date = str(century + year) + "-"
-    all_months = ['xxx', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul',
-    'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    all_months = [
+        'xxx', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
+        'Oct', 'Nov', 'Dec'
+    ]
     month = str(all_months.index(pdb_date[3:6]))
     if len(month) == 1:
         month = '0' + month
@@ -103,8 +101,8 @@ def _nice_case(line):
         if c >= 'a' and c <= 'z' and nextCap:
             c = c.upper()
             nextCap = 0
-        elif c == ' ' or c == '.' or c == ',' or c == ';' or c == ':' or c == '\t' or\
-             c == '-' or c == '_':
+        elif (c == ' ' or c == '.' or c == ',' or c == ';' or c == ':' or
+              c == '\t' or c == '-' or c == '_'):
             nextCap = 1
         s += c
         i += 1
@@ -132,7 +130,8 @@ def parse_pdb_header(infile):
 
 def _parse_pdb_header_list(header):
     # database fields
-    dict = {'name': "",
+    dict = {
+        'name': "",
         'head': '',
         'deposition_date': "1909-01-08",
         'release_date': "1909-01-08",
@@ -141,12 +140,22 @@ def _parse_pdb_header_list(header):
         'structure_reference': "unknown",
         'journal_reference': "unknown",
         'author': "",
-        'compound': {'1': {'misc': ''}}, 'source': {'1': {'misc': ''}}}
+        'compound': {
+            '1': {
+                'misc': ''
+            }
+        },
+        'source': {
+            '1': {
+                'misc': ''
+            }
+        }
+    }
 
     dict['structure_reference'] = _get_references(header)
     dict['journal_reference'] = _get_journal(header)
     comp_molid = "1"
-    src_molid = "1"
+    # src_molid = "1"
     last_comp_key = "misc"
     last_src_key = "misc"
 
@@ -255,6 +264,7 @@ def _parse_pdb_header_list(header):
         if dict['resolution'] > 0.0:
             dict['structure_method'] = 'x-ray diffraction'
     return dict
+
 
 if __name__ == '__main__':
     # Reads a PDB file passed as argument, parses its header, extracts

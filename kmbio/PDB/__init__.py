@@ -2,7 +2,7 @@
 # This code is part of the Biopython distribution and governed by its
 # license.  Please see the LICENSE file that should have been included
 # as part of this package.
-
+# flake8: noqa
 """Classes that deal with macromolecular crystal structures.
 
 Includes: PDB and mmCIF parsers, a Structure class, a module to keep a local
@@ -10,6 +10,13 @@ copy of the PDB up-to-date, selective IO of PDB files, etc.
 
 Author: Thomas Hamelryck.  Additional code by Kristian Rother.
 """
+import warnings
+
+try:
+    from ._mmcif_to_dict import MMCIF2Dict
+except ImportError:
+    warnings.warn("Cound not import cythonized MMCIF2Dict module. Performance will suffer!")
+    from .MMCIF2Dict import MMCIF2Dict
 
 # Get a Structure object from a PDB file
 from .PDBParser import PDBParser

@@ -2,26 +2,19 @@
 # This code is part of the Biopython distribution and governed by its
 # license.  Please see the LICENSE file that should have been included
 # as part of this package.
-
 """mmCIF parsers"""
-
-from __future__ import print_function
-
-import numpy
 import logging
 
-from Bio.File import as_handle
+import numpy
 from Bio._py3k import range
+from Bio.File import as_handle
 
-try:
-    from kmbio.PDB._mmcif_to_dict import MMCIF2Dict
-except ImportError:
-    logging.warn("Cound not import cythonized MMCIF2Dict module. Performance will suffer!")
-    from kmbio.PDB.MMCIF2Dict import MMCIF2Dict
-
+from kmbio.PDB import MMCIF2Dict
 from kmbio.PDB.Parser import Parser
-from kmbio.PDB.StructureBuilder import StructureBuilder
 from kmbio.PDB.PDBExceptions import PDBConstructionException
+from kmbio.PDB.StructureBuilder import StructureBuilder
+
+logger = logging.getLogger(__name__)
 
 
 class MMCIFParser(Parser):
@@ -66,7 +59,6 @@ class MMCIFParser(Parser):
         # however it can be confusing for other purposes
         self.ignore_auth_id = ignore_auth_id
 
-
     # Public methods
 
     def get_structure(self, filename, structure_id=None):
@@ -101,7 +93,7 @@ class MMCIFParser(Parser):
 
         # ignore_auth_id:
         if "_atom_site.auth_seq_id" in mmcif_dict and not self.ignore_auth_id:
-        # if "_atom_site.auth_seq_id" in mmcif_dict:
+            # if "_atom_site.auth_seq_id" in mmcif_dict:
             seq_id_list = mmcif_dict["_atom_site.auth_seq_id"]
         else:
             seq_id_list = mmcif_dict["_atom_site.label_seq_id"]
@@ -122,7 +114,9 @@ class MMCIFParser(Parser):
         occupancy_list = mmcif_dict["_atom_site.occupancy"]
         fieldname_list = mmcif_dict["_atom_site.group_PDB"]
         try:
-            serial_list = [int(n) for n in mmcif_dict["_atom_site.pdbx_PDB_model_num"]]
+            serial_list = [
+                int(n) for n in mmcif_dict["_atom_site.pdbx_PDB_model_num"]
+            ]
         except KeyError:
             # No model number column
             serial_list = None
@@ -175,7 +169,6 @@ class MMCIFParser(Parser):
             else:
                 int_resseq = int(seq_id_list[i])
 
-
             icode = icode_list[i]
             if icode == "?":
                 icode = " "
@@ -204,7 +197,8 @@ class MMCIFParser(Parser):
                     # if serial changes, update it and start new model
                     current_serial_id = serial_id
                     current_model_id += 1
-                    structure_builder.init_model(current_model_id, current_serial_id)
+                    structure_builder.init_model(current_model_id,
+                                                 current_serial_id)
                     current_chain_id = None
                     current_residue_id = None
                     current_resname = None
@@ -221,15 +215,22 @@ class MMCIFParser(Parser):
             if current_residue_id != resseq or current_resname != resname:
                 current_residue_id = resseq
                 current_resname = resname
-                structure_builder.init_residue(resname, hetatm_flag, int_resseq, icode)
+                structure_builder.init_residue(resname, hetatm_flag,
+                                               int_resseq, icode)
 
             coord = numpy.array((x, y, z), 'f')
             element = element_list[i] if element_list else None
             structure_builder.init_atom(
-                name, coord, tempfactor, occupancy, altloc, name, element=element)
+                name,
+                coord,
+                tempfactor,
+                occupancy,
+                altloc,
+                name,
+                element=element)
             if aniso_flag == 1:
-                u = (aniso_u11[i], aniso_u12[i], aniso_u13[i], aniso_u22[i], aniso_u23[i],
-                     aniso_u33[i])
+                u = (aniso_u11[i], aniso_u12[i], aniso_u13[i], aniso_u22[i],
+                     aniso_u23[i], aniso_u33[i])
                 mapped_anisou = [float(x) for x in u]
                 anisou_array = numpy.array(mapped_anisou, 'f')
                 structure_builder.atom.anisou_array = anisou_array
@@ -248,7 +249,7 @@ class MMCIFParser(Parser):
                 raise Exception
             structure_builder.set_symmetry(spacegroup, cell)
         except Exception:
-            pass    # no cell found, so just ignore
+            pass  # no cell found, so just ignore
 
 
 class FastMMCIFParser(Parser):
@@ -285,7 +286,6 @@ class FastMMCIFParser(Parser):
         # however it can be confusing for other purposes
         self.ignore_auth_id = ignore_auth_id
 
-
     # Public methods
 
     def get_structure(self, filename, structure_id=None):
@@ -309,7 +309,8 @@ class FastMMCIFParser(Parser):
         _fields, _records = [], []
         _anisof, _anisors = [], []
         for line in filehandle:
-            if structure_id is None and line.startswith('_pdbx_database_status.entry_id'):
+            if structure_id is None and line.startswith(
+                    '_pdbx_database_status.entry_id'):
                 structure_id = line.strip().split()[-1]
             elif line.startswith('_atom_site.'):
                 read_atom = True
@@ -346,7 +347,7 @@ class FastMMCIFParser(Parser):
 
         # ignore_auth_id:
         if "_atom_site.auth_seq_id" in mmcif_dict and not self.ignore_auth_id:
-        # if "_atom_site.auth_seq_id" in mmcif_dict:
+            # if "_atom_site.auth_seq_id" in mmcif_dict:
             seq_id_list = mmcif_dict["_atom_site.auth_seq_id"]
         else:
             seq_id_list = mmcif_dict["_atom_site.label_seq_id"]
@@ -369,7 +370,9 @@ class FastMMCIFParser(Parser):
         fieldname_list = mmcif_dict["_atom_site.group_PDB"]
 
         try:
-            serial_list = [int(n) for n in mmcif_dict["_atom_site.pdbx_PDB_model_num"]]
+            serial_list = [
+                int(n) for n in mmcif_dict["_atom_site.pdbx_PDB_model_num"]
+            ]
         except KeyError:
             # No model number column
             serial_list = None
@@ -388,7 +391,6 @@ class FastMMCIFParser(Parser):
         except KeyError:
             # no anisotropic B factors
             aniso_flag = 0
-
 
         # Now loop over atoms and build the structure
         current_chain_id = None
@@ -457,7 +459,8 @@ class FastMMCIFParser(Parser):
                     # if serial changes, update it and start new model
                     current_serial_id = serial_id
                     current_model_id += 1
-                    structure_builder.init_model(current_model_id, current_serial_id)
+                    structure_builder.init_model(current_model_id,
+                                                 current_serial_id)
                     current_chain_id = None
                     current_residue_id = None
                     current_resname = None
@@ -474,15 +477,22 @@ class FastMMCIFParser(Parser):
             if current_residue_id != resseq or current_resname != resname:
                 current_residue_id = resseq
                 current_resname = resname
-                structure_builder.init_residue(resname, hetatm_flag, int_resseq, icode)
+                structure_builder.init_residue(resname, hetatm_flag,
+                                               int_resseq, icode)
 
             coord = numpy.array((x, y, z), 'f')
             element = element_list[i] if element_list else None
             structure_builder.init_atom(
-                name, coord, tempfactor, occupancy, altloc, name, element=element)
+                name,
+                coord,
+                tempfactor,
+                occupancy,
+                altloc,
+                name,
+                element=element)
             if aniso_flag == 1:
-                u = (aniso_u11[i], aniso_u12[i], aniso_u13[i], aniso_u22[i], aniso_u23[i],
-                     aniso_u33[i])
+                u = (aniso_u11[i], aniso_u12[i], aniso_u13[i], aniso_u22[i],
+                     aniso_u23[i], aniso_u33[i])
                 mapped_anisou = [float(x) for x in u]
                 anisou_array = numpy.array(mapped_anisou, 'f')
                 structure_builder.atom.anisou_array = anisou_array

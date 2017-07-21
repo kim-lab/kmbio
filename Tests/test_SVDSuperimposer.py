@@ -1,17 +1,7 @@
 # This code is part of the Biopython distribution and governed by its
 # license.  Please see the LICENSE file that should have been included
 # as part of this package.
-
-from __future__ import print_function
-
-try:
-    from numpy import array
-    from numpy import dot  # missing in old PyPy's micronumpy
-    from numpy.linalg import svd, det  # Missing in PyPy 2.0 numpypy
-except ImportError:
-    from Bio import MissingPythonDependencyError
-    raise MissingPythonDependencyError(
-        "Install NumPy if you want to use Bio.SVDSuperimposer.")
+from numpy import array, dot
 
 from kmbio.SVDSuperimposer import SVDSuperimposer
 

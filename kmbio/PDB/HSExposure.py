@@ -2,11 +2,7 @@
 # This code is part of the Biopython distribution and governed by its
 # license.  Please see the LICENSE file that should have been included
 # as part of this package.
-
 """Half-sphere exposure and coordination number calculation."""
-
-from __future__ import print_function
-
 import logging
 from math import pi
 
@@ -26,7 +22,14 @@ class _AbstractHSExposure(AbstractPropertyMap):
     vector based on three consecutive CA atoms. This is done by two separate
     subclasses.
     """
-    def __init__(self, model, radius, offset, hse_up_key, hse_down_key, angle_key=None):
+
+    def __init__(self,
+                 model,
+                 radius,
+                 offset,
+                 hse_up_key,
+                 hse_down_key,
+                 angle_key=None):
         """
         @param model: model
         @type model: L{Model}
@@ -48,7 +51,7 @@ class _AbstractHSExposure(AbstractPropertyMap):
         the entity.xtra attribute
         @type angle_key: string
         """
-        assert(offset >= 0)
+        assert (offset >= 0)
         # For PyMOL visualization
         self.ca_cb_list = []
         ppb = CaPPBuilder()
@@ -140,6 +143,7 @@ class HSExposureCA(_AbstractHSExposure):
     Class to calculate HSE based on the approximate CA-CB vectors,
     using three consecutive CA positions.
     """
+
     def __init__(self, model, radius=12, offset=0):
         """
         @param model: the model that contains the residues
@@ -148,11 +152,13 @@ class HSExposureCA(_AbstractHSExposure):
         @param radius: radius of the sphere (centred at the CA atom)
         @type radius: float
 
-        @param offset: number of flanking residues that are ignored in the calculation of the number of neighbors
+        @param offset: number of flanking residues that are ignored in the calculation
+            of the number of neighbors
         @type offset: int
         """
         _AbstractHSExposure.__init__(self, model, radius, offset,
-                'EXP_HSE_A_U', 'EXP_HSE_A_D', 'EXP_CB_PCB_ANGLE')
+                                     'EXP_HSE_A_U', 'EXP_HSE_A_D',
+                                     'EXP_CB_PCB_ANGLE')
 
     def _get_cb(self, r1, r2, r3):
         """
@@ -229,6 +235,7 @@ class HSExposureCB(_AbstractHSExposure):
     """
     Class to calculate HSE based on the real CA-CB vectors.
     """
+
     def __init__(self, model, radius=12, offset=0):
         """
         @param model: the model that contains the residues
@@ -237,10 +244,12 @@ class HSExposureCB(_AbstractHSExposure):
         @param radius: radius of the sphere (centred at the CA atom)
         @type radius: float
 
-        @param offset: number of flanking residues that are ignored in the calculation of the number of neighbors
+        @param offset: number of flanking residues that are ignored in the calculation
+            of the number of neighbors
         @type offset: int
         """
-        _AbstractHSExposure.__init__(self, model, radius, offset, 'EXP_HSE_B_U', 'EXP_HSE_B_D')
+        _AbstractHSExposure.__init__(self, model, radius, offset,
+                                     'EXP_HSE_B_U', 'EXP_HSE_B_D')
 
     def _get_cb(self, r1, r2, r3):
         """
@@ -272,11 +281,12 @@ class ExposureCN(AbstractPropertyMap):
         @param radius: radius of the sphere (centred at the CA atom)
         @type radius: float
 
-        @param offset: number of flanking residues that are ignored in the calculation of the number of neighbors
+        @param offset: number of flanking residues that are ignored in the calculation
+            of the number of neighbors
         @type offset: int
 
         """
-        assert(offset >= 0)
+        assert (offset >= 0)
         ppb = CaPPBuilder()
         ppl = ppb.build_peptides(model)
         fs_map = {}

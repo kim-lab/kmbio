@@ -17,11 +17,7 @@
 # It may be distributed freely with respect to the original author.
 # Any maintainer of the Biopython code may change this notice
 # when appropriate.
-
 """ Access the PDB over the internet (e.g. to download structures). """
-
-from __future__ import print_function
-
 import contextlib
 import gzip
 import os
@@ -52,15 +48,19 @@ class PDBList(object):
 
     PDB_REF = """
     The Protein Data Bank: a computer-based archival file for macromolecular structures.
-    F.C.Bernstein, T.F.Koetzle, G.J.B.Williams, E.F.Meyer Jr, M.D.Brice, J.R.Rodgers, O.Kennard, T.Shimanouchi, M.Tasumi
+    F.C.Bernstein, T.F.Koetzle, G.J.B.Williams, E.F.Meyer Jr, M.D.Brice, J.R.Rodgers, O.Kennard, \
+T.Shimanouchi, M.Tasumi
     J. Mol. Biol. 112 pp. 535-542 (1977)
     http://www.pdb.org/.
     """
 
     alternative_download_url = "http://www.rcsb.org/pdb/files/"
+
     # just append PDB code to this, and then it works.
 
-    def __init__(self, server='ftp://ftp.wwpdb.org', pdb=os.getcwd(),
+    def __init__(self,
+                 server='ftp://ftp.wwpdb.org',
+                 pdb=os.getcwd(),
                  obsolete_pdb=None):
         """Initialize the class with the default server or a custom one."""
         self.pdb_server = server  # remote pdb server
@@ -109,9 +109,8 @@ class PDBList(object):
         """
         url = self.pdb_server + '/pub/pdb/data/status/'
         with contextlib.closing(_urlopen(url)) as handle:
-            recent = filter(str.isdigit,
-                            (x.split()[-1] for x in handle.readlines())
-                            )[-1]
+            recent = filter(str.isdigit, (x.split()[-1]
+                                          for x in handle.readlines()))[-1]
 
         path = self.pdb_server + '/pub/pdb/data/status/%s/' % (recent)
 
@@ -129,8 +128,9 @@ class PDBList(object):
         print("retrieving index file. Takes about 5 MB.")
         url = self.pdb_server + '/pub/pdb/derived_data/index/entries.idx'
         with contextlib.closing(_urlopen(url)) as handle:
-            all_entries = [line[:4] for line in handle.readlines()[2:]
-                           if len(line) > 4]
+            all_entries = [
+                line[:4] for line in handle.readlines()[2:] if len(line) > 4
+            ]
         return all_entries
 
     def get_all_obsolete(self):
@@ -186,8 +186,7 @@ class PDBList(object):
         code = pdb_code.lower()
         archive_fn = "pdb%s.ent.gz" % code
         pdb_dir = "divided" if not obsolete else "obsolete"
-        url = (self.pdb_server +
-               '/pub/pdb/data/structures/%s/pdb/%s/%s' %
+        url = (self.pdb_server + '/pub/pdb/data/structures/%s/pdb/%s/%s' %
                (pdb_dir, code[1:3], archive_fn))
 
         # Where does the final PDB file get saved?
@@ -243,11 +242,10 @@ class PDBList(object):
                 # you can insert here some more log notes that
                 # something has gone wrong.
 
-        # Move the obsolete files to a special folder
+            # Move the obsolete files to a special folder
         for pdb_code in obsolete:
             if self.flat_tree:
-                old_file = os.path.join(self.local_pdb,
-                                        'pdb%s.ent' % pdb_code)
+                old_file = os.path.join(self.local_pdb, 'pdb%s.ent' % pdb_code)
                 new_dir = self.obsolete_pdb
             else:
                 old_file = os.path.join(self.local_pdb, pdb_code[1:3],

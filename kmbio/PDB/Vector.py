@@ -2,10 +2,7 @@
 # This code is part of the Biopython distribution and governed by its
 # license.  Please see the LICENSE file that should have been included
 # as part of this package.
-
 """Vector class, including rotation-related functions."""
-
-from __future__ import print_function
 
 import numpy
 
@@ -68,7 +65,7 @@ def vector_to_axis(line, point):
     line = line.normalized()
     np = point.norm()
     angle = line.angle(point)
-    return point - line ** (np * numpy.cos(angle))
+    return point - line**(np * numpy.cos(angle))
 
 
 def rotaxis2m(theta, vector):
@@ -110,6 +107,7 @@ def rotaxis2m(theta, vector):
     rot[2, 1] = t * y * z + s * x
     rot[2, 2] = t * z * z + c
     return rot
+
 
 rotaxis = rotaxis2m
 
@@ -190,9 +188,9 @@ def calc_dihedral(v1, v2, v3, v4):
     ab = v1 - v2
     cb = v3 - v2
     db = v4 - v3
-    u = ab ** cb
-    v = db ** cb
-    w = u ** v
+    u = ab**cb
+    v = db**cb
+    w = u**v
     angle = u.angle(v)
     # Determine sign of angle
     try:
@@ -320,6 +318,7 @@ class Vector(object):
         "Return a deep copy of the Vector"
         return Vector(self._ar)
 
+
 if __name__ == "__main__":
 
     from numpy.random import random
@@ -336,7 +335,7 @@ if __name__ == "__main__":
     print(calc_angle(v1, v2, v3))
     dih = calc_dihedral(v1, v2, v3, v4)
     # Test dihedral sign
-    assert(dih > 0)
+    assert (dih > 0)
     print("DIHEDRAL %f" % dih)
 
     ref = refmat(v1, v3)
@@ -361,9 +360,9 @@ if __name__ == "__main__":
     print(v1 / 2)
     print(v1 / (1, 2, 3))
     # **
-    print(v1 ** v2)
-    print(v1 ** 2)
-    print(v1 ** (1, 2, 3))
+    print(v1**v2)
+    print(v1**2)
+    print(v1**(1, 2, 3))
     # norm
     print(v1.norm())
     # norm squared

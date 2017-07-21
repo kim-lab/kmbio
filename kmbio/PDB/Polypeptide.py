@@ -2,7 +2,6 @@
 # This code is part of the Biopython distribution and governed by its
 # license.  Please see the LICENSE file that should have been included
 # as part of this package.
-
 """Polypeptide-related classes (construction and representation).
 
 Simple example with multiple chains,
@@ -47,24 +46,22 @@ If you want to, you can include non-standard amino acids in the peptides:
 In this case the selenomethionines (the first and also seventh and sixth from
 last residues) have been shown as M (methionine) by the get_sequence method.
 """
-
-from __future__ import print_function
-from Bio._py3k import basestring
-
 import logging
 
+from Bio._py3k import basestring
 from Bio.Alphabet import generic_protein
 from Bio.Data import SCOPData
 from Bio.Seq import Seq
+
 from kmbio.PDB.PDBExceptions import PDBException
-from kmbio.PDB.Vector import calc_dihedral, calc_angle
+from kmbio.PDB.Vector import calc_angle, calc_dihedral
 
 logger = logging.getLogger(__name__)
 
-standard_aa_names = ["ALA", "CYS", "ASP", "GLU", "PHE", "GLY", "HIS", "ILE", "LYS",
-                     "LEU", "MET", "ASN", "PRO", "GLN", "ARG", "SER", "THR", "VAL",
-                     "TRP", "TYR"]
-
+standard_aa_names = [
+    "ALA", "CYS", "ASP", "GLU", "PHE", "GLY", "HIS", "ILE", "LYS", "LEU",
+    "MET", "ASN", "PRO", "GLN", "ARG", "SER", "THR", "VAL", "TRP", "TYR"
+]
 
 aa1 = "ACDEFGHIKLMNPQRSTVWY"
 aa3 = standard_aa_names
@@ -190,6 +187,7 @@ def is_aa(residue, standard=False):
 
 class Polypeptide(list):
     """A polypeptide is simply a list of L{Residue} objects."""
+
     def get_ca_list(self):
         """Get list of C-alpha atoms in the polypeptide.
 
@@ -252,7 +250,8 @@ class Polypeptide(list):
         ca_list = self.get_ca_list()
         tau_list = []
         for i in range(0, len(ca_list) - 3):
-            atom_list = (ca_list[i], ca_list[i + 1], ca_list[i + 2], ca_list[i + 3])
+            atom_list = (ca_list[i], ca_list[i + 1], ca_list[i + 2],
+                         ca_list[i + 3])
             v1, v2, v3, v4 = [a.get_vector() for a in atom_list]
             tau = calc_dihedral(v1, v2, v3, v4)
             tau_list.append(tau)
@@ -307,6 +306,7 @@ class _PPBuilder(object):
 
     This assumes you want both standard and non-standard amino acids.
     """
+
     def __init__(self, radius):
         """
         @param radius: distance
@@ -323,7 +323,7 @@ class _PPBuilder(object):
             # We probably need to update the hard coded list of
             # non-standard residues, see function is_aa for details.
             logger.warning("Assuming residue %s is an unknown modified "
-                          "amino acid" % residue.resname)
+                           "amino acid" % residue.resname)
             return True
         else:
             # not a standard AA so skip
@@ -364,8 +364,8 @@ class _PPBuilder(object):
             pp = None
             for next_res in chain_it:
                 if accept(prev_res, aa_only) \
-                and accept(next_res, aa_only) \
-                and is_connected(prev_res, next_res):
+                        and accept(next_res, aa_only) \
+                        and is_connected(prev_res, next_res):
                     if pp is None:
                         pp = Polypeptide()
                         pp.append(prev_res)
@@ -381,6 +381,7 @@ class _PPBuilder(object):
 
 class CaPPBuilder(_PPBuilder):
     """Use CA--CA distance to find polypeptides."""
+
     def __init__(self, radius=4.3):
         _PPBuilder.__init__(self, radius)
 
@@ -408,6 +409,7 @@ class CaPPBuilder(_PPBuilder):
 
 class PPBuilder(_PPBuilder):
     """Use C--N distance to find polypeptides."""
+
     def __init__(self, radius=1.8):
         _PPBuilder.__init__(self, radius)
 

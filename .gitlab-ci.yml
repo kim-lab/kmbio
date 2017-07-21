@@ -71,7 +71,8 @@ build-py36:
     - conda install -y -q --use-local "python=$PYTHON_VERSION" $CI_PROJECT_NAME
     # Test
     - pip install -q flake8 pytest pytest-cov pytest-runner pytest-logging hypothesis
-    - py.test Tests/test_PDB.py Tests/test_KDTree.py Tests/test_PDB_KDTree.py Tests/test_MMCIF.py
+    - flake8  # should probably go in a separate test, so no duplication?
+    - py.test
 
 test-py35:
   <<: [*conda_configure, *test]

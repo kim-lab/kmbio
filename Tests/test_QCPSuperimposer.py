@@ -1,31 +1,18 @@
 # This code is part of the Biopython distribution and governed by its
 # license.  Please see the LICENSE file that should have been included
 # as part of this package.
-
-from __future__ import print_function
-
-try:
-    # TODO - Don't use "from XXX import *"
-    from numpy import *
-    from numpy import dot  # missing in old PyPy's micronumpy
-except ImportError:
-    from Bio import MissingPythonDependencyError
-    raise MissingPythonDependencyError(
-        "Install NumPy if you want to use Bio.QCPSuperimposer.")
+from numpy import array
+from numpy import dot  # missing in old PyPy's micronumpy
 
 from kmbio.PDB.QCPSuperimposer import QCPSuperimposer
 
 # start with two coordinate sets (Nx3 arrays - Float0)
 
-x = array([[51.65, -1.90, 50.07],
-         [50.40, -1.23, 50.65],
-         [50.68, -0.04, 51.54],
-         [50.22, -0.02, 52.85]], 'f')
+x = array([[51.65, -1.90, 50.07], [50.40, -1.23, 50.65], [50.68, -0.04, 51.54],
+           [50.22, -0.02, 52.85]], 'f')
 
-y = array([[51.30, -2.99, 46.54],
-         [51.09, -1.88, 47.58],
-         [52.36, -1.20, 48.03],
-         [52.71, -1.18, 49.38]], 'f')
+y = array([[51.30, -2.99, 46.54], [51.09, -1.88, 47.58], [52.36, -1.20, 48.03],
+           [52.71, -1.18, 49.38]], 'f')
 
 sup = QCPSuperimposer()
 

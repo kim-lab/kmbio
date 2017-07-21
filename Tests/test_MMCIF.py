@@ -36,8 +36,6 @@ class ParseReal(unittest.TestCase):
         structure = parser.get_structure("PDB/1A8O.cif", "example")
         f_structure = fast_parser.get_structure("PDB/1A8O.cif", "example")
 
-
-
         self.assertEqual(len(structure), 1)
         self.assertEqual(len(f_structure), 1)
 
@@ -133,7 +131,6 @@ class ParseReal(unittest.TestCase):
             self.assertEqual(s.alphabet, generic_protein)
             self.assertEqual("TACQG", str(s))
 
-
     def test_models_PDB_num(self):
         self._testModels(ignore=False)
 
@@ -197,7 +194,6 @@ class ParseReal(unittest.TestCase):
     def test_interations_CIF_num(self):
         self._test_insertions(ignore=True)
 
-
     def _test_insertions(self, ignore):
         """Test file with residue insertion codes"""
 
@@ -232,7 +228,6 @@ class ParseReal(unittest.TestCase):
     def test_filehandle_CIF_num(self):
         self._test_filehandle(ignore=True)
 
-
     def _test_filehandle(self, ignore):
         """Test if the parser can handle file handle as well as filename"""
         parser = MMCIFParser(ignore_auth_id=ignore)
@@ -241,8 +236,6 @@ class ParseReal(unittest.TestCase):
 
         structure = parser.get_structure(open("PDB/1A8O.cif"), "example")
         self.assertEqual(len(structure), 1)
-
-
 
     def test_point_mutations_main_PDB(self):
         """Test if MMCIFParser parse point mutations correctly."""
@@ -254,7 +247,6 @@ class ParseReal(unittest.TestCase):
 
         self._run_point_mutation_tests(MMCIFParser(ignore_auth_id=True))
 
-
     def test_point_mutations_fast_PDB(self):
         """Test if MMCIFParser parse point mutations correctly."""
 
@@ -265,10 +257,7 @@ class ParseReal(unittest.TestCase):
 
         self._run_point_mutation_tests(FastMMCIFParser(ignore_auth_id=True))
 
-
     def _run_point_mutation_tests(self, parser):
-
-
         """Common test code for testing point mutations."""
         structure = parser.get_structure("PDB/3JQH.cif", "example")
 
@@ -312,8 +301,6 @@ class ParseReal(unittest.TestCase):
         self.assertAlmostEqual(
             res_1["CA"].occupancy,
             0.17, 2, "Residue 1 serine occupancy correcy")
-
-
 
 
 if __name__ == '__main__':

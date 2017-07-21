@@ -2,10 +2,7 @@
 # This code is part of the Biopython distribution and governed by its
 # license.  Please see the LICENSE file that should have been included
 # as part of this package.
-
 """Class that maps (chain_id, residue_id) to a residue property."""
-
-from __future__ import print_function
 
 
 class AbstractPropertyMap(object):
@@ -108,7 +105,7 @@ class AbstractPropertyMap(object):
 class AbstractResiduePropertyMap(AbstractPropertyMap):
     def __init__(self, property_dict, property_keys, property_list):
         AbstractPropertyMap.__init__(self, property_dict, property_keys,
-                property_list)
+                                     property_list)
 
     def _translate_id(self, ent_id):
         chain_id, res_id = ent_id
@@ -120,7 +117,7 @@ class AbstractResiduePropertyMap(AbstractPropertyMap):
 class AbstractAtomPropertyMap(AbstractPropertyMap):
     def __init__(self, property_dict, property_keys, property_list):
         AbstractPropertyMap.__init__(self, property_dict, property_keys,
-                property_list)
+                                     property_list)
 
     def _translate_id(self, ent_id):
         if len(ent_id) == 4:

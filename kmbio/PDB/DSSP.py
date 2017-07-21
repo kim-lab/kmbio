@@ -2,7 +2,6 @@
 # This code is part of the Biopython distribution and governed by its
 # license.  Please see the LICENSE file that should have been included
 # as part of this package.
-
 """Use the DSSP program to calculate secondary structure and accessibility.
 
 You need to have a working version of DSSP (and a license, free for academic
@@ -38,14 +37,11 @@ to the Sander and Rost values:
         Tien et al. 2013 http://dx.doi.org/10.1371/journal.pone.0080635
 
 """
-
-from __future__ import print_function
-
-import re
-from Bio._py3k import StringIO
-import subprocess
 import logging
+import re
+import subprocess
 
+from Bio._py3k import StringIO
 from Bio.Data import SCOPData
 
 from kmbio.PDB.AbstractPropertyMap import AbstractResiduePropertyMap
@@ -53,7 +49,6 @@ from kmbio.PDB.PDBExceptions import PDBException
 from kmbio.PDB.PDBParser import PDBParser
 
 logger = logging.getLogger(__name__)
-
 
 # Match C in DSSP
 _dssp_cys = re.compile('[a-z]')
@@ -66,25 +61,70 @@ residue_max_acc = {
     # Wilke: Tien et al. 2013 http://dx.doi.org/10.1371/journal.pone.0080635
     # Sander: Sander & Rost 1994 http://dx.doi.org/10.1002/prot.340200303
     'Miller': {
-        'ALA': 113.0, 'ARG': 241.0, 'ASN': 158.0, 'ASP': 151.0,
-        'CYS': 140.0, 'GLN': 189.0, 'GLU': 183.0, 'GLY': 85.0,
-        'HIS': 194.0, 'ILE': 182.0, 'LEU': 180.0, 'LYS': 211.0,
-        'MET': 204.0, 'PHE': 218.0, 'PRO': 143.0, 'SER': 122.0,
-        'THR': 146.0, 'TRP': 259.0, 'TYR': 229.0, 'VAL': 160.0
+        'ALA': 113.0,
+        'ARG': 241.0,
+        'ASN': 158.0,
+        'ASP': 151.0,
+        'CYS': 140.0,
+        'GLN': 189.0,
+        'GLU': 183.0,
+        'GLY': 85.0,
+        'HIS': 194.0,
+        'ILE': 182.0,
+        'LEU': 180.0,
+        'LYS': 211.0,
+        'MET': 204.0,
+        'PHE': 218.0,
+        'PRO': 143.0,
+        'SER': 122.0,
+        'THR': 146.0,
+        'TRP': 259.0,
+        'TYR': 229.0,
+        'VAL': 160.0
     },
     'Wilke': {
-        'ALA': 129.0, 'ARG': 274.0, 'ASN': 195.0, 'ASP': 193.0,
-        'CYS': 167.0, 'GLN': 225.0, 'GLU': 223.0, 'GLY': 104.0,
-        'HIS': 224.0, 'ILE': 197.0, 'LEU': 201.0, 'LYS': 236.0,
-        'MET': 224.0, 'PHE': 240.0, 'PRO': 159.0, 'SER': 155.0,
-        'THR': 172.0, 'TRP': 285.0, 'TYR': 263.0, 'VAL': 174.0
+        'ALA': 129.0,
+        'ARG': 274.0,
+        'ASN': 195.0,
+        'ASP': 193.0,
+        'CYS': 167.0,
+        'GLN': 225.0,
+        'GLU': 223.0,
+        'GLY': 104.0,
+        'HIS': 224.0,
+        'ILE': 197.0,
+        'LEU': 201.0,
+        'LYS': 236.0,
+        'MET': 224.0,
+        'PHE': 240.0,
+        'PRO': 159.0,
+        'SER': 155.0,
+        'THR': 172.0,
+        'TRP': 285.0,
+        'TYR': 263.0,
+        'VAL': 174.0
     },
     'Sander': {
-        'ALA': 106.0, 'ARG': 248.0, 'ASN': 157.0, 'ASP': 163.0,
-        'CYS': 135.0, 'GLN': 198.0, 'GLU': 194.0, 'GLY': 84.0,
-        'HIS': 184.0, 'ILE': 169.0, 'LEU': 164.0, 'LYS': 205.0,
-        'MET': 188.0, 'PHE': 197.0, 'PRO': 136.0, 'SER': 130.0,
-        'THR': 142.0, 'TRP': 227.0, 'TYR': 222.0, 'VAL': 142.0
+        'ALA': 106.0,
+        'ARG': 248.0,
+        'ASN': 157.0,
+        'ASP': 163.0,
+        'CYS': 135.0,
+        'GLN': 198.0,
+        'GLU': 194.0,
+        'GLY': 84.0,
+        'HIS': 184.0,
+        'ILE': 169.0,
+        'LEU': 164.0,
+        'LYS': 205.0,
+        'MET': 188.0,
+        'PHE': 197.0,
+        'PRO': 136.0,
+        'SER': 130.0,
+        'THR': 142.0,
+        'TRP': 227.0,
+        'TYR': 222.0,
+        'VAL': 142.0
     }
 }
 
@@ -130,8 +170,11 @@ def dssp_dict_from_pdb_file(in_file, DSSP="dssp"):
     """
     # Using universal newlines is important on Python 3, this
     # gives unicode handles rather than bytes handles.
-    p = subprocess.Popen([DSSP, in_file], universal_newlines=True,
-                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen(
+        [DSSP, in_file],
+        universal_newlines=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE)
     out, err = p.communicate()
 
     # Alert user for errors
@@ -235,8 +278,9 @@ def _make_dssp_dict(handle):
                 raise ValueError(exc)
         res_id = (" ", resseq, icode)
         dssp[(chainid, res_id)] = (aa, ss, acc, phi, psi, dssp_index,
-                NH_O_1_relidx, NH_O_1_energy, O_NH_1_relidx, O_NH_1_energy,
-                NH_O_2_relidx, NH_O_2_energy, O_NH_2_relidx, O_NH_2_energy)
+                                   NH_O_1_relidx, NH_O_1_energy, O_NH_1_relidx,
+                                   O_NH_1_energy, NH_O_2_relidx, NH_O_2_energy,
+                                   O_NH_2_relidx, O_NH_2_energy)
         keys.append((chainid, res_id))
     return dssp, keys
 
@@ -269,7 +313,12 @@ class DSSP(AbstractResiduePropertyMap):
     -42.399999999999999)
     """
 
-    def __init__(self, model, in_file, dssp="dssp", acc_array="Sander", file_type='PDB'):
+    def __init__(self,
+                 model,
+                 in_file,
+                 dssp="dssp",
+                 acc_array="Sander",
+                 file_type='PDB'):
         """Create a DSSP object.
 
         Parameters
@@ -292,7 +341,7 @@ class DSSP(AbstractResiduePropertyMap):
 
         # create DSSP dictionary
         file_type = file_type.upper()
-        assert(file_type in ['PDB', 'DSSP'])
+        assert (file_type in ['PDB', 'DSSP'])
         # If the input file is a PDB file run DSSP and parse output:
         if file_type == 'PDB':
             dssp_dict, dssp_keys = dssp_dict_from_pdb_file(in_file, dssp)
@@ -373,11 +422,9 @@ class DSSP(AbstractResiduePropertyMap):
                                 res = r
                                 break
 
-            (aa, ss, acc, phi, psi, dssp_index,
-                NH_O_1_relidx, NH_O_1_energy,
-                O_NH_1_relidx, O_NH_1_energy,
-                NH_O_2_relidx, NH_O_2_energy,
-                O_NH_2_relidx, O_NH_2_energy) = dssp_dict[key]
+            (aa, ss, acc, phi, psi, dssp_index, NH_O_1_relidx, NH_O_1_energy,
+             O_NH_1_relidx, O_NH_1_energy, NH_O_2_relidx, NH_O_2_energy,
+             O_NH_2_relidx, O_NH_2_energy) = dssp_dict[key]
 
             res.xtra["SS_DSSP"] = ss
             res.xtra["EXP_DSSP_ASA"] = acc
@@ -417,17 +464,16 @@ class DSSP(AbstractResiduePropertyMap):
             if (resname != aa) and (res.id[0] == ' ' or aa != 'X'):
                 raise PDBException("Structure/DSSP mismatch at %s" % res)
 
-            dssp_vals = (dssp_index, aa, ss, rel_acc, phi, psi,
-                            NH_O_1_relidx, NH_O_1_energy,
-                            O_NH_1_relidx, O_NH_1_energy,
-                            NH_O_2_relidx, NH_O_2_energy,
-                            O_NH_2_relidx, O_NH_2_energy)
+            dssp_vals = (dssp_index, aa, ss, rel_acc, phi, psi, NH_O_1_relidx,
+                         NH_O_1_energy, O_NH_1_relidx, O_NH_1_energy,
+                         NH_O_2_relidx, NH_O_2_energy, O_NH_2_relidx,
+                         O_NH_2_energy)
 
             dssp_map[key] = dssp_vals
             dssp_list.append(dssp_vals)
 
         AbstractResiduePropertyMap.__init__(self, dssp_map, dssp_keys,
-                dssp_list)
+                                            dssp_list)
 
 
 if __name__ == "__main__":
