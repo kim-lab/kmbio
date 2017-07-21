@@ -61,7 +61,7 @@ class MMCIFParser(Parser):
 
     # Public methods
 
-    def get_structure(self, filename, structure_id=None):
+    def get_structure(self, filename, structure_id=None, bioassembly=0):
         """Return the structure.
 
         Parameters
@@ -93,7 +93,6 @@ class MMCIFParser(Parser):
 
         # ignore_auth_id:
         if "_atom_site.auth_seq_id" in mmcif_dict and not self.ignore_auth_id:
-            # if "_atom_site.auth_seq_id" in mmcif_dict:
             seq_id_list = mmcif_dict["_atom_site.auth_seq_id"]
         else:
             seq_id_list = mmcif_dict["_atom_site.label_seq_id"]
@@ -347,7 +346,6 @@ class FastMMCIFParser(Parser):
 
         # ignore_auth_id:
         if "_atom_site.auth_seq_id" in mmcif_dict and not self.ignore_auth_id:
-            # if "_atom_site.auth_seq_id" in mmcif_dict:
             seq_id_list = mmcif_dict["_atom_site.auth_seq_id"]
         else:
             seq_id_list = mmcif_dict["_atom_site.label_seq_id"]
