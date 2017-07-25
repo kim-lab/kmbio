@@ -14,4 +14,4 @@ atexit.register(os.chdir, CWD)
 # Use the installed version of the package instead of the current directory
 sys.path.remove(CWD)
 
-os.chdir(op.join(op.dirname(op.abspath(__file__)), 'Tests'))
+os.chdir(op.join(op.dirname(op.abspath(__file__)), 'tests'))
