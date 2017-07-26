@@ -198,3 +198,7 @@ intersphinx_mapping = {
     'pandas': ('http://pandas.pydata.org/pandas-docs/stable/', None),
     'mdtraj': ('http://mdtraj.org/development/', None),
 }
+
+# -- Custom options---- ---------------------------------------------------
+primary_domain = 'py'
+default_role = 'py:obj'

@@ -12,8 +12,6 @@ http://biopython.org
 """
 __version__ = "1.69.6.dev0"
 
-from .exc import *
-
 __all__ = [
     'KDTree',
     'PDB',

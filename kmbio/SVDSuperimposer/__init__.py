@@ -9,16 +9,8 @@ two point sets on top of each other (minimizing the RMSD). This is
 eg. useful to superimpose crystal structures. SVD stands for singular
 value decomposition, which is used in the algorithm.
 """
-
-from __future__ import print_function
-
-try:
-    from numpy import dot, transpose, sqrt
-    from numpy.linalg import svd, det
-except ImportError:
-    from Bio import MissingPythonDependencyError
-    raise MissingPythonDependencyError(
-        "Install NumPy if you want to use Bio.SVDSuperimposer.")
+from numpy import dot, transpose, sqrt
+from numpy.linalg import svd, det
 
 
 class SVDSuperimposer(object):

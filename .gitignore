@@ -47,6 +47,9 @@ MANIFEST
 .nfs*
 
 # Ignore compiled Cython code
-*.so
-*.c
-*.h
+kmbio/PDB/parsers/_shlex*.c
+kmbio/PDB/parsers/_shlex*.so
+kmbio/PDB/parsers/_mmcif_to_dict*.c
+kmbio/PDB/parsers/_mmcif_to_dict*.so
+kmbio/PDB/tools/QCPSuperimposer/qcprotmodule*.so
+kmbio/KDTree/_CKDTree*.so
