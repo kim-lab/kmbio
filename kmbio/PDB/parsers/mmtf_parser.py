@@ -1,5 +1,7 @@
 from mmtf import fetch, parse
 
+from kmbio.PDB import StructureBuilder
+
 from .parser import Parser
 
 
@@ -34,9 +36,6 @@ class MMTFParser(Parser):
         """
         decoder = fetch(pdb_id)
         return get_from_decoded(decoder)
-
-
-from kmbio.PDB import StructureBuilder
 
 
 class StructureDecoder(object):

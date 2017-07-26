@@ -9,10 +9,12 @@ import numpy as np
 from Bio._py3k import range
 from Bio.File import as_handle
 
-from kmbio.PDB import MMCIF2Dict
-from kmbio.PDB.Parser import Parser
-from kmbio.PDB.PDBExceptions import PDBConstructionException
-from kmbio.PDB.StructureBuilder import StructureBuilder
+from kmbio.PDB import StructureBuilder
+from kmbio.PDB.exceptions import PDBConstructionException
+
+from . import MMCIF2Dict
+from .bioassembly import generate_bioassembly
+from .parser import Parser
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +56,7 @@ class MMCIFParser(Parser):
 
     # Public methods
 
-    def get_structure(self, filename, structure_id=None, bioassembly_id=None):
+    def get_structure(self, filename, structure_id=None, bioassembly_id=0):
         """Return the structure.
 
         Parameters
@@ -69,14 +71,9 @@ class MMCIFParser(Parser):
 
         structure = self._structure_builder.get_structure()
 
-        if bioassembly_id is not None:
-            bioassembly_data = _get_bioassembly_data(structure_id)
-            if bioassembly_id not in bioassembly_id:
-                raise PDBConstructionException("Wront bioassembly id: {}".format(bioassembly_id))
-            structure.transform(
-                bioassembly_data[bioassembly_id]['rotation'],
-                bioassembly_data[bioassembly_id]['translation'],
-            )
+        if bioassembly_id != 0:
+            structure = generate_bioassembly(
+                self._mmcif_dict, structure, bioassembly_id, self.ignore_auth_id)
         return structure
 
     # Private methods
@@ -496,22 +493,3 @@ class FastMMCIFParser(Parser):
                 mapped_anisou = [float(x) for x in u]
                 anisou_array = np.array(mapped_anisou, 'f')
                 structure_builder.atom.anisou_array = anisou_array
-
-
-if __name__ == "__main__":
-    import sys
-
-    if len(sys.argv) != 2:
-        print("Usage: python MMCIFparser.py filename")
-        raise SystemExit
-    filename = sys.argv[1]
-
-    p = MMCIFParser()
-
-    structure = p.get_structure("test", filename)
-
-    for model in structure:
-        print(model)
-        for chain in model:
-            print(chain)
-            print("Found %d residues." % len(chain))

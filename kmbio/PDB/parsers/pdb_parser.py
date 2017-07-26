@@ -14,6 +14,7 @@ from kmbio.PDB import StructureBuilder
 from kmbio.PDB.exceptions import PDBConstructionException
 
 from .parser import Parser
+from .bioassembly import generate_bioassembly
 
 logger = logging.getLogger(__name__)
 
@@ -50,49 +51,39 @@ class PDBParser(Parser):
         self.line_counter = 0
         self.PERMISSIVE = bool(PERMISSIVE)
 
+        self.header = None
+        self.trailer = None
+
     # Public methods
 
-    def get_structure(self, filename, structure_id=None):
+    def get_structure(self, filename, structure_id=None, bioassembly_id=0):
         """Return the structure.
 
         Arguments:
          - id - string, the id that will be used for the structure
          - file - name of the PDB file OR an open filehandle
         """
-        self.header = None
-        self.trailer = None
-
-        # Make a StructureBuilder instance (pass id of structure as parameter)
-        if structure_id is None:
-            with open(filename, mode='rU') as handle:
-                structure_id = next(handle)[62:66]
-        self.structure_builder.init_structure(structure_id)
-
         with as_handle(filename, mode='rU') as handle:
-            self._parse(handle.readlines())
+            data = handle.readlines()
 
+        self.header, coords_trailer = self._get_header(data)
+        print(self.header)
+        if structure_id is None:
+            structure_id = self.header['id']
+
+        self.structure_builder.init_structure(structure_id)
+        self.trailer = self._parse_coordinates(coords_trailer)
         self.structure_builder.set_header(self.header)
-        # Return the Structure instance
         structure = self.structure_builder.get_structure()
+
+        if bioassembly_id != 0:
+            sdict = {}
+            structure = generate_bioassembly(
+                sdict, structure, bioassembly_id, self.ignore_auth_id)
 
         return structure
 
-    def get_header(self):
-        """Return the header."""
-        return self.header
-
-    def get_trailer(self):
-        """Return the trailer."""
-        return self.trailer
-
     # Private methods
-
-    def _parse(self, header_coords_trailer):
-        """Parse the PDB file (PRIVATE)."""
-        # Extract the header; return the rest of the file
-        self.header, coords_trailer = self._get_header(header_coords_trailer)
-        # Parse the atomic data; return the PDB file trailer
-        self.trailer = self._parse_coordinates(coords_trailer)
 
     def _get_header(self, header_coords_trailer):
         """Get the header of the PDB file, return the rest (PRIVATE)."""
@@ -402,6 +393,7 @@ def parse_pdb_header(infile):
 def _parse_pdb_header_list(header):
     # database fields
     dict = {
+        'id': header[0][62:66] if len(header) > 0 else '',
         'name': "",
         'head': '',
         'deposition_date': "1909-01-08",
