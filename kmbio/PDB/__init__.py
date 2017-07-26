@@ -12,6 +12,7 @@ Author: Thomas Hamelryck.  Additional code by Kristian Rother.
 """
 from .core import *
 from .parsers import *
+from .utils import *
 
 # Download from the PDB
 from .pdb_list import PDBList
