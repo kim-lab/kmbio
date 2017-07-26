@@ -2,101 +2,23 @@
 # This code is part of the Biopython distribution and governed by its
 # license.  Please see the LICENSE file that should have been included
 # as part of this package.
-"""mmCIF parsers"""
+"""mmCIF parsers."""
 import logging
 
 import numpy as np
-import pandas as pd
 from Bio._py3k import range
 from Bio.File import as_handle
 
-from kmbio.PDB.core import StructureBuilder
-from kmbio.PDB.exceptions import PDBConstructionException
-
-from . import MMCIF2Dict
-from .parser import Parser
+from kmbio.PDB import MMCIF2Dict
+from kmbio.PDB.Parser import Parser
+from kmbio.PDB.PDBExceptions import PDBConstructionException
+from kmbio.PDB.StructureBuilder import StructureBuilder
 
 logger = logging.getLogger(__name__)
 
 
-def mmcif_key_to_dataframe(sdict, key):
-    """Convert element ``key`` from dictionary ``sdict`` into a `pandas.DataFrame`.
-
-    Parameters
-    ----------
-    sdict : `dict`
-        Dictionary of of MMCIF elements.
-    key : `str`
-        Element of the dictionary to convert to a dataframe.
-
-    Examples
-    --------
-    >>> mmcif_key_to_dataframe({'a.1': [1, 2], 'a.2': [3, 4]}, 'a')
-       a.1  a.2
-    0    1    3
-    1    2    4
-    """
-    data = {k: v for k, v in sdict.items() if k.startswith(key + '.')}
-    data_element = next(iter(data.values()))
-    if isinstance(data_element, (list, tuple)):
-        assert all(len(data_element) == len(v) for v in data.values())
-        _data = []
-        for row in zip(*[v for v in data.values()]):
-            _data.append(dict(zip(data.keys(), row)))
-        data = _data
-    else:
-        data = [data]
-    return pd.DataFrame(data)
-
-
-def get_rotation(row):
-    """Generate a rotation matrix from elements in dictionary ``row``.
-
-    Examples
-    ---------
-    >>> sdict = { \
-        '_pdbx_struct_oper_list.matrix[{}][{}]'.format(i // 3 + 1, i % 3 + 1): i \
-        for i in range(9) \
-    }
-    >>> get_rotation(sdict)
-    [[0.0, 1.0, 2.0], [3.0, 4.0, 5.0], [6.0, 7.0, 8.0]]
-    """
-    return [
-        [float(row['_pdbx_struct_oper_list.matrix[1][1]']),
-         float(row['_pdbx_struct_oper_list.matrix[1][2]']),
-         float(row['_pdbx_struct_oper_list.matrix[1][3]'])],
-        [float(row['_pdbx_struct_oper_list.matrix[2][1]']),
-         float(row['_pdbx_struct_oper_list.matrix[2][2]']),
-         float(row['_pdbx_struct_oper_list.matrix[2][3]'])],
-        [float(row['_pdbx_struct_oper_list.matrix[3][1]']),
-         float(row['_pdbx_struct_oper_list.matrix[3][2]']),
-         float(row['_pdbx_struct_oper_list.matrix[3][3]'])]
-    ]
-
-
-def get_translation(row):
-    """Generate a translation matrix from elements in dictionary ``row``.
-
-    Examples
-    ---------
-    >>> sdict = {'_pdbx_struct_oper_list.vector[{}]'.format(i): i for i in range(1, 4)}
-    >>> get_translation(sdict)
-    [1.0, 2.0, 3.0]
-    """
-    return [
-        float(row['_pdbx_struct_oper_list.vector[1]']),
-        float(row['_pdbx_struct_oper_list.vector[2]']),
-        float(row['_pdbx_struct_oper_list.vector[3]']),
-    ]
-
-
 class MMCIFParser(Parser):
-    """Parse a mmCIF file and return a Structure object.
-
-    Attributes
-    ----------
-    _structure_builder : StructureBuilder
-    """
+    """Parse a mmCIF file and return a Structure object."""
 
     def __init__(self, structure_builder=None, ignore_auth_id=False):
         """Create a PDBParser object.
@@ -132,7 +54,7 @@ class MMCIFParser(Parser):
 
     # Public methods
 
-    def get_structure(self, filename, structure_id=None, bioassembly=0):
+    def get_structure(self, filename, structure_id=None, bioassembly_id=None):
         """Return the structure.
 
         Parameters
@@ -146,6 +68,15 @@ class MMCIFParser(Parser):
         self._build_structure(structure_id)
 
         structure = self._structure_builder.get_structure()
+
+        if bioassembly_id is not None:
+            bioassembly_data = _get_bioassembly_data(structure_id)
+            if bioassembly_id not in bioassembly_id:
+                raise PDBConstructionException("Wront bioassembly id: {}".format(bioassembly_id))
+            structure.transform(
+                bioassembly_data[bioassembly_id]['rotation'],
+                bioassembly_data[bioassembly_id]['translation'],
+            )
         return structure
 
     # Private methods
