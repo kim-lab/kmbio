@@ -44,8 +44,10 @@ test:
     - Bio.KDTree
     - Bio.KDTree._CKDTree
     - kmbio.PDB
-    - kmbio.PDB.QCPSuperimposer
-    - kmbio.PDB.mmtf
-    - kmbio.PDB._mmcif_to_dict
-    - kmbio.PDB._shlex
+    - kmbio.PDB.core
+    - kmbio.PDB.parsers
+    - kmbio.PDB.parsers._shlex
+    - kmbio.PDB.parsers._mmcif_to_dict
+    - kmbio.PDB.tools
+    - kmbio.PDB.tools.QCPSuperimposer
     - Bio.SVDSuperimposer
