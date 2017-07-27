@@ -1,3 +1,4 @@
+import contextlib
 import gzip
 import logging
 import os
@@ -14,8 +15,18 @@ URL = "ftp://ftp.wwpdb.org/pub/pdb/data/"
 
 # (pdb_id, bioassembly_id)
 TEST_DATA = [
-    ('2co0', 1),
+    ('1y0y', 1),
 ]
+
+
+@contextlib.contextmanager
+def gzip_open_url(url, mode='w+t'):
+    with tempfile.TemporaryFile(mode) as ofh:
+        with urllib.request.urlopen(url) as ifh:
+            ofh.write(gzip.decompress(ifh.read()).decode('utf-8'))
+        ofh.seek(0)
+        yield ofh
+    return None
 
 
 @pytest.mark.parametrize("pdb_id, bioassembly_id", TEST_DATA)
@@ -27,18 +38,12 @@ def test_mmcif_to_pdb(pdb_id, bioassembly_id):
         URL + "biounit/PDB/divided/{}/{}.pdb{}.gz".format(pdb_id[1:3], pdb_id, bioassembly_id))
     logger.info(pdb_bioassembly_url)
 
-    with urllib.request.urlopen(mmcif_url) as ifh, \
-            tempfile.TemporaryFile('w+t') as ofh:
-        ofh.write(gzip.decompress(ifh.read()).decode('utf-8'))
-        ofh.seek(0)
+    with gzip_open_url(mmcif_url) as fh:
         mmcif_structure = MMCIFParser(ignore_auth_id=False).get_structure(
-            ofh, bioassembly_id=bioassembly_id)
+            fh, bioassembly_id=bioassembly_id)
 
-    with urllib.request.urlopen(pdb_bioassembly_url) as ifh, \
-            tempfile.TemporaryFile('w+t') as ofh:
-        ofh.write(gzip.decompress(ifh.read()).decode('utf-8'))
-        ofh.seek(0)
-        pdb_bioassembly_structure = PDBParser().get_structure(ofh)
+    with gzip_open_url(pdb_bioassembly_url) as fh:
+        pdb_bioassembly_structure = PDBParser().get_structure(fh)
 
     assert allequal(mmcif_structure, pdb_bioassembly_structure)
 

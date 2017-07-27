@@ -15,6 +15,24 @@ logger = logging.getLogger(__name__)
 _ATOM_FORMAT_STRING = "%s%5i %-4s%c%3s %c%4i%c   %8.3f%8.3f%8.3f%s%6.2f      %4s%2s%2s\n"
 
 
+def save(structure, filename, model_ids=None, chain_ids=None, include_disordered=True):
+    """Save kmbioPython structure object as a PDB.
+
+    Examples
+    --------
+    >>> tmpfile = tempfile.NamedTemporaryFile()
+    >>> s1 = fetch_structure('4dkl')
+    >>> save_structure(s1, tmpfile.name)
+    >>> s2 = load_structure(tmpfile.name)
+    >>> allequal(s1, s2)
+    True
+    """
+    io = PDBIO()
+    io.set_structure(structure)
+    select = Select() if include_disordered else NotDisordered()
+    io.save(filename, select=select)
+
+
 class Select(object):
     """Select everything fo PDB output (for use as a bas class).
 
@@ -40,6 +58,34 @@ class Select(object):
     def accept_atom(self, atom):
         """Overload this to reject atoms for output."""
         return 1
+
+
+class NotDisordered(Select):
+    """Select only non-disordered residues and set their altloc flag to ' '.
+
+    Source: http://biopython.org/wiki/Remove_PDB_disordered_atoms
+    """
+
+    def accept_residue(self, residue):
+        if not residue.disordered:
+            return True
+        elif any(self.accept_atom(atom) for atom in residue):
+            residue.disordered = False
+            return True
+        else:
+            logger.debug("Ignoring residue %s.", residue)
+            return False
+
+    def accept_atom(self, atom):
+        if not atom.disordered_flag:
+            return True
+        elif atom.altloc == 'A':
+            atom.disordered_flag = False
+            atom.altloc = ' '
+            return True
+        else:
+            logger.debug("Ignoring atom %s.", atom)
+            return False
 
 
 class PDBIO(object):

@@ -37,16 +37,15 @@ in a residue):
 
 """
 
-from __future__ import print_function
-
 import os
 import tempfile
 
 import numpy
 
-from kmbio.PDB import Selection
-from kmbio.PDB.abstract_property_map import AbstractPropertyMap
+from kmbio.PDB import unfold_entities
 from kmbio.PDB.polypeptide import is_aa
+
+from ._abstract_property_map import AbstractPropertyMap
 
 
 def _read_vertex_array(filename):
@@ -139,7 +138,7 @@ class ResidueDepth(AbstractPropertyMap):
         depth_list = []
         depth_keys = []
         # get_residue
-        residue_list = Selection.unfold_entities(model, 'R')
+        residue_list = unfold_entities(model, 'R')
         # make surface from PDB file
         surface = get_surface(pdb_file)
         # calculate rdepth for each residue

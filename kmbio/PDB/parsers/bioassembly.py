@@ -49,13 +49,13 @@ def get_rotation(row):
     """
     return [
         [float(row['_pdbx_struct_oper_list.matrix[1][1]']),
-         float(row['_pdbx_struct_oper_list.matrix[1][2]']),
-         float(row['_pdbx_struct_oper_list.matrix[1][3]'])],
-        [float(row['_pdbx_struct_oper_list.matrix[2][1]']),
+         float(row['_pdbx_struct_oper_list.matrix[2][1]']),
+         float(row['_pdbx_struct_oper_list.matrix[3][1]'])],
+        [float(row['_pdbx_struct_oper_list.matrix[1][2]']),
          float(row['_pdbx_struct_oper_list.matrix[2][2]']),
-         float(row['_pdbx_struct_oper_list.matrix[2][3]'])],
-        [float(row['_pdbx_struct_oper_list.matrix[3][1]']),
-         float(row['_pdbx_struct_oper_list.matrix[3][2]']),
+         float(row['_pdbx_struct_oper_list.matrix[3][2]'])],
+        [float(row['_pdbx_struct_oper_list.matrix[1][3]']),
+         float(row['_pdbx_struct_oper_list.matrix[2][3]']),
          float(row['_pdbx_struct_oper_list.matrix[3][3]'])]
     ]
 

@@ -58,14 +58,14 @@ class Superimposer(object):
 if __name__ == "__main__":
     import sys
 
-    from kmbio.PDB import PDBParser, Selection
+    from kmbio.PDB import PDBParser, unfold_entities
 
     p = PDBParser()
     s1 = p.get_structure("FIXED", sys.argv[1])
-    fixed = Selection.unfold_entities(s1, "A")
+    fixed = unfold_entities(s1, "A")
 
     s2 = p.get_structure("MOVING", sys.argv[1])
-    moving = Selection.unfold_entities(s2, "A")
+    moving = unfold_entities(s2, "A")
 
     rot = numpy.identity(3).astype('f')
     tran = numpy.array((1.0, 2.0, 3.0), 'f')

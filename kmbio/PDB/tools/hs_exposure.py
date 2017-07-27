@@ -7,8 +7,9 @@ import logging
 from math import pi
 
 from kmbio.PDB import PDBParser, rotaxis
-from kmbio.PDB.abstract_property_map import AbstractPropertyMap
 from kmbio.PDB.polypeptide import CaPPBuilder, is_aa
+
+from ._abstract_property_map import AbstractPropertyMap
 
 logger = logging.getLogger(__name__)
 

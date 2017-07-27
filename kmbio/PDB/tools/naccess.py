@@ -22,8 +22,9 @@ import subprocess
 import tempfile
 
 from kmbio.PDB import PDBIO
-from kmbio.PDB.abstract_property_map import (AbstractAtomPropertyMap,
-                                             AbstractResiduePropertyMap)
+
+from ._abstract_property_map import (AbstractAtomPropertyMap,
+                                     AbstractResiduePropertyMap)
 
 logger = logging.getLogger(__name__)
 

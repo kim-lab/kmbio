@@ -57,5 +57,3 @@ kmbio/KDTree/_CKDTree*.so
 job_1
 job_2
 job_3
-tests/test_bioassembly_1.py
-tests/test_bioassembly_2.py

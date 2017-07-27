@@ -67,7 +67,6 @@ class PDBParser(Parser):
             data = handle.readlines()
 
         self.header, coords_trailer = self._get_header(data)
-        print(self.header)
         if structure_id is None:
             structure_id = self.header['id']
 
