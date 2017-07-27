@@ -14,9 +14,9 @@ PDB_IDS = [
 #: Conversely, PDBs which make up a large biounit often only have mmCIF structure.
 MISSING = [
     # (pdb_id, pdb_type, biounit)
-    ('1arr', 'pdb', True),
-    ('4p6f', 'pdb', False),
-    ('4p6f', 'pdb', True),
+    ('1arr', 'pdb', 1),
+    ('4p6f', 'pdb', 0),
+    ('4p6f', 'pdb', 1),
 ]
 
 DIFFICULT = [
@@ -24,8 +24,8 @@ DIFFICULT = [
 ]
 
 LOCAL_REMOTE_MISMATCH = [
-    ('4dkl', 'pdb', False),
-    ('4dkl', 'pdb', True),
+    ('4dkl', 'pdb'),
+    ('4dkl', 'pdb'),
 ]
 
 # PDBs that cause errors

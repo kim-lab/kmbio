@@ -14,3 +14,6 @@ class PDBException(Exception):
 # data structure
 class PDBConstructionException(Exception):
     pass
+
+class BioassemblyNotFoundError(Exception):
+    pass

@@ -1,9 +1,17 @@
+import bz2
+import contextlib
+import gzip
 import itertools
+import logging
+import lzma
+import tempfile
+import urllib.request
 
 from kmbio.PDB import Atom
 from kmbio.PDB.core.entity import Entity
 from kmbio.PDB.exceptions import PDBException
 
+logger = logging.getLogger(__name__)
 ENTITY_LEVELS = ["A", "R", "C", "M", "S"]
 
 
@@ -24,6 +32,44 @@ def uniqueify(items):
     """
     _seen = set()
     return [x for x in items if x not in _seen and not _seen.add(x)]
+
+
+class uncompressed:
+
+    @staticmethod
+    def open(*args, **kwargs):
+        return open(*args, **kwargs)
+
+    @staticmethod
+    def decompress(data):
+        return data
+
+
+def anyzip(filename):
+    if filename.endswith('.gz'):
+        return gzip
+    elif filename.endswith('.bz2'):
+        return bz2
+    elif filename.endswith('.xz'):
+        return lzma
+    else:
+        return uncompressed
+
+
+@contextlib.contextmanager
+def open_url(url):
+    if url.startswith(('ftp:', 'http:', 'https:', )):
+        with tempfile.TemporaryFile('w+t') as fh:
+            logger.debug("URL: %s", url)
+            with urllib.request.urlopen(url) as ifh:
+                data_bin = ifh.read()
+                data_txt = anyzip(url).decompress(data_bin).decode('utf-8')
+                fh.write(data_txt)
+            fh.seek(0)
+            yield fh
+    else:
+        with anyzip(url).open(url, mode='rt') as fh:
+            yield fh
 
 
 def get_unique_parents(entity_list):

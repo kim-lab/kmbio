@@ -1,13 +1,11 @@
-import contextlib
 import gzip
 import logging
 import os
-import tempfile
-import urllib.request
 
 import pytest
 
-from kmbio.PDB import allequal, MMCIFParser, PDBParser
+from kmbio.PDB import (allequal, DEFAULT_ROUTES, MMCIFParser, open_url,
+                       PDBParser, ProcessLine350)
 
 logger = logging.getLogger(__name__)
 
@@ -19,14 +17,15 @@ TEST_DATA = [
 ]
 
 
-@contextlib.contextmanager
-def gzip_open_url(url, mode='w+t'):
-    with tempfile.TemporaryFile(mode) as ofh:
-        with urllib.request.urlopen(url) as ifh:
-            ofh.write(gzip.decompress(ifh.read()).decode('utf-8'))
-        ofh.seek(0)
-        yield ofh
-    return None
+@pytest.mark.parametrize("pdb_id, bioassembly_id", TEST_DATA)
+def test_process_line_350(pdb_id, bioassembly_id):
+    pdb_url = DEFAULT_ROUTES['rcsb://'](pdb_id, 'pdb')
+    with open_url(pdb_url) as ifh:
+        data = [l for l in ifh if l.startswith('REMARK 350')]
+    pl350 = ProcessLine350()
+    bioassembly_data = pl350.process_lines(data)
+    assert str(bioassembly_id) in bioassembly_data
+    print(bioassembly_data)
 
 
 @pytest.mark.parametrize("pdb_id, bioassembly_id", TEST_DATA)
@@ -38,11 +37,11 @@ def test_mmcif_to_pdb(pdb_id, bioassembly_id):
         URL + "biounit/PDB/divided/{}/{}.pdb{}.gz".format(pdb_id[1:3], pdb_id, bioassembly_id))
     logger.info(pdb_bioassembly_url)
 
-    with gzip_open_url(mmcif_url) as fh:
+    with open_url(mmcif_url) as fh:
         mmcif_structure = MMCIFParser(ignore_auth_id=False).get_structure(
             fh, bioassembly_id=bioassembly_id)
 
-    with gzip_open_url(pdb_bioassembly_url) as fh:
+    with open_url(pdb_bioassembly_url) as fh:
         pdb_bioassembly_structure = PDBParser().get_structure(fh)
 
     assert allequal(mmcif_structure, pdb_bioassembly_structure)
@@ -72,3 +71,8 @@ def test_mmcif_to_mmcif(pdb_id, bioassembly_id, ignore_auth_id):
         mmcif_bioassembly_structure = MMCIFParser(ignore_auth_id=False).get_structure(ifh)
 
     assert allequal(mmcif_structure, mmcif_bioassembly_structure)
+
+
+# @pytest.mark.parametrize("pdb_id, bioassembly_id", TEST_DATA)
+# def test_pdb_to_pdb(pdb_id, bioassembly_id):
+#     pass
