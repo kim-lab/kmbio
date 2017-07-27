@@ -6,6 +6,7 @@ PACKAGES = [
     'kmbio',
     'kmbio.PDB',
     'kmbio.PDB.core',
+    'kmbio.PDB.io',
     'kmbio.PDB.parsers',
     'kmbio.PDB.tools',
     'kmbio.PDB.tools.QCPSuperimposer',
