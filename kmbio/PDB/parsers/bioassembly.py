@@ -1,10 +1,14 @@
+import logging
 import re
 import warnings
+from collections import OrderedDict
 
 import pandas as pd
 
 from kmbio.PDB import Model, Structure
 from kmbio.PDB.exceptions import BioassemblyNotFoundError
+
+logger = logging.getLogger(__name__)
 
 
 class ProcessRemark350:
@@ -12,19 +16,20 @@ class ProcessRemark350:
     RE_BIOMOLECULE = re.compile('BIOMOLECULE: ([0-9]+)')
     RE_CHAINS = re.compile('APPLY THE FOLLOWING TO CHAINS: ([a-zA-Z0-9, ]+)')
     RE_BIOMT = re.compile(
-        'BIOMT([0-9]+)\s+([0-9]+)\s+([0-9\.]+)\s+([0-9\.]+)\s+([0-9\.]+)\s+([0-9\.]+)')
+        'BIOMT([0-9]+)\s+([0-9]+)\s+([-0-9\.]+)\s+([-0-9\.]+)\s+([-0-9\.]+)\s+([-0-9\.]+)')
 
     def __init__(self):
         self._biomolecule = None
         self._chains = None
         self._biomt = None
 
-        self.bioassembly_data = {}
+        self.bioassembly_data = OrderedDict()
 
     def process_lines(self, lines):
         for line in lines:
             assert line.startswith('REMARK 350 ')
             line = line[11:].strip()
+            logger.debug('[%s]', line)
             biomolecule = self.RE_BIOMOLECULE.findall(line)
             if biomolecule:
                 self._process_biomolecule(biomolecule[0])
@@ -38,6 +43,7 @@ class ProcessRemark350:
                 self._process_biomt(biomt[0])
                 continue
         self._flush()
+        return self.bioassembly_data
 
     def _process_biomolecule(self, biomolecule):
         if self._biomolecule is None:
@@ -53,19 +59,24 @@ class ProcessRemark350:
 
     def _process_biomt(self, biomt):
         matrix_id, transformation_id, matrix_0, matrix_1, matrix_2, vector = biomt
+        logger.debug('matrix_id: %s', matrix_id)
         assert matrix_id in ['1', '2', '3']
         if matrix_id == '1':
             row = {}
+            if self._biomt is None:
+                self._biomt = []
             self._biomt.append(row)
         else:
-            row = biomt[-1]
+            row = self._biomt[-1]
+            logger.debug('row: %s', row)
             # Sanity check on the data that we already have
             assert all([
                 '_pdbx_struct_oper_list.matrix[{}][{}]'.format(k, i) in row
                 for k in range(1, int(matrix_id)) for i in range(1, 3)
-            ])
+            ]), (matrix_id, row)
             assert all(
-                ['_pdbx_struct_oper_list.vector[{}]'.format(k) for k in range(1, int(matrix_id))])
+                ['_pdbx_struct_oper_list.vector[{}]'.format(k)
+                 for k in range(1, int(matrix_id))]), row
         row['_pdbx_struct_oper_list.matrix[{}][1]'.format(matrix_id)] = matrix_0
         row['_pdbx_struct_oper_list.matrix[{}][2]'.format(matrix_id)] = matrix_1
         row['_pdbx_struct_oper_list.matrix[{}][3]'.format(matrix_id)] = matrix_2
@@ -74,8 +85,8 @@ class ProcessRemark350:
     def _flush(self):
         assert str(self._biomolecule) not in self.bioassembly_data
         self.bioassembly_data[str(self._biomolecule)] = {
-            'chains': self._chains,
-            'transformations': [((get_rotation(row), get_translation(row)) for row in self._biomt)]
+            'chain_ids': self._chains.split(','),
+            'transformations': [(get_rotation(row), get_translation(row)) for row in self._biomt]
         }
         self._chains = None
         self._biomt = None

@@ -11,11 +11,11 @@ copy of the PDB up-to-date, selective IO of PDB files, etc.
 Author: Thomas Hamelryck.  Additional code by Kristian Rother.
 """
 from .core import *
+from .utils import *
 from .parsers import *
 from .io import *
 
 # Find connected polypeptides in a Structure
 from .polypeptide import *
 
-from .utils import *
 from .tools import *

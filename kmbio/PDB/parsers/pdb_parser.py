@@ -13,8 +13,8 @@ from Bio.File import as_handle
 from kmbio.PDB import StructureBuilder
 from kmbio.PDB.exceptions import PDBConstructionException
 
+from .bioassembly import ProcessRemark350, transform_structure
 from .parser import Parser
-from .bioassembly import generate_bioassembly
 
 logger = logging.getLogger(__name__)
 
@@ -24,10 +24,7 @@ logger = logging.getLogger(__name__)
 class PDBParser(Parser):
     """Parse a PDB file and return a Structure object."""
 
-    def __init__(self,
-                 PERMISSIVE=True,
-                 get_header=False,
-                 structure_builder=None):
+    def __init__(self, PERMISSIVE=True, get_header=False, structure_builder=None):
         """Create a PDBParser object.
 
         The PDB parser call a number of standard methods in an aggregated
@@ -76,9 +73,9 @@ class PDBParser(Parser):
         structure = self.structure_builder.get_structure()
 
         if bioassembly_id != 0:
-            sdict = {}
-            structure = generate_bioassembly(
-                sdict, structure, bioassembly_id, self.ignore_auth_id)
+            bioassembly_data = self.header['bioassembly_data'][str(bioassembly_id)]
+            structure = transform_structure(structure, bioassembly_data['chain_ids'],
+                                            bioassembly_data['transformations'])
 
         return structure
 
@@ -159,15 +156,13 @@ class PDBParser(Parser):
                     # Should we allow parsing to continue in permissive mode?
                     # If so, what coordinates should we default to?  Easier to abort!
                     raise PDBConstructionException(
-                        "Invalid or missing coordinate(s) at line %i." %
-                        global_line_counter)
+                        "Invalid or missing coordinate(s) at line %i." % global_line_counter)
                 coord = np.array((x, y, z), "f")
                 # occupancy & B factor
                 try:
                     occupancy = float(line[54:60])
                 except Exception:
-                    self._handle_PDB_exception("Invalid or missing occupancy",
-                                               global_line_counter)
+                    self._handle_PDB_exception("Invalid or missing occupancy", global_line_counter)
                     occupancy = None  # Rather than arbitrary zero or one
                 if occupancy is not None and occupancy < 0:
                     # TODO - Should this be an error in strict mode?
@@ -178,8 +173,7 @@ class PDBParser(Parser):
                 try:
                     bfactor = float(line[60:66])
                 except Exception:
-                    self._handle_PDB_exception("Invalid or missing B factor",
-                                               global_line_counter)
+                    self._handle_PDB_exception("Invalid or missing B factor", global_line_counter)
                     bfactor = 0.0  # The PDB use a default of zero if the data is missing
                 segid = line[72:76]
                 element = line[76:78].strip().upper()
@@ -192,32 +186,27 @@ class PDBParser(Parser):
                     current_residue_id = residue_id
                     current_resname = resname
                     try:
-                        structure_builder.init_residue(resname, hetero_flag,
-                                                       resseq, icode)
+                        structure_builder.init_residue(resname, hetero_flag, resseq, icode)
                     except PDBConstructionException as message:
-                        self._handle_PDB_exception(message,
-                                                   global_line_counter)
+                        self._handle_PDB_exception(message, global_line_counter)
                 elif current_residue_id != residue_id or current_resname != resname:
                     current_residue_id = residue_id
                     current_resname = resname
                     try:
-                        structure_builder.init_residue(resname, hetero_flag,
-                                                       resseq, icode)
+                        structure_builder.init_residue(resname, hetero_flag, resseq, icode)
                     except PDBConstructionException as message:
-                        self._handle_PDB_exception(message,
-                                                   global_line_counter)
+                        self._handle_PDB_exception(message, global_line_counter)
                 # init atom
                 try:
-                    structure_builder.init_atom(name, coord, bfactor,
-                                                occupancy, altloc, fullname,
+                    structure_builder.init_atom(name, coord, bfactor, occupancy, altloc, fullname,
                                                 serial_number, element)
                 except PDBConstructionException as message:
                     self._handle_PDB_exception(message, global_line_counter)
             elif record_type == "ANISOU":
                 anisou = [
                     float(x)
-                    for x in (line[28:35], line[35:42], line[43:49],
-                              line[49:56], line[56:63], line[63:70])
+                    for x in (line[28:35], line[35:42], line[43:49], line[49:56], line[56:63],
+                              line[63:70])
                 ]
                 # U's are scaled by 10^4
                 anisou_array = (np.array(anisou, "f") / 10000.0).astype("f")
@@ -226,9 +215,8 @@ class PDBParser(Parser):
                 try:
                     serial_num = int(line[10:14])
                 except Exception:
-                    self._handle_PDB_exception(
-                        "Invalid or missing model serial number",
-                        global_line_counter)
+                    self._handle_PDB_exception("Invalid or missing model serial number",
+                                               global_line_counter)
                     serial_num = 0
                 structure_builder.init_model(current_model_id, serial_num)
                 current_model_id += 1
@@ -247,8 +235,8 @@ class PDBParser(Parser):
                 # standard deviation of anisotropic B factor
                 siguij = [
                     float(x)
-                    for x in (line[28:35], line[35:42], line[42:49],
-                              line[49:56], line[56:63], line[63:70])
+                    for x in (line[28:35], line[35:42], line[42:49], line[49:56], line[56:63],
+                              line[63:70])
                 ]
                 # U sigma's are scaled by 10^4
                 siguij_array = (np.array(siguij, "f") / 10000.0).astype("f")
@@ -257,8 +245,7 @@ class PDBParser(Parser):
                 # standard deviation of atomic positions
                 sigatm = [
                     float(x)
-                    for x in (line[30:38], line[38:45], line[46:54],
-                              line[54:60], line[60:66])
+                    for x in (line[30:38], line[38:45], line[46:54], line[54:60], line[60:66])
                 ]
                 sigatm_array = np.array(sigatm, "f")
                 structure_builder.atom.sigatm_array = sigatm_array
@@ -277,11 +264,9 @@ class PDBParser(Parser):
         message = "%s at line %i." % (message, line_counter)
         if self.PERMISSIVE:
             # just print a warning - some residues/atoms may be missing
-            logger.warning(
-                "PDBConstructionException: %s\n"
-                "Exception ignored.\n"
-                "Some atoms or residues may be missing in the data structure.",
-                message)
+            logger.warning("PDBConstructionException: %s\n"
+                           "Exception ignored.\n"
+                           "Some atoms or residues may be missing in the data structure.", message)
         else:
             # exceptions are fatal - raise again with new message (including line nr)
             raise PDBConstructionException(message)
@@ -331,8 +316,7 @@ def _format_date(pdb_date):
         century = 1900
     date = str(century + year) + "-"
     all_months = [
-        'xxx', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
-        'Oct', 'Nov', 'Dec'
+        'xxx', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
     ]
     month = str(all_months.index(pdb_date[3:6]))
     if len(month) == 1:
@@ -362,8 +346,8 @@ def _nice_case(line):
         if c >= 'a' and c <= 'z' and nextCap:
             c = c.upper()
             nextCap = 0
-        elif (c == ' ' or c == '.' or c == ',' or c == ';' or c == ':' or
-              c == '\t' or c == '-' or c == '_'):
+        elif (c == ' ' or c == '.' or c == ',' or c == ';' or c == ':' or c == '\t' or c == '-' or
+              c == '_'):
             nextCap = 1
         s += c
         i += 1
@@ -420,6 +404,7 @@ def _parse_pdb_header_list(header):
     # src_molid = "1"
     last_comp_key = "misc"
     last_src_key = "misc"
+    remark_350_lines = []
 
     for hh in header:
         h = re.sub("[\s\n\r]*\Z", "", hh)  # chop linebreaks off
@@ -519,10 +504,17 @@ def _parse_pdb_header_list(header):
                 except:
                     # print('nonstandard resolution %r' % r)
                     dict['resolution'] = None
+            elif hh.startswith('REMARK 350 '):
+                remark_350_lines.append(hh)
         else:
             # print(key)
             pass
     if dict['structure_method'] == 'unknown':
         if dict['resolution'] > 0.0:
             dict['structure_method'] = 'x-ray diffraction'
+
+    if remark_350_lines:
+        pr350 = ProcessRemark350()
+        dict['bioassembly_data'] = pr350.process_lines(remark_350_lines)
+
     return dict

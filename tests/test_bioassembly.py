@@ -5,7 +5,7 @@ import os
 import pytest
 
 from kmbio.PDB import (allequal, DEFAULT_ROUTES, MMCIFParser, open_url,
-                       PDBParser, ProcessLine350)
+                       PDBParser, ProcessRemark350)
 
 logger = logging.getLogger(__name__)
 
@@ -22,10 +22,28 @@ def test_process_line_350(pdb_id, bioassembly_id):
     pdb_url = DEFAULT_ROUTES['rcsb://'](pdb_id, 'pdb')
     with open_url(pdb_url) as ifh:
         data = [l for l in ifh if l.startswith('REMARK 350')]
-    pl350 = ProcessLine350()
-    bioassembly_data = pl350.process_lines(data)
+    pr350 = ProcessRemark350()
+    bioassembly_data = pr350.process_lines(data)
     assert str(bioassembly_id) in bioassembly_data
     print(bioassembly_data)
+
+
+@pytest.mark.parametrize("pdb_id, bioassembly_id", TEST_DATA)
+def test_pdb_to_pdb(pdb_id, bioassembly_id):
+    pdb_url = DEFAULT_ROUTES['rcsb://'](pdb_id, 'pdb')
+    logger.info(pdb_url)
+
+    pdb_bioassembly_url = (
+        URL + "biounit/PDB/divided/{}/{}.pdb{}.gz".format(pdb_id[1:3], pdb_id, bioassembly_id))
+    logger.info(pdb_bioassembly_url)
+
+    with open_url(pdb_url) as fh:
+        mmcif_structure = PDBParser().get_structure(fh, bioassembly_id=bioassembly_id)
+
+    with open_url(pdb_bioassembly_url) as fh:
+        pdb_bioassembly_structure = PDBParser().get_structure(fh)
+
+    assert allequal(mmcif_structure, pdb_bioassembly_structure)
 
 
 @pytest.mark.parametrize("pdb_id, bioassembly_id", TEST_DATA)
@@ -71,8 +89,3 @@ def test_mmcif_to_mmcif(pdb_id, bioassembly_id, ignore_auth_id):
         mmcif_bioassembly_structure = MMCIFParser(ignore_auth_id=False).get_structure(ifh)
 
     assert allequal(mmcif_structure, mmcif_bioassembly_structure)
-
-
-# @pytest.mark.parametrize("pdb_id, bioassembly_id", TEST_DATA)
-# def test_pdb_to_pdb(pdb_id, bioassembly_id):
-#     pass
