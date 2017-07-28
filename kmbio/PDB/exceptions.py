@@ -15,5 +15,6 @@ class PDBException(Exception):
 class PDBConstructionException(Exception):
     pass
 
+
 class BioassemblyNotFoundError(Exception):
     pass
