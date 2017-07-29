@@ -7,11 +7,9 @@
 file.
 """
 
-from __future__ import print_function
-
 from Bio.Data import SCOPData
 
-from kmbio.PDB import Selection
+from kmbio.PDB import unfold_entities
 from kmbio.PDB.polypeptide import is_aa
 
 
@@ -31,8 +29,8 @@ class StructureAlignment(object):
         """
         l = fasta_align.get_alignment_length()
         # Get the residues in the models
-        rl1 = Selection.unfold_entities(m1, 'R')
-        rl2 = Selection.unfold_entities(m2, 'R')
+        rl1 = unfold_entities(m1, 'R')
+        rl2 = unfold_entities(m2, 'R')
         # Residue positions
         p1 = 0
         p2 = 0

@@ -2,9 +2,17 @@ from abc import ABC, abstractmethod
 
 
 class Parser(ABC):
+    """
+    Attributes
+    ----------
+    data_dict : `dict`
+        Dictionary of structure data.
+    _structure_builder : `StructureBuilder`
+        Instance of a class which will be used to build the structure.
+    """
 
     @abstractmethod
-    def get_structure(self, filename, structure_id=None, bioassembly=0):
+    def get_structure(self, filename, structure_id=None, bioassembly_id=0):
         """Return the structure.
 
         Parameters

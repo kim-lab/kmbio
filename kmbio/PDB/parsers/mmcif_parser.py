@@ -2,103 +2,28 @@
 # This code is part of the Biopython distribution and governed by its
 # license.  Please see the LICENSE file that should have been included
 # as part of this package.
-"""mmCIF parsers"""
+"""mmCIF parsers."""
 import logging
 
 import numpy as np
-import pandas as pd
 from Bio._py3k import range
 from Bio.File import as_handle
 
-from kmbio.PDB.core import StructureBuilder
-from kmbio.PDB.exceptions import PDBConstructionException
+from kmbio.PDB import StructureBuilder
+from kmbio.PDB.exceptions import (BioassemblyNotFoundError,
+                                  PDBConstructionException)
 
 from . import MMCIF2Dict
+from .bioassembly import apply_bioassembly, get_mmcif_bioassembly_data
 from .parser import Parser
 
 logger = logging.getLogger(__name__)
 
 
-def mmcif_key_to_dataframe(sdict, key):
-    """Convert element ``key`` from dictionary ``sdict`` into a `pandas.DataFrame`.
-
-    Parameters
-    ----------
-    sdict : `dict`
-        Dictionary of of MMCIF elements.
-    key : `str`
-        Element of the dictionary to convert to a dataframe.
-
-    Examples
-    --------
-    >>> mmcif_key_to_dataframe({'a.1': [1, 2], 'a.2': [3, 4]}, 'a')
-       a.1  a.2
-    0    1    3
-    1    2    4
-    """
-    data = {k: v for k, v in sdict.items() if k.startswith(key + '.')}
-    data_element = next(iter(data.values()))
-    if isinstance(data_element, (list, tuple)):
-        assert all(len(data_element) == len(v) for v in data.values())
-        _data = []
-        for row in zip(*[v for v in data.values()]):
-            _data.append(dict(zip(data.keys(), row)))
-        data = _data
-    else:
-        data = [data]
-    return pd.DataFrame(data)
-
-
-def get_rotation(row):
-    """Generate a rotation matrix from elements in dictionary ``row``.
-
-    Examples
-    ---------
-    >>> sdict = { \
-        '_pdbx_struct_oper_list.matrix[{}][{}]'.format(i // 3 + 1, i % 3 + 1): i \
-        for i in range(9) \
-    }
-    >>> get_rotation(sdict)
-    [[0.0, 1.0, 2.0], [3.0, 4.0, 5.0], [6.0, 7.0, 8.0]]
-    """
-    return [
-        [float(row['_pdbx_struct_oper_list.matrix[1][1]']),
-         float(row['_pdbx_struct_oper_list.matrix[1][2]']),
-         float(row['_pdbx_struct_oper_list.matrix[1][3]'])],
-        [float(row['_pdbx_struct_oper_list.matrix[2][1]']),
-         float(row['_pdbx_struct_oper_list.matrix[2][2]']),
-         float(row['_pdbx_struct_oper_list.matrix[2][3]'])],
-        [float(row['_pdbx_struct_oper_list.matrix[3][1]']),
-         float(row['_pdbx_struct_oper_list.matrix[3][2]']),
-         float(row['_pdbx_struct_oper_list.matrix[3][3]'])]
-    ]
-
-
-def get_translation(row):
-    """Generate a translation matrix from elements in dictionary ``row``.
-
-    Examples
-    ---------
-    >>> sdict = {'_pdbx_struct_oper_list.vector[{}]'.format(i): i for i in range(1, 4)}
-    >>> get_translation(sdict)
-    [1.0, 2.0, 3.0]
-    """
-    return [
-        float(row['_pdbx_struct_oper_list.vector[1]']),
-        float(row['_pdbx_struct_oper_list.vector[2]']),
-        float(row['_pdbx_struct_oper_list.vector[3]']),
-    ]
-
-
 class MMCIFParser(Parser):
-    """Parse a mmCIF file and return a Structure object.
+    """Parse a mmCIF file and return a Structure object."""
 
-    Attributes
-    ----------
-    _structure_builder : StructureBuilder
-    """
-
-    def __init__(self, structure_builder=None, ignore_auth_id=False):
+    def __init__(self, structure_builder=None, use_auth_id=True):
         """Create a PDBParser object.
 
         The mmCIF parser calls a number of standard methods in an aggregated
@@ -110,7 +35,7 @@ class MMCIFParser(Parser):
         ----------
          structure_builder : :class:`StructureBuilder`
             An optional user implemented StructureBuilder class.
-         ignore_auth_id : `bool`
+         use_auth_id : `bool`
             If `False` (default) the author chain and sequence id is used
             (match with PDB information). If True, the mmCIF seq and chain id is used.
         """
@@ -128,11 +53,11 @@ class MMCIFParser(Parser):
         # in order to match the identification used in the publication
         # this is what it is used by default in the PDB format
         # however it can be confusing for other purposes
-        self.ignore_auth_id = ignore_auth_id
+        self.use_auth_id = use_auth_id
 
     # Public methods
 
-    def get_structure(self, filename, structure_id=None, bioassembly=0):
+    def get_structure(self, filename, structure_id=None, bioassembly_id=0):
         """Return the structure.
 
         Parameters
@@ -146,6 +71,15 @@ class MMCIFParser(Parser):
         self._build_structure(structure_id)
 
         structure = self._structure_builder.get_structure()
+
+        if bioassembly_id != 0:
+            try:
+                bioassembly_data = get_mmcif_bioassembly_data(
+                    self._mmcif_dict, self.use_auth_id)[str(bioassembly_id)]
+            except KeyError:
+                raise BioassemblyNotFoundError
+            structure = apply_bioassembly(structure, bioassembly_data['chain_ids'],
+                                          bioassembly_data['transformations'])
         return structure
 
     # Private methods
@@ -162,18 +96,16 @@ class MMCIFParser(Parser):
         except KeyError:
             element_list = None
 
-        # ignore_auth_id:
-        if "_atom_site.auth_seq_id" in mmcif_dict and not self.ignore_auth_id:
+        if "_atom_site.auth_seq_id" in mmcif_dict and self.use_auth_id:
             seq_id_list = mmcif_dict["_atom_site.auth_seq_id"]
         else:
             seq_id_list = mmcif_dict["_atom_site.label_seq_id"]
             seq_id_auth_list = mmcif_dict["_atom_site.auth_seq_id"]
 
-        # ignore_auth_id
-        if self.ignore_auth_id:
-            chain_id_list = mmcif_dict["_atom_site.label_asym_id"]
-        else:
+        if self.use_auth_id:
             chain_id_list = mmcif_dict["_atom_site.auth_asym_id"]
+        else:
+            chain_id_list = mmcif_dict["_atom_site.label_asym_id"]
         # coords
         x_list = [float(x) for x in mmcif_dict["_atom_site.Cartn_x"]]
         y_list = [float(x) for x in mmcif_dict["_atom_site.Cartn_y"]]
@@ -184,9 +116,7 @@ class MMCIFParser(Parser):
         occupancy_list = mmcif_dict["_atom_site.occupancy"]
         fieldname_list = mmcif_dict["_atom_site.group_PDB"]
         try:
-            serial_list = [
-                int(n) for n in mmcif_dict["_atom_site.pdbx_PDB_model_num"]
-            ]
+            serial_list = [int(n) for n in mmcif_dict["_atom_site.pdbx_PDB_model_num"]]
         except KeyError:
             # No model number column
             serial_list = None
@@ -234,7 +164,7 @@ class MMCIFParser(Parser):
                 altloc = " "
             # hetero atoms do not have seq_id number in seq_label only '.'
             # use the auth_seq number
-            if self.ignore_auth_id and seq_id_list[i] == '.':
+            if not self.use_auth_id and seq_id_list[i] == '.':
                 int_resseq = int(seq_id_auth_list[i])
             else:
                 int_resseq = int(seq_id_list[i])
@@ -267,8 +197,7 @@ class MMCIFParser(Parser):
                     # if serial changes, update it and start new model
                     current_serial_id = serial_id
                     current_model_id += 1
-                    structure_builder.init_model(current_model_id,
-                                                 current_serial_id)
+                    structure_builder.init_model(current_model_id, current_serial_id)
                     current_chain_id = None
                     current_residue_id = None
                     current_resname = None
@@ -285,22 +214,15 @@ class MMCIFParser(Parser):
             if current_residue_id != resseq or current_resname != resname:
                 current_residue_id = resseq
                 current_resname = resname
-                structure_builder.init_residue(resname, hetatm_flag,
-                                               int_resseq, icode)
+                structure_builder.init_residue(resname, hetatm_flag, int_resseq, icode)
 
             coord = np.array((x, y, z), 'f')
             element = element_list[i] if element_list else None
             structure_builder.init_atom(
-                name,
-                coord,
-                tempfactor,
-                occupancy,
-                altloc,
-                name,
-                element=element)
+                name, coord, tempfactor, occupancy, altloc, name, element=element)
             if aniso_flag == 1:
-                u = (aniso_u11[i], aniso_u12[i], aniso_u13[i], aniso_u22[i],
-                     aniso_u23[i], aniso_u33[i])
+                u = (aniso_u11[i], aniso_u12[i], aniso_u13[i], aniso_u22[i], aniso_u23[i],
+                     aniso_u33[i])
                 mapped_anisou = [float(x) for x in u]
                 anisou_array = np.array(mapped_anisou, 'f')
                 structure_builder.atom.anisou_array = anisou_array
@@ -325,7 +247,7 @@ class MMCIFParser(Parser):
 class FastMMCIFParser(Parser):
     """Parse an MMCIF file and return a Structure object."""
 
-    def __init__(self, structure_builder=None, ignore_auth_id=False):
+    def __init__(self, structure_builder=None, use_auth_id=True):
         """Create a FastMMCIFParser object.
 
         The mmCIF parser calls a number of standard methods in an aggregated
@@ -339,7 +261,7 @@ class FastMMCIFParser(Parser):
 
         Arguments:
          - structure_builder - an optional user implemented StructureBuilder class.
-         - ignore_auth_id - (BOOL). If false (default) the author chain and sequence id
+         - use_auth_id - (BOOL). If `True` (default) the author chain and sequence id
          is used (match with PDB information). If True, the mmCIF seq and chain id is used.
         """
         if structure_builder is not None:
@@ -354,7 +276,7 @@ class FastMMCIFParser(Parser):
         # in order to match the identification used in the publication
         # this is what it is used by default in the PDB format
         # however it can be confusing for other purposes
-        self.ignore_auth_id = ignore_auth_id
+        self.use_auth_id = use_auth_id
 
     # Public methods
 
@@ -379,8 +301,7 @@ class FastMMCIFParser(Parser):
         _fields, _records = [], []
         _anisof, _anisors = [], []
         for line in filehandle:
-            if structure_id is None and line.startswith(
-                    '_pdbx_database_status.entry_id'):
+            if structure_id is None and line.startswith('_pdbx_database_status.entry_id'):
                 structure_id = line.strip().split()[-1]
             elif line.startswith('_atom_site.'):
                 read_atom = True
@@ -415,18 +336,16 @@ class FastMMCIFParser(Parser):
         except KeyError:
             element_list = None
 
-        # ignore_auth_id:
-        if "_atom_site.auth_seq_id" in mmcif_dict and not self.ignore_auth_id:
+        if "_atom_site.auth_seq_id" in mmcif_dict and self.use_auth_id:
             seq_id_list = mmcif_dict["_atom_site.auth_seq_id"]
         else:
             seq_id_list = mmcif_dict["_atom_site.label_seq_id"]
             seq_id_auth_list = mmcif_dict["_atom_site.auth_seq_id"]
 
-        # ignore_auth_id
-        if self.ignore_auth_id:
-            chain_id_list = mmcif_dict["_atom_site.label_asym_id"]
-        else:
+        if self.use_auth_id:
             chain_id_list = mmcif_dict["_atom_site.auth_asym_id"]
+        else:
+            chain_id_list = mmcif_dict["_atom_site.label_asym_id"]
         # coords
 
         x_list = [float(x) for x in mmcif_dict["_atom_site.Cartn_x"]]
@@ -439,9 +358,7 @@ class FastMMCIFParser(Parser):
         fieldname_list = mmcif_dict["_atom_site.group_PDB"]
 
         try:
-            serial_list = [
-                int(n) for n in mmcif_dict["_atom_site.pdbx_PDB_model_num"]
-            ]
+            serial_list = [int(n) for n in mmcif_dict["_atom_site.pdbx_PDB_model_num"]]
         except KeyError:
             # No model number column
             serial_list = None
@@ -491,7 +408,7 @@ class FastMMCIFParser(Parser):
 
             # hetero atoms do not have seq_id number in seq_label only '.'
             # use the auth_seq number
-            if self.ignore_auth_id and seq_id_list[i] == '.':
+            if not self.use_auth_id and seq_id_list[i] == '.':
                 int_resseq = int(seq_id_auth_list[i])
             else:
                 int_resseq = int(seq_id_list[i])
@@ -528,8 +445,7 @@ class FastMMCIFParser(Parser):
                     # if serial changes, update it and start new model
                     current_serial_id = serial_id
                     current_model_id += 1
-                    structure_builder.init_model(current_model_id,
-                                                 current_serial_id)
+                    structure_builder.init_model(current_model_id, current_serial_id)
                     current_chain_id = None
                     current_residue_id = None
                     current_resname = None
@@ -546,41 +462,15 @@ class FastMMCIFParser(Parser):
             if current_residue_id != resseq or current_resname != resname:
                 current_residue_id = resseq
                 current_resname = resname
-                structure_builder.init_residue(resname, hetatm_flag,
-                                               int_resseq, icode)
+                structure_builder.init_residue(resname, hetatm_flag, int_resseq, icode)
 
             coord = np.array((x, y, z), 'f')
             element = element_list[i] if element_list else None
             structure_builder.init_atom(
-                name,
-                coord,
-                tempfactor,
-                occupancy,
-                altloc,
-                name,
-                element=element)
+                name, coord, tempfactor, occupancy, altloc, name, element=element)
             if aniso_flag == 1:
-                u = (aniso_u11[i], aniso_u12[i], aniso_u13[i], aniso_u22[i],
-                     aniso_u23[i], aniso_u33[i])
+                u = (aniso_u11[i], aniso_u12[i], aniso_u13[i], aniso_u22[i], aniso_u23[i],
+                     aniso_u33[i])
                 mapped_anisou = [float(x) for x in u]
                 anisou_array = np.array(mapped_anisou, 'f')
                 structure_builder.atom.anisou_array = anisou_array
-
-
-if __name__ == "__main__":
-    import sys
-
-    if len(sys.argv) != 2:
-        print("Usage: python MMCIFparser.py filename")
-        raise SystemExit
-    filename = sys.argv[1]
-
-    p = MMCIFParser()
-
-    structure = p.get_structure("test", filename)
-
-    for model in structure:
-        print(model)
-        for chain in model:
-            print(chain)
-            print("Found %d residues." % len(chain))

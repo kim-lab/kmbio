@@ -53,3 +53,7 @@ kmbio/PDB/parsers/_mmcif_to_dict*.c
 kmbio/PDB/parsers/_mmcif_to_dict*.so
 kmbio/PDB/tools/QCPSuperimposer/qcprotmodule*.so
 kmbio/KDTree/_CKDTree*.so
+
+job_1
+job_2
+job_3

@@ -11,25 +11,11 @@ copy of the PDB up-to-date, selective IO of PDB files, etc.
 Author: Thomas Hamelryck.  Additional code by Kristian Rother.
 """
 from .core import *
+from .utils import *
 from .parsers import *
-
-# Download from the PDB
-from .pdb_list import PDBList
+from .io import *
 
 # Find connected polypeptides in a Structure
-from .polypeptide import PPBuilder, CaPPBuilder, is_aa, standard_aa_names
-
-# This is also useful :-)
-from Bio.Data.SCOPData import protein_letters_3to1
-
-# IO of PDB files (including flexible selective output)
-from .pdb_io import PDBIO, Select
-
-# Some methods to eg. get a list of Residues
-# from a list of Atoms.
-from . import selection as Selection
-
-# Write out chain(start-end) to PDB file
-from .dice import extract
+from .polypeptide import *
 
 from .tools import *

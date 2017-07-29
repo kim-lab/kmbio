@@ -1,5 +1,7 @@
 from mmtf import fetch, parse
 
+from kmbio.PDB import StructureBuilder
+
 from .parser import Parser
 
 
@@ -12,7 +14,6 @@ def get_from_decoded(decoder):
 class MMTFParser(Parser):
     """Class to get a BioPython structure from a URL or a filename."""
 
-    @staticmethod
     def get_structure(filename, structure_id=None):
         """Get a structrue from a file - given a file path.
 
@@ -25,7 +26,6 @@ class MMTFParser(Parser):
             structure.id = structure_id
         return structure
 
-    @staticmethod
     def get_structure_from_url(pdb_id):
         """Get a structure from a URL - given a PDB id.
 
@@ -34,9 +34,6 @@ class MMTFParser(Parser):
         """
         decoder = fetch(pdb_id)
         return get_from_decoded(decoder)
-
-
-from kmbio.PDB import StructureBuilder
 
 
 class StructureDecoder(object):

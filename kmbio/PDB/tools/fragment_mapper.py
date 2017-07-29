@@ -33,13 +33,11 @@ The library files can be found in directory 'fragment_data'.
 from __future__ import print_function
 
 import numpy
-
 from Bio.SVDSuperimposer import SVDSuperimposer
 
-from kmbio.PDB import Selection, PDBParser
+from kmbio.PDB import PDBParser, unfold_entities
 from kmbio.PDB.exceptions import PDBException
 from kmbio.PDB.polypeptide import PPBuilder
-
 
 # fragment file (lib_SIZE_z_LENGTH.txt)
 # SIZE=number of fragments
@@ -318,7 +316,6 @@ class FragmentMapper(object):
 
 
 if __name__ == "__main__":
-
     import sys
 
     p = PDBParser()
@@ -326,7 +323,7 @@ if __name__ == "__main__":
     m = s[0]
     fm = FragmentMapper(m, 10, 5, "levitt_data")
 
-    for r in Selection.unfold_entities(m, "R"):
+    for r in unfold_entities(m, "R"):
         print("%s:" % r)
         if r in fm:
             print(fm[r])

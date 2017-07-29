@@ -44,9 +44,10 @@ import subprocess
 from Bio._py3k import StringIO
 from Bio.Data import SCOPData
 
-from kmbio.PDB.abstract_property_map import AbstractResiduePropertyMap
-from kmbio.PDB.exceptions import PDBException
 from kmbio.PDB import PDBParser
+from kmbio.PDB.exceptions import PDBException
+
+from ._abstract_property_map import AbstractResiduePropertyMap
 
 logger = logging.getLogger(__name__)
 

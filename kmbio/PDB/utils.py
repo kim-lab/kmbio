@@ -1,24 +1,75 @@
-# Copyright (C) 2002, Thomas Hamelryck (thamelry@binf.ku.dk)
-# This code is part of the Biopython distribution and governed by its
-# license.  Please see the LICENSE file that should have been included
-# as part of this package.
-"""Selection of atoms, residues, etc."""
+import bz2
+import contextlib
+import gzip
 import itertools
+import logging
+import lzma
+import tempfile
+import urllib.request
 
 from kmbio.PDB import Atom
 from kmbio.PDB.core.entity import Entity
 from kmbio.PDB.exceptions import PDBException
 
+logger = logging.getLogger(__name__)
+ENTITY_LEVELS = ["A", "R", "C", "M", "S"]
 
-entity_levels = ["A", "R", "C", "M", "S"]
+
+def allequal(s1, s2):
+    if type(s1) != type(s2):
+        raise Exception
+    if isinstance(s1, Atom):
+        return s1 == s2
+    equal = (len(s1) == len(s2) and
+             all(allequal(so1, so2) for (so1, so2) in zip(s1.values(), s2.values())))
+    return equal
 
 
 def uniqueify(items):
     """Return a list of the unique items in the given iterable.
 
-    Order is NOT preserved.
+    Order is preserved.
     """
-    return list(set(items))
+    _seen = set()
+    return [x for x in items if x not in _seen and not _seen.add(x)]
+
+
+class uncompressed:
+
+    @staticmethod
+    def open(*args, **kwargs):
+        return open(*args, **kwargs)
+
+    @staticmethod
+    def decompress(data):
+        return data
+
+
+def anyzip(filename):
+    if filename.endswith('.gz'):
+        return gzip
+    elif filename.endswith('.bz2'):
+        return bz2
+    elif filename.endswith('.xz'):
+        return lzma
+    else:
+        return uncompressed
+
+
+@contextlib.contextmanager
+def open_url(url):
+    if url.startswith(('ftp:', 'http:', 'https:', )):
+        with tempfile.TemporaryFile('w+t') as fh:
+            logger.debug("URL: %s", url)
+            with urllib.request.urlopen(url) as ifh:
+                data_bin = ifh.read()
+                data_txt = anyzip(url).decompress(data_bin).decode('utf-8')
+                fh.write(data_txt)
+            fh.seek(0)
+            yield fh
+    else:
+        with anyzip(url).open(url, mode='rt') as fh:
+            yield fh
 
 
 def get_unique_parents(entity_list):
@@ -46,7 +97,7 @@ def unfold_entities(entity_list, target_level):
     []
 
     """
-    if target_level not in entity_levels:
+    if target_level not in ENTITY_LEVELS:
         raise PDBException("%s: Not an entity level." % target_level)
     if entity_list == []:
         return []
@@ -57,8 +108,8 @@ def unfold_entities(entity_list, target_level):
     if not all(entity.level == level for entity in entity_list):
         raise PDBException("Entity list is not homogeneous.")
 
-    target_index = entity_levels.index(target_level)
-    level_index = entity_levels.index(level)
+    target_index = ENTITY_LEVELS.index(target_level)
+    level_index = ENTITY_LEVELS.index(level)
 
     if level_index == target_index:  # already right level
         return entity_list
@@ -74,15 +125,3 @@ def unfold_entities(entity_list, target_level):
                 entity.parent for entity in entity_list
                 if entity.parent.id not in _seen and not _seen.add(entity.parent.id)]
     return list(entity_list)
-
-
-def _test():
-    """Run the kmbio.PDB.Selection module's doctests (PRIVATE)."""
-    import doctest
-    print("Running doctests ...")
-    doctest.testmod()
-    print("Done")
-
-
-if __name__ == "__main__":
-    _test()

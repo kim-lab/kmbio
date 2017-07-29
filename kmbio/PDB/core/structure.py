@@ -57,10 +57,19 @@ class Structure(Entity):
                 yield a
 
     def extract_models(self, model_ids):
+        # TODO: Not sure if this is neccessary
         structure = Structure(self.id)
         for model_id in model_ids:
             structure.add(self[model_id].copy())
         return structure
+
+    def select(self, models=None, chains=None, residues=None, hetatms=None):
+        """This method allows you to select things from structures using a variety of queries.
+
+        In particular, you should be able to select one or more chains,
+        and all HETATMs that are within a certain distance of those chains.
+        """
+        raise NotImplementedError
 
     def to_dataframe(self) -> (pd.DataFrame, np.ndarray):
         """Convert this structure into a pandas DataFrame
@@ -76,4 +85,8 @@ class Structure(Entity):
             The bonds in this structure, represented as an n_bonds x 2 array
             of the indices of the atoms involved in each bond.
         """
+        raise NotImplementedError
+
+    def from_dataframe(atoms, bonds=None):
+        """Generate a new structure from a dataframe of atoms and an array of bonds."""
         raise NotImplementedError
