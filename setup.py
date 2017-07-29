@@ -31,7 +31,7 @@ EXTENSIONS = [
 
 setup(
     name='kmbio',
-    version="1.69.6.dev0",
+    version="2.0.0.dev0",
     author='The Biopython Contributors + KimLab',
     author_email='alexey.strokach@kimlab.org',
     url='https://github.com/kimlaborg/kmbio',
