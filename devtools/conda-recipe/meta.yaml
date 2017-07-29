@@ -25,6 +25,7 @@ requirements:
     - reportlab
     - biopython
     - mmtf-python
+    - cachetools
     # Binaries
     - bwa
     - clustalo
