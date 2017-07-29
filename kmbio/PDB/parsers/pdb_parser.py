@@ -13,7 +13,7 @@ from Bio.File import as_handle
 from kmbio.PDB import StructureBuilder
 from kmbio.PDB.exceptions import PDBConstructionException
 
-from .bioassembly import ProcessRemark350, transform_structure
+from .bioassembly import apply_bioassembly, ProcessRemark350
 from .parser import Parser
 
 logger = logging.getLogger(__name__)
@@ -74,8 +74,8 @@ class PDBParser(Parser):
 
         if bioassembly_id != 0:
             bioassembly_data = self.header['bioassembly_data'][str(bioassembly_id)]
-            structure = transform_structure(structure, bioassembly_data['chain_ids'],
-                                            bioassembly_data['transformations'])
+            structure = apply_bioassembly(structure, bioassembly_data['chain_ids'],
+                                          bioassembly_data['transformations'])
 
         return structure
 

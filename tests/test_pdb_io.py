@@ -3,10 +3,11 @@ import os
 
 import pytest
 
-from common import (ATOM_DEFINED_TWICE_PDBS, LOCAL_REMOTE_MISMATCH, MISSING, PDB_IDS,
-                    random_subset)
+from common import (ATOM_DEFINED_TWICE_PDBS, LOCAL_REMOTE_MISMATCH, MISSING,
+                    PDB_IDS, random_subset)
 from kmbio.PDB import allequal, DEFAULT_ROUTES, load
 from kmbio.PDB.exceptions import BioassemblyNotFoundError
+from kmbio.PDB.io.loaders import guess_pdb_type
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +28,13 @@ def _get_local_url(pdb_id, pdb_type):
     return url
 
 
+@pytest.mark.parametrize(
+    "url, pdb_type", [('ftp://ftp.wwpdb.org/pub/pdb/data/structures/divided/mmCIF/dk/4dkl.cif.gz',
+                       'cif')])
+def test_guess_pdb_type(url, pdb_type):
+    assert guess_pdb_type(url) == pdb_type
+
+
 @pytest.mark.parametrize("pdb_id, pdb_type, bioassembly_id",
                          [(pdb_id, pdb_type, bioassembly_id)
                           for pdb_id in PDB_IDS for pdb_type in ['pdb', 'cif']
@@ -36,6 +44,7 @@ def _get_local_url(pdb_id, pdb_type):
 def test_equal(pdb_id, pdb_type, bioassembly_id):
     """Make sure that loading local and remote files produces the same result."""
     filename = '{}.{}'.format(pdb_id, pdb_type)
+    logger.debug(filename)
     structures = []
     exceptions = []
     for route in DEFAULT_ROUTES:

@@ -51,7 +51,9 @@ def load(pdb_file, **kwargs) -> Structure:
 
     logger.debug('pdb_file: %s', pdb_file)
     pdb_type = guess_pdb_type(pdb_file)
+    logger.debug('pdb_type: %s', pdb_type)
     parser = _get_parser(pdb_type, **kwargs)
+    logger.debug('parser: %s', parser)
     with open_url(pdb_file) as fh:
         structure = parser.get_structure(fh)
     return structure
@@ -89,7 +91,7 @@ def guess_pdb_type(pdb_file):
     >>> _guess_pdb_type('/tmp/4dkl.cif.gz')
     'cif'
     """
-    for chunk in re.split('/|\.|:', pdb_file):
+    for chunk in reversed(re.split('/|\.|:', pdb_file)):
         chunk = chunk.lower().strip(string.digits)
         if chunk in ['pdb', 'ent']:
             return 'pdb'
@@ -105,7 +107,7 @@ def _get_parser(pdb_type, **kwargs) -> Parser:
     if pdb_type == 'pdb':
         Parser = PDBParser
     elif pdb_type == 'cif':
-        kwargs.setdefault('ignore_auth_id', True)
+        kwargs.setdefault('use_auth_id', False)
         Parser = MMCIFParser
     elif pdb_type == 'mmtf':
         Parser = MMTFParser
