@@ -115,7 +115,7 @@ class ProcessRemark350:
     def _process_chains(self, chains):
         logger.debug('_process_chains(%s)', chains)
         assert not self._chains
-        self._chains = chains.replace(' ', '')
+        self._chains = sorted(set(chains.replace(' ', '').split(',')))
 
     def _process_biomt(self, biomt):
         logger.debug('_process_biomt(%s)', biomt)
@@ -148,7 +148,7 @@ class ProcessRemark350:
         assert str(self._biomolecule) not in self.bioassembly_data
         self.bioassembly_data[str(self._biomolecule)] = {
             'chain_ids':
-            self._chains.split(','),
+            self._chains,
             'transformations':
             [Transformation(get_rotation(row), get_translation(row)) for row in self._biomt]
         }
