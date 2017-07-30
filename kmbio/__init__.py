@@ -10,7 +10,7 @@ of freely available Python tools for computational molecular biology.
 
 http://biopython.org
 """
-__version__ = "1.69.6.dev0"
+__version__ = "2.0.0"
 
 __all__ = [
     'KDTree',
