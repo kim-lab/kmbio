@@ -18,13 +18,14 @@ TEST_DATA = [
 ]
 
 PDB_IDS = [
+    '2vmw',
     '1y0y',
     '4dkl',
-    '1dvf'
+    '1dvf',
 ]
 
 
-@pytest.mark.parametrize("pdb_id, bioassembly_id", sorted((x[0], 1) for x in TEST_DATA))
+@pytest.mark.parametrize("pdb_id, bioassembly_id", TEST_DATA)
 def test_process_line_350(pdb_id, bioassembly_id):
     pdb_url = DEFAULT_ROUTES['rcsb://'](pdb_id, 'pdb')
     with open_url(pdb_url) as ifh:
