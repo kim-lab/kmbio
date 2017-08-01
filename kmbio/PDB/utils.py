@@ -7,7 +7,7 @@ import lzma
 import tempfile
 import urllib.request
 
-from kmbio.PDB import Atom
+from kmbio.PDB import Atom, DisorderedAtom
 from kmbio.PDB.core.entity import Entity
 from kmbio.PDB.exceptions import PDBException
 
@@ -16,8 +16,10 @@ ENTITY_LEVELS = ["A", "R", "C", "M", "S"]
 
 
 def allequal(s1, s2):
-    if type(s1) != type(s2):
-        raise Exception
+    if type(s1) != type(s2) and not (isinstance(s1, (Atom, DisorderedAtom)) and
+                                     isinstance(s2, (Atom, DisorderedAtom))):
+        raise Exception(
+            "Can't compare objects of different types! ({}, {})".format(type(s1), type(s2)))
     if isinstance(s1, Atom):
         return s1 == s2
     equal = (len(s1) == len(s2) and
@@ -35,7 +37,6 @@ def uniqueify(items):
 
 
 class uncompressed:
-
     @staticmethod
     def open(*args, **kwargs):
         return open(*args, **kwargs)
@@ -123,5 +124,6 @@ def unfold_entities(entity_list, target_level):
             _seen = set()
             entity_list = [
                 entity.parent for entity in entity_list
-                if entity.parent.id not in _seen and not _seen.add(entity.parent.id)]
+                if entity.parent.id not in _seen and not _seen.add(entity.parent.id)
+            ]
     return list(entity_list)
