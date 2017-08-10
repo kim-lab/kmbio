@@ -11,8 +11,10 @@ logger = logging.getLogger(__name__)
 
 URL = "ftp://ftp.wwpdb.org/pub/pdb/data/"
 
-# (pdb_id, bioassembly_id)
 TEST_DATA = [
+    # (pdb_id, bioassembly_id)
+    ('1y0x', 2),
+    ('1y0o', 1),
     ('1y0y', 1),
     ('1dvf', 1),
 ]

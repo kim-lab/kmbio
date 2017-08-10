@@ -1,3 +1,4 @@
+import copy
 import logging
 import re
 from collections import OrderedDict, namedtuple
@@ -55,15 +56,22 @@ def get_translation(row):
     ]
 
 
-def apply_bioassembly(structure, chain_ids, transformations):
+def apply_bioassembly(structure, bioassembly_data):
     bioassembly = Structure(structure.id)
-    for i, (rotation, translation) in enumerate(transformations):
-        model = Model(i)
-        bioassembly.add(model)
-        for chain_id in sorted(chain_ids):
-            chain = structure[0][chain_id].copy()
-            model.add(chain)
-        model.transform(rotation, translation)
+    for i, (chain_transformations) in enumerate(bioassembly_data):
+        chain_ids = chain_transformations['chain_ids']
+        transformations = chain_transformations['transformations']
+        for j, chain_id in enumerate(chain_ids):
+            for k, (rotation, translation) in enumerate(transformations):
+                if len(bioassembly) <= k:
+                    assert len(bioassembly) == k
+                    model = Model(k)
+                    bioassembly.add(model)
+                else:
+                    model = bioassembly[k]
+                chain = copy.deepcopy(structure[0][chain_id])
+                chain.transform(rotation, translation)
+                model.add(chain)
     return bioassembly
 
 
@@ -114,44 +122,65 @@ class ProcessRemark350:
 
     def _process_chains(self, chains):
         logger.debug('_process_chains(%s)', chains)
-        assert not self._chains
-        self._chains = sorted(set(chains.replace(' ', '').split(',')))
+        if self._chains is None:
+            assert self._biomt is None
+            self._chains = []
+        else:
+            assert len(self._chains) == len(self._biomt)
+        self._chains.append(sorted(set(chains.replace(' ', '').split(','))))
 
     def _process_biomt(self, biomt):
         logger.debug('_process_biomt(%s)', biomt)
         matrix_id, transformation_id, matrix_0, matrix_1, matrix_2, vector = biomt
         logger.debug('matrix_id: %s', matrix_id)
         assert matrix_id in ['1', '2', '3']
+        if self._biomt is None:
+            self._biomt = []
+        # New row
         if matrix_id == '1':
+            # New transformation
+            if len(self._chains) > len(self._biomt):
+                transformations = []
+                self._biomt.append(transformations)
+            else:
+                transformations = self._biomt[-1]
             row = {}
-            if self._biomt is None:
-                self._biomt = []
-            self._biomt.append(row)
+            transformations.append(row)
         else:
-            row = self._biomt[-1]
-            # Sanity check on the data that we already have
-            assert all([
-                '_pdbx_struct_oper_list.matrix[{}][{}]'.format(k, i) in row
-                for k in range(1, int(matrix_id)) for i in range(1, 3)
-            ]), (matrix_id, row)
-            assert all(
-                ['_pdbx_struct_oper_list.vector[{}]'.format(k)
-                 for k in range(1, int(matrix_id))]), row
+            transformations = self._biomt[-1]
+            row = transformations[-1]
+            self._validate_row(row, matrix_id)
+        assert len(self._biomt) == len(self._chains)
         logger.debug('row: %s', row)
         row['_pdbx_struct_oper_list.matrix[{}][1]'.format(matrix_id)] = matrix_0
         row['_pdbx_struct_oper_list.matrix[{}][2]'.format(matrix_id)] = matrix_1
         row['_pdbx_struct_oper_list.matrix[{}][3]'.format(matrix_id)] = matrix_2
         row['_pdbx_struct_oper_list.vector[{}]'.format(matrix_id)] = vector
 
+    def _validate_row(self, row, matrix_id):
+        """Sanity check on the data that we already have in ``row``."""
+        previous_matrix_data_is_present = [
+            '_pdbx_struct_oper_list.matrix[{}][{}]'.format(k, i) in row
+            for k in range(1, int(matrix_id)) for i in range(1, 3)
+        ]
+        previous_vector_data_is_present = [
+            '_pdbx_struct_oper_list.vector[{}]'.format(k) in row for k in range(1, int(matrix_id))
+        ]
+        assert all(previous_matrix_data_is_present) and all(previous_vector_data_is_present)
+
     def _flush(self):
         logger.debug('_flush')
         assert str(self._biomolecule) not in self.bioassembly_data
-        self.bioassembly_data[str(self._biomolecule)] = {
-            'chain_ids':
-            self._chains,
-            'transformations':
-            [Transformation(get_rotation(row), get_translation(row)) for row in self._biomt]
-        }
+        assert len(self._chains) == len(self._biomt)
+        self.bioassembly_data[str(self._biomolecule)] = []
+        for chain_ids, transformations in zip(self._chains, self._biomt):
+            transformations = [
+                Transformation(get_rotation(t), get_translation(t)) for t in transformations
+            ]
+            self.bioassembly_data[str(self._biomolecule)].append({
+                'chain_ids': chain_ids,
+                'transformations': transformations
+            })
         self._chains = None
         self._biomt = None
 
@@ -223,22 +252,23 @@ def get_mmcif_bioassembly_data(sdict, use_auth_id=False):
         label_id_to_auth_id = get_label_id_to_auth_id_mapping(sdict)
 
     bioassembly_data = OrderedDict()
-    for bioassembly_id, df in _pdbx_struct_assembly_gen.iterrows():
-        chain_ids = \
-            _pdbx_struct_assembly_gen \
-            .at[bioassembly_id, '_pdbx_struct_assembly_gen.asym_id_list'] \
-            .split(',')
-        if use_auth_id:
-            chain_ids = sorted(set(label_id_to_auth_id[c] for c in chain_ids))
-        transformation_ids = \
-            _pdbx_struct_assembly_gen \
-            .at[bioassembly_id, '_pdbx_struct_assembly_gen.oper_expression'] \
-            .split(',')
-        transformations = list(
-            _pdbx_struct_oper_list.loc[transformation_ids, ['rotation', 'translation']]
-            .itertuples(index=False, name='Transformation'))
-        bioassembly_data[bioassembly_id] = {
-            'chain_ids': chain_ids,
-            'transformations': transformations
-        }
+    for bioassembly_id in _pdbx_struct_assembly_gen.index:
+        logger.debug("bioassembly_id: %s", bioassembly_id)
+        for chain_ids, transformation_ids in _pdbx_struct_assembly_gen.loc[
+                bioassembly_id:bioassembly_id, [
+                    '_pdbx_struct_assembly_gen.asym_id_list',
+                    '_pdbx_struct_assembly_gen.oper_expression'
+                ]].applymap(lambda x: x.split(',')).values:
+            logger.debug("chain_ids: %s, transformation_ids: %s", chain_ids, transformation_ids)
+            if use_auth_id:
+                chain_ids = sorted(set(label_id_to_auth_id[c] for c in chain_ids))
+            transformations = list(
+                _pdbx_struct_oper_list.loc[transformation_ids, ['rotation', 'translation']]
+                .itertuples(index=False, name='Transformation'))
+            bioassembly_data.setdefault(bioassembly_id, []).append({
+                'chain_ids':
+                chain_ids,
+                'transformations':
+                transformations
+            })
     return bioassembly_data

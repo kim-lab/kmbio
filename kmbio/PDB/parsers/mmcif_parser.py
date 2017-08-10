@@ -10,8 +10,7 @@ from Bio._py3k import range
 from Bio.File import as_handle
 
 from kmbio.PDB import StructureBuilder
-from kmbio.PDB.exceptions import (BioassemblyNotFoundError,
-                                  PDBConstructionException)
+from kmbio.PDB.exceptions import (BioassemblyNotFoundError, PDBConstructionException)
 
 from . import MMCIF2Dict
 from .bioassembly import apply_bioassembly, get_mmcif_bioassembly_data
@@ -74,12 +73,11 @@ class MMCIFParser(Parser):
 
         if bioassembly_id != 0:
             try:
-                bioassembly_data = get_mmcif_bioassembly_data(
-                    self._mmcif_dict, self.use_auth_id)[str(bioassembly_id)]
+                bioassembly_data = get_mmcif_bioassembly_data(self._mmcif_dict,
+                                                              self.use_auth_id)[str(bioassembly_id)]
             except KeyError:
                 raise BioassemblyNotFoundError
-            structure = apply_bioassembly(structure, bioassembly_data['chain_ids'],
-                                          bioassembly_data['transformations'])
+            structure = apply_bioassembly(structure, bioassembly_data)
         return structure
 
     # Private methods

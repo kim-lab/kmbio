@@ -74,8 +74,7 @@ class PDBParser(Parser):
 
         if bioassembly_id != 0:
             bioassembly_data = self.header['bioassembly_data'][str(bioassembly_id)]
-            structure = apply_bioassembly(structure, bioassembly_data['chain_ids'],
-                                          bioassembly_data['transformations'])
+            structure = apply_bioassembly(structure, bioassembly_data)
 
         return structure
 
