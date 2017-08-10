@@ -7,15 +7,14 @@ import string
 import warnings
 
 from cachetools import LRUCache
-from kmbio.PDB import (MMCIFParser, MMTFParser, open_url, Parser, PDBParser,
-                       Structure)
+from kmbio.PDB import (MMCIFParser, MMTFParser, open_url, Parser, PDBParser, Structure)
 
 from .routes import DEFAULT_ROUTES
 
 logger = logging.getLogger(__name__)
 
 
-def load(pdb_file, _cache=LRUCache(maxsize=512), **kwargs) -> Structure:
+def load(pdb_file, structure_id=None, _cache=LRUCache(maxsize=512), **kwargs) -> Structure:
     """Load local PDB file.
 
     Parameters
@@ -61,6 +60,8 @@ def load(pdb_file, _cache=LRUCache(maxsize=512), **kwargs) -> Structure:
     logger.debug('parser: %s', parser)
     with open_url(pdb_file) as fh:
         structure = parser.get_structure(fh)
+        if not structure.id:
+            structure.id = guess_pdb_id(pdb_file)
     if not pdb_file.startswith('/'):
         _cache[pdb_file] = structure
     return structure
