@@ -15,13 +15,26 @@ logger = logging.getLogger(__name__)
 ENTITY_LEVELS = ["A", "R", "C", "M", "S"]
 
 
+def as_digit(num, decimals):
+    a, b = str(num).partition('.')
+    b = b[:3]
+    return a + '.' + b
+
+
 def allequal(s1, s2):
     if type(s1) != type(s2) and not (isinstance(s1, (Atom, DisorderedAtom)) and
                                      isinstance(s2, (Atom, DisorderedAtom))):
         raise Exception(
             "Can't compare objects of different types! ({}, {})".format(type(s1), type(s2)))
     if isinstance(s1, Atom):
-        return s1 == s2
+        ids_equal = s1.id == s2.id
+        coords_equal = (as_digit(a1, 3) == as_digit(a2, 3) for a1, a2 in zip(s1.coord, s2.coord))
+        equal = ids_equal and coords_equal
+        if not equal:
+            logger.debug('Atoms not equal: (%s, %s) (%s, %s)', s1, s1.coord, s2, s2.coord)
+            logger.debug(' '.join(as_digit(a) for a in s1.coord) + ' ' + ' '.join(
+                as_digit(a) for a in s1.coord))
+        return equal
     equal = (len(s1) == len(s2) and
              all(allequal(so1, so2) for (so1, so2) in zip(s1.values(), s2.values())))
     return equal
