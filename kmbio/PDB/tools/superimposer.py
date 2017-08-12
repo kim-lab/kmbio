@@ -4,7 +4,7 @@
 # as part of this package.
 
 """Superimpose two structures."""
-import numpy
+import numpy as np
 
 from kmbio.SVDSuperimposer import SVDSuperimposer
 from kmbio.PDB.exceptions import PDBException
@@ -31,8 +31,8 @@ class Superimposer(object):
         if not (len(fixed) == len(moving)):
             raise PDBException("Fixed and moving atom lists differ in size")
         l = len(fixed)
-        fixed_coord = numpy.zeros((l, 3))
-        moving_coord = numpy.zeros((l, 3))
+        fixed_coord = np.zeros((l, 3))
+        moving_coord = np.zeros((l, 3))
         for i in range(0, len(fixed)):
             fixed_coord[i] = fixed[i].coord
             moving_coord[i] = moving[i].coord
@@ -49,8 +49,8 @@ class Superimposer(object):
         if self.rotran is None:
             raise PDBException("No transformation has been calculated yet")
         rot, tran = self.rotran
-        rot = rot.astype('f')
-        tran = tran.astype('f')
+        rot = rot.astype(np.float64)
+        tran = tran.astype(np.float64)
         for atom in atom_list:
             atom.transform(rot, tran)
 
@@ -67,8 +67,8 @@ if __name__ == "__main__":
     s2 = p.get_structure("MOVING", sys.argv[1])
     moving = unfold_entities(s2, "A")
 
-    rot = numpy.identity(3).astype('f')
-    tran = numpy.array((1.0, 2.0, 3.0), 'f')
+    rot = np.identity(3).astype(np.float64)
+    tran = np.array((1.0, 2.0, 3.0), np.float64)
 
     for atom in moving:
         atom.transform(rot, tran)

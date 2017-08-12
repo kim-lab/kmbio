@@ -156,7 +156,7 @@ class PDBParser(Parser):
                     # If so, what coordinates should we default to?  Easier to abort!
                     raise PDBConstructionException(
                         "Invalid or missing coordinate(s) at line %i." % global_line_counter)
-                coord = np.array((x, y, z), "f")
+                coord = np.array((x, y, z), np.float64)
                 # occupancy & B factor
                 try:
                     occupancy = float(line[54:60])
@@ -208,7 +208,7 @@ class PDBParser(Parser):
                               line[63:70])
                 ]
                 # U's are scaled by 10^4
-                anisou_array = (np.array(anisou, "f") / 10000.0).astype("f")
+                anisou_array = np.array(anisou, np.float64) / 10000.0
                 structure_builder.atom.anisou_array = anisou_array
             elif record_type == "MODEL ":
                 try:
@@ -238,7 +238,7 @@ class PDBParser(Parser):
                               line[63:70])
                 ]
                 # U sigma's are scaled by 10^4
-                siguij_array = (np.array(siguij, "f") / 10000.0).astype("f")
+                siguij_array = np.array(siguij, np.float64) / 10000.0
                 structure_builder.atom.set_siguij = siguij_array
             elif record_type == "SIGATM":
                 # standard deviation of atomic positions
@@ -246,7 +246,7 @@ class PDBParser(Parser):
                     float(x)
                     for x in (line[30:38], line[38:45], line[46:54], line[54:60], line[60:66])
                 ]
-                sigatm_array = np.array(sigatm, "f")
+                sigatm_array = np.array(sigatm, np.float64)
                 structure_builder.atom.sigatm_array = sigatm_array
             local_line_counter += 1
         # EOF (does not end in END or CONECT)

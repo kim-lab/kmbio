@@ -1118,7 +1118,7 @@ class TransformTests(unittest.TestCase):
         """Transform entities (rotation and translation)."""
         for o in (self.s, self.m, self.c, self.r, self.a):
             rotation = rotmat(Vector(1, 3, 5), Vector(1, 0, 0))
-            translation = np.array((2.4, 0, 1), 'f')
+            translation = np.array((2.4, 0, 1))
             oldpos = self.get_pos(o)
             o.transform(rotation, translation)
             newpos = self.get_pos(o)

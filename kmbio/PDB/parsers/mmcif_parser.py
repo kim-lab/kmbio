@@ -214,7 +214,7 @@ class MMCIFParser(Parser):
                 current_resname = resname
                 structure_builder.init_residue(resname, hetatm_flag, int_resseq, icode)
 
-            coord = np.array((x, y, z), 'f')
+            coord = np.array((x, y, z), np.float64)
             element = element_list[i] if element_list else None
             structure_builder.init_atom(
                 name, coord, tempfactor, occupancy, altloc, name, element=element)
@@ -222,7 +222,7 @@ class MMCIFParser(Parser):
                 u = (aniso_u11[i], aniso_u12[i], aniso_u13[i], aniso_u22[i], aniso_u23[i],
                      aniso_u33[i])
                 mapped_anisou = [float(x) for x in u]
-                anisou_array = np.array(mapped_anisou, 'f')
+                anisou_array = np.array(mapped_anisou, np.float64)
                 structure_builder.atom.anisou_array = anisou_array
         # Now try to set the cell
         try:
@@ -232,7 +232,7 @@ class MMCIFParser(Parser):
             alpha = float(mmcif_dict["_cell.angle_alpha"])
             beta = float(mmcif_dict["_cell.angle_beta"])
             gamma = float(mmcif_dict["_cell.angle_gamma"])
-            cell = np.array((a, b, c, alpha, beta, gamma), 'f')
+            cell = np.array((a, b, c, alpha, beta, gamma), np.float64)
             spacegroup = mmcif_dict["_symmetry.space_group_name_H-M"]
             spacegroup = spacegroup[1:-1]  # get rid of quotes!!
             if spacegroup is None:
@@ -462,7 +462,7 @@ class FastMMCIFParser(Parser):
                 current_resname = resname
                 structure_builder.init_residue(resname, hetatm_flag, int_resseq, icode)
 
-            coord = np.array((x, y, z), 'f')
+            coord = np.array((x, y, z), np.float64)
             element = element_list[i] if element_list else None
             structure_builder.init_atom(
                 name, coord, tempfactor, occupancy, altloc, name, element=element)
@@ -470,5 +470,5 @@ class FastMMCIFParser(Parser):
                 u = (aniso_u11[i], aniso_u12[i], aniso_u13[i], aniso_u22[i], aniso_u23[i],
                      aniso_u33[i])
                 mapped_anisou = [float(x) for x in u]
-                anisou_array = np.array(mapped_anisou, 'f')
+                anisou_array = np.array(mapped_anisou, np.float64)
                 structure_builder.atom.anisou_array = anisou_array
