@@ -73,6 +73,7 @@ build-py36:
     - pip install -q flake8 pytest pytest-cov pytest-runner pytest-logging hypothesis
     - flake8  # should probably go in a separate test, so no duplication?
     - py.test
+  coverage: /^TOTAL.*(\d+\%)/
 
 test-py35:
   <<: [*conda_configure, *test]
