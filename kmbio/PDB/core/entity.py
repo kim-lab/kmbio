@@ -236,7 +236,7 @@ class Entity(object):
 
         Example:
                 >>> rotation=rotmat(pi, Vector(1, 0, 0))
-                >>> translation=array((0, 0, 1), 'f')
+                >>> translation=array((0, 0, 1))
                 >>> entity.transform(rotation, translation)
 
         @param rot: A right multiplying rotation matrix

@@ -841,25 +841,27 @@ class Exposure(unittest.TestCase):
         self.radius = 13.0
 
     def test_HSExposureCA(self):
-        """HSExposureCA."""
+        """HSExposureCA.
+
+        Note: Floating point numbers have to be adjusted slightly
+        depending on whether Biopython uses `np.float32` or `np.float64`.
+        """
         hse = HSExposureCA(self.model, self.radius)
         assert hse
         residues = self.a_residues
         self.assertEqual(0, len(residues[0].xtra))
         self.assertEqual(0, len(residues[1].xtra))
         self.assertEqual(3, len(residues[2].xtra))
-        self.assertAlmostEqual(0.81250973133184456,
-                               residues[2].xtra["EXP_CB_PCB_ANGLE"])
+        self.assertAlmostEqual(0.8125101, residues[2].xtra["EXP_CB_PCB_ANGLE"])
         self.assertEqual(14, residues[2].xtra["EXP_HSE_A_D"])
         self.assertEqual(14, residues[2].xtra["EXP_HSE_A_U"])
         self.assertEqual(3, len(residues[3].xtra))
-        self.assertAlmostEqual(1.3383737, residues[3].xtra["EXP_CB_PCB_ANGLE"])
+        self.assertAlmostEqual(1.3383735, residues[3].xtra["EXP_CB_PCB_ANGLE"])
         self.assertEqual(13, residues[3].xtra["EXP_HSE_A_D"])
         self.assertEqual(16, residues[3].xtra["EXP_HSE_A_U"])
         # ...
         self.assertEqual(3, len(residues[-2].xtra))
-        self.assertAlmostEqual(0.77124014456278489,
-                               residues[-2].xtra["EXP_CB_PCB_ANGLE"])
+        self.assertAlmostEqual(0.7712405, residues[-2].xtra["EXP_CB_PCB_ANGLE"])
         self.assertEqual(24, residues[-2].xtra["EXP_HSE_A_D"])
         self.assertEqual(24, residues[-2].xtra["EXP_HSE_A_U"])
         self.assertEqual(0, len(residues[-1].xtra))
@@ -1118,7 +1120,7 @@ class TransformTests(unittest.TestCase):
         """Transform entities (rotation and translation)."""
         for o in (self.s, self.m, self.c, self.r, self.a):
             rotation = rotmat(Vector(1, 3, 5), Vector(1, 0, 0))
-            translation = np.array((2.4, 0, 1), 'f')
+            translation = np.array((2.4, 0, 1))
             oldpos = self.get_pos(o)
             o.transform(rotation, translation)
             newpos = self.get_pos(o)

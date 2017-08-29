@@ -2,7 +2,6 @@
 # This code is part of the Biopython distribution and governed by its
 # license.  Please see the LICENSE file that should have been included
 # as part of this package.
-
 """Atom class, used in Structure objects."""
 
 import copy
@@ -20,8 +19,16 @@ logger = logging.getLogger(__name__)
 class Atom(Entity):
     level = "A"
 
-    def __init__(self, name, coord, bfactor, occupancy, altloc, fullname, serial_number,
-                 element=None, **kwargs):
+    def __init__(self,
+                 name,
+                 coord,
+                 bfactor,
+                 occupancy,
+                 altloc,
+                 fullname,
+                 serial_number,
+                 element=None,
+                 **kwargs):
         """Create Atom object.
 
         The Atom object stores atom name (both with and without spaces),
@@ -126,10 +133,18 @@ class Atom(Entity):
         return np.sqrt(np.dot(diff, diff))
 
     def __eq__(self, other):
-        return self.name == other.name and np.allclose(self.coord, other.coord)
+        return self.atoms_equal(other)
 
     def __ne__(self, other):
-        return self.name != other.name or not np.allclose(self.coord, other.coord)
+        return not self.atoms_equal(other)
+
+    def atoms_equal(self, other, atol=1e-3):
+        """Check whether two atoms are equal.
+
+        Unlike `__eq__` and `__ne__` special methods, `atoms_equal` allows you
+        to specify tolerance.
+        """
+        return self.name == other.name and np.allclose(self.coord, other.coord, atol=atol)
 
     @property
     def full_id(self):
@@ -138,14 +153,14 @@ class Atom(Entity):
         The full id of an atom is the tuple
         (structure id, model id, chain id, residue id, atom name, altloc).
         """
-        return self.parent.full_id + ((self.name, self.altloc),)
+        return self.parent.full_id + ((self.name, self.altloc), )
 
     def transform(self, rot, tran):
         """Apply rotation and translation to the atomic coordinates.
 
         Example:
                 >>> rotation=rotmat(pi, Vector(1, 0, 0))
-                >>> translation=array((0, 0, 1), 'f')
+                >>> translation=array((0, 0, 1))
                 >>> atom.transform(rotation, translation)
 
         @param rot: A right multiplying rotation matrix
@@ -209,11 +224,8 @@ class DisorderedAtom(DisorderedEntityWrapper):
         # Add atom to dict, use altloc as key
         atom.disordered = 1
         # set the residue parent of the added atom
-        residue = self.parent
-        atom.parent = residue
-        altloc = atom.altloc
-        occupancy = atom.occupancy
-        self[altloc] = atom
-        if occupancy > self.last_occupancy:
-            self.last_occupancy = occupancy
-            self.disordered_select(altloc)
+        atom.parent = self.parent
+        self[atom.altloc] = atom
+        if atom.occupancy > self.last_occupancy:
+            self.last_occupancy = atom.occupancy
+            self.disordered_select(atom.altloc)

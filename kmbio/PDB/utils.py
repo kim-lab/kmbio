@@ -7,7 +7,7 @@ import lzma
 import tempfile
 import urllib.request
 
-from kmbio.PDB import Atom
+from kmbio.PDB import Atom, DisorderedAtom
 from kmbio.PDB.core.entity import Entity
 from kmbio.PDB.exceptions import PDBException
 
@@ -15,14 +15,36 @@ logger = logging.getLogger(__name__)
 ENTITY_LEVELS = ["A", "R", "C", "M", "S"]
 
 
-def allequal(s1, s2):
+def _unfold_disordered_atom(atom):
+    if isinstance(atom, DisorderedAtom):
+        return list(atom._child_dict.values())
+    else:
+        return [atom]
+
+
+def allequal(s1, s2, atol=1e-3):
+    # Check if atoms are equal
+    if isinstance(s1, (Atom, DisorderedAtom)) and isinstance(s2, (Atom, DisorderedAtom)):
+        atoms_1 = _unfold_disordered_atom(s1)
+        atoms_2 = _unfold_disordered_atom(s2)
+        for atom_1 in atoms_1:
+            for atom_2 in atoms_2:
+                if atom_1.atoms_equal(atom_2, atol):
+                    return True
+        logger.debug('Atoms not equal: (%s, %s) (%s, %s)', atoms_1, [a.coord for a in atoms_1],
+                     atoms_2, [a.coord for a in atoms_2])
+        return False
+    # Check if object types are the same
     if type(s1) != type(s2):
-        raise Exception
-    if isinstance(s1, Atom):
-        return s1 == s2
-    equal = (len(s1) == len(s2) and
-             all(allequal(so1, so2) for (so1, so2) in zip(s1.values(), s2.values())))
-    return equal
+        raise Exception(
+            "Can't compare objects of different types! ({}, {})".format(type(s1), type(s2)))
+    # Check if lengths are the same
+    lengths_equal = len(s1) == len(s2)
+    if not lengths_equal:
+        logger.error("Lengths are different: %s, %s", len(s1), len(s2))
+        return False
+    # Recurse
+    return all(allequal(so1, so2, atol) for (so1, so2) in zip(s1.values(), s2.values()))
 
 
 def uniqueify(items):
@@ -34,8 +56,17 @@ def uniqueify(items):
     return [x for x in items if x not in _seen and not _seen.add(x)]
 
 
-class uncompressed:
+def sort_structure(structure):
+    structure._child_list.sort(key=lambda m: m.id)
+    for model in structure.values():
+        model._child_list.sort(key=lambda c: c.id)
+        for chain in model.values():
+            chain._child_list.sort(key=lambda r: r.id[1])
+            for residue in chain.values():
+                residue._child_list.sort(key=lambda a: a.id)
 
+
+class uncompressed:
     @staticmethod
     def open(*args, **kwargs):
         return open(*args, **kwargs)
@@ -123,5 +154,6 @@ def unfold_entities(entity_list, target_level):
             _seen = set()
             entity_list = [
                 entity.parent for entity in entity_list
-                if entity.parent.id not in _seen and not _seen.add(entity.parent.id)]
+                if entity.parent.id not in _seen and not _seen.add(entity.parent.id)
+            ]
     return list(entity_list)

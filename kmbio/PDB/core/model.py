@@ -57,17 +57,17 @@ class Model(Entity):
     # Public
 
     def get_chains(self):
-        for c in self:
+        for c in self.values():
             yield c
 
     def get_residues(self):
         for c in self.get_chains():
-            for r in c:
+            for r in c.values():
                 yield r
 
     def get_atoms(self):
         for r in self.get_residues():
-            for a in r:
+            for a in r.values():
                 yield a
 
     # Custom

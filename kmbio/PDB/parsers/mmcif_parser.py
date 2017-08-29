@@ -10,8 +10,7 @@ from Bio._py3k import range
 from Bio.File import as_handle
 
 from kmbio.PDB import StructureBuilder
-from kmbio.PDB.exceptions import (BioassemblyNotFoundError,
-                                  PDBConstructionException)
+from kmbio.PDB.exceptions import BioassemblyError, PDBConstructionException
 
 from . import MMCIF2Dict
 from .bioassembly import apply_bioassembly, get_mmcif_bioassembly_data
@@ -74,12 +73,11 @@ class MMCIFParser(Parser):
 
         if bioassembly_id != 0:
             try:
-                bioassembly_data = get_mmcif_bioassembly_data(
-                    self._mmcif_dict, self.use_auth_id)[str(bioassembly_id)]
+                bioassembly_data = get_mmcif_bioassembly_data(self._mmcif_dict,
+                                                              self.use_auth_id)[str(bioassembly_id)]
             except KeyError:
-                raise BioassemblyNotFoundError
-            structure = apply_bioassembly(structure, bioassembly_data['chain_ids'],
-                                          bioassembly_data['transformations'])
+                raise BioassemblyError
+            structure = apply_bioassembly(structure, bioassembly_data)
         return structure
 
     # Private methods
@@ -87,7 +85,7 @@ class MMCIFParser(Parser):
     def _build_structure(self, structure_id=None):
         mmcif_dict = self._mmcif_dict
         if structure_id is None:
-            structure_id = mmcif_dict['_pdbx_database_status.entry_id']
+            structure_id = mmcif_dict.get('_pdbx_database_status.entry_id', None)
         atom_id_list = mmcif_dict["_atom_site.label_atom_id"]
         residue_id_list = mmcif_dict["_atom_site.label_comp_id"]
 
@@ -216,7 +214,7 @@ class MMCIFParser(Parser):
                 current_resname = resname
                 structure_builder.init_residue(resname, hetatm_flag, int_resseq, icode)
 
-            coord = np.array((x, y, z), 'f')
+            coord = np.array((x, y, z), np.float64)
             element = element_list[i] if element_list else None
             structure_builder.init_atom(
                 name, coord, tempfactor, occupancy, altloc, name, element=element)
@@ -224,7 +222,7 @@ class MMCIFParser(Parser):
                 u = (aniso_u11[i], aniso_u12[i], aniso_u13[i], aniso_u22[i], aniso_u23[i],
                      aniso_u33[i])
                 mapped_anisou = [float(x) for x in u]
-                anisou_array = np.array(mapped_anisou, 'f')
+                anisou_array = np.array(mapped_anisou, np.float64)
                 structure_builder.atom.anisou_array = anisou_array
         # Now try to set the cell
         try:
@@ -234,7 +232,7 @@ class MMCIFParser(Parser):
             alpha = float(mmcif_dict["_cell.angle_alpha"])
             beta = float(mmcif_dict["_cell.angle_beta"])
             gamma = float(mmcif_dict["_cell.angle_gamma"])
-            cell = np.array((a, b, c, alpha, beta, gamma), 'f')
+            cell = np.array((a, b, c, alpha, beta, gamma), np.float64)
             spacegroup = mmcif_dict["_symmetry.space_group_name_H-M"]
             spacegroup = spacegroup[1:-1]  # get rid of quotes!!
             if spacegroup is None:
@@ -464,7 +462,7 @@ class FastMMCIFParser(Parser):
                 current_resname = resname
                 structure_builder.init_residue(resname, hetatm_flag, int_resseq, icode)
 
-            coord = np.array((x, y, z), 'f')
+            coord = np.array((x, y, z), np.float64)
             element = element_list[i] if element_list else None
             structure_builder.init_atom(
                 name, coord, tempfactor, occupancy, altloc, name, element=element)
@@ -472,5 +470,5 @@ class FastMMCIFParser(Parser):
                 u = (aniso_u11[i], aniso_u12[i], aniso_u13[i], aniso_u22[i], aniso_u23[i],
                      aniso_u33[i])
                 mapped_anisou = [float(x) for x in u]
-                anisou_array = np.array(mapped_anisou, 'f')
+                anisou_array = np.array(mapped_anisou, np.float64)
                 structure_builder.atom.anisou_array = anisou_array

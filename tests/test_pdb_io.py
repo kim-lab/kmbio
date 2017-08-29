@@ -6,7 +6,7 @@ import pytest
 from common import (ATOM_DEFINED_TWICE_PDBS, LOCAL_REMOTE_MISMATCH, MISSING,
                     PDB_IDS, random_subset)
 from kmbio.PDB import allequal, DEFAULT_ROUTES, load
-from kmbio.PDB.exceptions import BioassemblyNotFoundError
+from kmbio.PDB.exceptions import BioassemblyError
 from kmbio.PDB.io.loaders import guess_pdb_type
 
 logger = logging.getLogger(__name__)
@@ -52,7 +52,7 @@ def test_equal(pdb_id, pdb_type, bioassembly_id):
             structure = load(route + filename, bioassembly_id=bioassembly_id)
             structures.append(structure)
             exceptions.append(None)
-        except BioassemblyNotFoundError as exception:
+        except BioassemblyError as exception:
             structures.append(None)
             exceptions.append(str(type(exception)))
     if any(s is not None for s in structures):

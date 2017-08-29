@@ -57,7 +57,7 @@ class Residue(Entity):
         """Returns the list of all atoms, unpack DisorderedAtoms."""
         undisordered_atom_list = []
         for atom in self.values():
-            if atom.disordered:
+            if isinstance(atom, DisorderedAtom):
                 undisordered_atom_list = (undisordered_atom_list + atom.disordered_get_list())
             else:
                 undisordered_atom_list.append(atom)
