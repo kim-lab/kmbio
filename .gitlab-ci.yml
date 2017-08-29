@@ -68,12 +68,16 @@ build-py36:
     # Conda install
     - cp -r $CI_PROJECT_DIR/conda-bld/* /opt/conda/conda-bld/
     - conda index /opt/conda/conda-bld/
-    - conda install -y -q --use-local "python=$PYTHON_VERSION" $CI_PROJECT_NAME
+    - conda install -y -q --use-local "python=$PYTHON_VERSION" ${CI_PROJECT_NAME}
     # Test
-    - pip install -q flake8 pytest pytest-cov pytest-runner pytest-logging hypothesis
+    - pip install -q flake8 pytest pytest-cov codecov pytest-logging hypothesis
     - flake8  # should probably go in a separate test, so no duplication?
     - py.test
+    - conda env export -f ${CI_PROJECT_DIR}/environment-py${PYTHON_VERSION/./}.yml
   coverage: /^TOTAL.*(\d+\%)/
+  artifacts:
+    paths:
+    - environment-py${PYTHON_VERSION/./}.yml
 
 test-py35:
   <<: [*conda_configure, *test]
