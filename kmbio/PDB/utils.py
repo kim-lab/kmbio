@@ -15,29 +15,36 @@ logger = logging.getLogger(__name__)
 ENTITY_LEVELS = ["A", "R", "C", "M", "S"]
 
 
-def as_digit(num, decimals):
-    a, b = str(num).partition('.')
-    b = b[:3]
-    return a + '.' + b
+def _unfold_disordered_atom(atom):
+    if isinstance(atom, DisorderedAtom):
+        return list(atom._child_dict.values())
+    else:
+        return [atom]
 
 
-def allequal(s1, s2):
-    if type(s1) != type(s2) and not (isinstance(s1, (Atom, DisorderedAtom)) and
-                                     isinstance(s2, (Atom, DisorderedAtom))):
+def allequal(s1, s2, atol=1e-3):
+    # Check if atoms are equal
+    if isinstance(s1, (Atom, DisorderedAtom)) and isinstance(s2, (Atom, DisorderedAtom)):
+        atoms_1 = _unfold_disordered_atom(s1)
+        atoms_2 = _unfold_disordered_atom(s2)
+        for atom_1 in atoms_1:
+            for atom_2 in atoms_2:
+                if atom_1.atoms_equal(atom_2, atol):
+                    return True
+        logger.debug('Atoms not equal: (%s, %s) (%s, %s)', atoms_1, [a.coord for a in atoms_1],
+                     atoms_2, [a.coord for a in atoms_2])
+        return False
+    # Check if object types are the same
+    if type(s1) != type(s2):
         raise Exception(
             "Can't compare objects of different types! ({}, {})".format(type(s1), type(s2)))
-    if isinstance(s1, Atom):
-        ids_equal = s1.id == s2.id
-        coords_equal = (as_digit(a1, 3) == as_digit(a2, 3) for a1, a2 in zip(s1.coord, s2.coord))
-        equal = ids_equal and coords_equal
-        if not equal:
-            logger.debug('Atoms not equal: (%s, %s) (%s, %s)', s1, s1.coord, s2, s2.coord)
-            logger.debug(' '.join(as_digit(a) for a in s1.coord) + ' ' + ' '.join(
-                as_digit(a) for a in s1.coord))
-        return equal
-    equal = (len(s1) == len(s2) and
-             all(allequal(so1, so2) for (so1, so2) in zip(s1.values(), s2.values())))
-    return equal
+    # Check if lengths are the same
+    lengths_equal = len(s1) == len(s2)
+    if not lengths_equal:
+        logger.error("Lengths are different: %s, %s", len(s1), len(s2))
+        return False
+    # Recurse
+    return all(allequal(so1, so2, atol) for (so1, so2) in zip(s1.values(), s2.values()))
 
 
 def uniqueify(items):
@@ -47,6 +54,16 @@ def uniqueify(items):
     """
     _seen = set()
     return [x for x in items if x not in _seen and not _seen.add(x)]
+
+
+def sort_structure(structure):
+    structure._child_list.sort(key=lambda m: m.id)
+    for model in structure.values():
+        model._child_list.sort(key=lambda c: c.id)
+        for chain in model.values():
+            chain._child_list.sort(key=lambda r: r.id[1])
+            for residue in chain.values():
+                residue._child_list.sort(key=lambda a: a.id)
 
 
 class uncompressed:
