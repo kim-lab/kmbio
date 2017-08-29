@@ -11,8 +11,8 @@ def view(entity, **kwargs):
 
 class Viewer(abc.ABC):
 
-    @abc.abstractmethod
     @property
+    @abc.abstractmethod
     def _structure(self):
         raise NotImplementedError
 
