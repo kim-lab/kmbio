@@ -5,6 +5,7 @@
 """Parser for PDB files."""
 import logging
 import re
+from collections import namedtuple
 
 import numpy as np
 from Bio import File
@@ -13,10 +14,15 @@ from Bio.File import as_handle
 from kmbio.PDB import StructureBuilder
 from kmbio.PDB.exceptions import PDBConstructionException
 
-from .bioassembly import apply_bioassembly, ProcessRemark350
+from .bioassembly import ProcessRemark350, apply_bioassembly
 from .parser import Parser
 
 logger = logging.getLogger(__name__)
+
+AtomData = namedtuple(
+    'AtomData',
+    ('record_type, fullname, altloc, resname, chainid, serial_number, resseq, icode, hetero_flag,'
+     'coord, occupancy, bfactor, segid, element, name, residue_id'))
 
 # If PDB spec says "COLUMNS 18-20" this means line[17:20]
 
@@ -98,7 +104,7 @@ class PDBParser(Parser):
         return header_dict, coords_trailer
 
     def _parse_coordinates(self, coords_trailer):
-        """Parse the atomic data in the PDB file (PRIVATE)."""
+        """Parse the atomic data in the PDB file."""
         local_line_counter = 0
         structure_builder = self.structure_builder
         current_model_id = 0
@@ -116,89 +122,39 @@ class PDBParser(Parser):
             if record_type == "ATOM  " or record_type == "HETATM":
                 # Initialize the Model - there was no explicit MODEL record
                 if not model_open:
+                    logger.debug("Adding new model: %s", current_model_id)
                     structure_builder.init_model(current_model_id)
                     current_model_id += 1
                     model_open = 1
-                fullname = line[12:16]
-                # get rid of whitespace in atom names
-                split_list = fullname.split()
-                if len(split_list) != 1:
-                    # atom name has internal spaces, e.g. " N B ", so
-                    # we do not strip spaces
-                    name = fullname
-                else:
-                    # atom name is like " CA ", so we can strip spaces
-                    name = split_list[0]
-                altloc = line[16]
-                resname = line[17:20]
-                chainid = line[21]
-                try:
-                    serial_number = int(line[6:11])
-                except Exception:
-                    serial_number = 0
-                resseq = int(line[22:26].split()[0])  # sequence identifier
-                icode = line[26]  # insertion code
-                if record_type == "HETATM":  # hetero atom flag
-                    if resname == "HOH" or resname == "WAT":
-                        hetero_flag = "W"
-                    else:
-                        hetero_flag = "H"
-                else:
-                    hetero_flag = " "
-                residue_id = (hetero_flag, resseq, icode)
-                # atomic coordinates
-                try:
-                    x = float(line[30:38])
-                    y = float(line[38:46])
-                    z = float(line[46:54])
-                except Exception:
-                    # Should we allow parsing to continue in permissive mode?
-                    # If so, what coordinates should we default to?  Easier to abort!
-                    raise PDBConstructionException(
-                        "Invalid or missing coordinate(s) at line %i." % global_line_counter)
-                coord = np.array((x, y, z), np.float64)
-                # occupancy & B factor
-                try:
-                    occupancy = float(line[54:60])
-                except Exception:
-                    self._handle_PDB_exception("Invalid or missing occupancy", global_line_counter)
-                    occupancy = None  # Rather than arbitrary zero or one
-                if occupancy is not None and occupancy < 0:
-                    # TODO - Should this be an error in strict mode?
-                    # self._handle_PDB_exception("Negative occupancy",
-                    #                            global_line_counter)
-                    # This uses fixed text so the warning occurs once only:
-                    logger.info("Negative occupancy in one or more atoms")
-                try:
-                    bfactor = float(line[60:66])
-                except Exception:
-                    self._handle_PDB_exception("Invalid or missing B factor", global_line_counter)
-                    bfactor = 0.0  # The PDB use a default of zero if the data is missing
-                segid = line[72:76]
-                element = line[76:78].strip().upper()
-                if current_segid != segid:
-                    current_segid = segid
+                atom_data = self._parse_atom_line(line, global_line_counter)
+                if current_segid != atom_data.segid:
+                    current_segid = atom_data.segid
                     structure_builder.init_seg(current_segid)
-                if current_chain_id != chainid:
-                    current_chain_id = chainid
+                if current_chain_id != atom_data.chainid:
+                    current_chain_id = atom_data.chainid
                     structure_builder.init_chain(current_chain_id)
-                    current_residue_id = residue_id
-                    current_resname = resname
+                    current_residue_id = atom_data.residue_id
+                    current_resname = atom_data.resname
                     try:
-                        structure_builder.init_residue(resname, hetero_flag, resseq, icode)
+                        structure_builder.init_residue(atom_data.resname, atom_data.hetero_flag,
+                                                       atom_data.resseq, atom_data.icode)
                     except PDBConstructionException as message:
                         self._handle_PDB_exception(message, global_line_counter)
-                elif current_residue_id != residue_id or current_resname != resname:
-                    current_residue_id = residue_id
-                    current_resname = resname
+                elif (current_residue_id != atom_data.residue_id
+                      or current_resname != atom_data.resname):
+                    current_residue_id = atom_data.residue_id
+                    current_resname = atom_data.resname
                     try:
-                        structure_builder.init_residue(resname, hetero_flag, resseq, icode)
+                        structure_builder.init_residue(atom_data.resname, atom_data.hetero_flag,
+                                                       atom_data.resseq, atom_data.icode)
                     except PDBConstructionException as message:
                         self._handle_PDB_exception(message, global_line_counter)
                 # init atom
                 try:
-                    structure_builder.init_atom(name, coord, bfactor, occupancy, altloc, fullname,
-                                                serial_number, element)
+                    structure_builder.init_atom(atom_data.name, atom_data.coord, atom_data.bfactor,
+                                                atom_data.occupancy, atom_data.altloc,
+                                                atom_data.fullname, atom_data.serial_number,
+                                                atom_data.element)
                 except PDBConstructionException as message:
                     self._handle_PDB_exception(message, global_line_counter)
             elif record_type == "ANISOU":
@@ -252,6 +208,69 @@ class PDBParser(Parser):
         # EOF (does not end in END or CONECT)
         self.line_counter = self.line_counter + local_line_counter
         return []
+
+    def _parse_atom_line(self, line, global_line_counter):
+        record_type = line[0:6]
+        fullname = line[12:16]
+        # get rid of whitespace in atom names
+        split_list = fullname.split()
+        if len(split_list) != 1:
+            # atom name has internal spaces, e.g. " N B ", so
+            # we do not strip spaces
+            name = fullname
+        else:
+            # atom name is like " CA ", so we can strip spaces
+            name = split_list[0]
+        altloc = line[16]
+        resname = line[17:20]
+        chainid = line[21]
+        try:
+            serial_number = int(line[6:11])
+        except Exception:
+            serial_number = 0
+        resseq = int(line[22:26].split()[0])  # sequence identifier
+        icode = line[26]  # insertion code
+        if record_type == "HETATM":  # hetero atom flag
+            if resname == "HOH" or resname == "WAT":
+                hetero_flag = "W"
+            else:
+                hetero_flag = "H"
+        else:
+            hetero_flag = " "
+        residue_id = (hetero_flag, resseq, icode)
+        # atomic coordinates
+        try:
+            x = float(line[30:38])
+            y = float(line[38:46])
+            z = float(line[46:54])
+        except Exception:
+            # Should we allow parsing to continue in permissive mode?
+            # If so, what coordinates should we default to?  Easier to abort!
+            raise PDBConstructionException(
+                "Invalid or missing coordinate(s) at line %i." % global_line_counter)
+        coord = np.array((x, y, z), np.float64)
+        # occupancy & B factor
+        try:
+            occupancy = float(line[54:60])
+        except Exception:
+            self._handle_PDB_exception("Invalid or missing occupancy", global_line_counter)
+            occupancy = None  # Rather than arbitrary zero or one
+        if occupancy is not None and occupancy < 0:
+            # TODO - Should this be an error in strict mode?
+            # self._handle_PDB_exception("Negative occupancy",
+            #                            global_line_counter)
+            # This uses fixed text so the warning occurs once only:
+            logger.info("Negative occupancy in one or more atoms")
+        try:
+            bfactor = float(line[60:66])
+        except Exception:
+            self._handle_PDB_exception("Invalid or missing B factor", global_line_counter)
+            bfactor = 0.0  # The PDB use a default of zero if the data is missing
+        segid = line[72:76]
+        element = line[76:78].strip().upper()
+        return AtomData(record_type, fullname, altloc, resname, chainid, serial_number, resseq,
+                        icode, hetero_flag, coord, occupancy, bfactor, segid, element, name,
+                        residue_id)
 
     def _handle_PDB_exception(self, message, line_counter):
         """Handle exception (PRIVATE).
@@ -345,8 +364,8 @@ def _nice_case(line):
         if c >= 'a' and c <= 'z' and nextCap:
             c = c.upper()
             nextCap = 0
-        elif (c == ' ' or c == '.' or c == ',' or c == ';' or c == ':' or c == '\t' or c == '-' or
-              c == '_'):
+        elif (c == ' ' or c == '.' or c == ',' or c == ';' or c == ':' or c == '\t' or c == '-'
+              or c == '_'):
             nextCap = 1
         s += c
         i += 1
