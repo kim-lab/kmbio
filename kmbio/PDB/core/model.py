@@ -56,18 +56,16 @@ class Model(Entity):
 
     # Public
 
-    def get_chains(self):
-        for c in self.values():
-            yield c
-
-    def get_residues(self):
-        for c in self.get_chains():
-            for r in c.values():
+    @property
+    def residues(self):
+        for c in self:
+            for r in c:
                 yield r
 
-    def get_atoms(self):
-        for r in self.get_residues():
-            for a in r.values():
+    @property
+    def atoms(self):
+        for r in self.residues:
+            for a in r:
                 yield a
 
     # Custom

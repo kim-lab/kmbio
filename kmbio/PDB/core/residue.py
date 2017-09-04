@@ -56,16 +56,12 @@ class Residue(Entity):
     def get_unpacked_list(self):
         """Returns the list of all atoms, unpack DisorderedAtoms."""
         undisordered_atom_list = []
-        for atom in self.values():
+        for atom in self:
             if isinstance(atom, DisorderedAtom):
                 undisordered_atom_list = (undisordered_atom_list + atom.disordered_get_list())
             else:
                 undisordered_atom_list.append(atom)
         return undisordered_atom_list
-
-    def get_atom(self):
-        for a in self.values():
-            yield a
 
     @property
     def is_hetatm(self):

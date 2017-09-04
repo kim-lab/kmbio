@@ -37,23 +37,22 @@ class Structure(Entity):
     def __gt__(self, other):
         return self.id.lower() > other.id.lower()
 
-    def get_models(self):
-        for m in self.values():
-            yield m
-
-    def get_chains(self):
-        for m in self.get_models():
-            for c in m.values():
+    @property
+    def chains(self):
+        for m in self:
+            for c in m:
                 yield c
 
-    def get_residues(self):
-        for c in self.get_chains():
-            for r in c.values():
+    @property
+    def residues(self):
+        for c in self.chains:
+            for r in c:
                 yield r
 
-    def get_atoms(self):
-        for r in self.get_residues():
-            for a in r.values():
+    @property
+    def atoms(self):
+        for r in self.residues:
+            for a in r:
                 yield a
 
     def extract_models(self, model_ids):
@@ -87,6 +86,7 @@ class Structure(Entity):
         """
         raise NotImplementedError
 
+    @staticmethod
     def from_dataframe(atoms, bonds=None):
         """Generate a new structure from a dataframe of atoms and an array of bonds."""
         raise NotImplementedError

@@ -344,16 +344,16 @@ class _PPBuilder(object):
         # Decide which entity we are dealing with
         if level == "S":
             model = entity[0]
-            chain_list = model.values()
+            chain_list = list(model)
         elif level == "M":
-            chain_list = entity.values()
+            chain_list = list(entity)
         elif level == "C":
             chain_list = [entity]
         else:
             raise PDBException("Entity should be Structure, Model or Chain.")
         pp_list = []
         for chain in chain_list:
-            chain_it = iter(chain.values())
+            chain_it = iter(chain)
             try:
                 prev_res = next(chain_it)
                 while not accept(prev_res, aa_only):

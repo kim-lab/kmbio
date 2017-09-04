@@ -6,6 +6,7 @@ import logging
 import lzma
 import tempfile
 import urllib.request
+from collections import OrderedDict
 
 from kmbio.PDB import Atom, DisorderedAtom
 from kmbio.PDB.core.entity import Entity
@@ -15,9 +16,24 @@ logger = logging.getLogger(__name__)
 ENTITY_LEVELS = ["A", "R", "C", "M", "S"]
 
 
+def sort_ordered_dict(ordered_dict: OrderedDict) -> None:
+    """Sort ordered dict in ascending order using selection sort.
+
+    Parameters
+    ----------
+    ordered_dict:
+        Dictionary to sort.
+    n_sorted:
+        Number of items *at the end of the dictionary* that are sored.
+    """
+    for n_sorted in range(len(ordered_dict)):
+        min_key = min(list(ordered_dict)[:-n_sorted or None])
+        ordered_dict.move_to_end(min_key)
+
+
 def _unfold_disordered_atom(atom):
     if isinstance(atom, DisorderedAtom):
-        return list(atom._child_dict.values())
+        return list(atom.disordered_get_list())
     else:
         return [atom]
 
@@ -44,7 +60,7 @@ def allequal(s1, s2, atol=1e-3):
         logger.error("Lengths are different: %s, %s", len(s1), len(s2))
         return False
     # Recurse
-    return all(allequal(so1, so2, atol) for (so1, so2) in zip(s1.values(), s2.values()))
+    return all(allequal(so1, so2, atol) for (so1, so2) in zip(s1, s2))
 
 
 def uniqueify(items):
@@ -57,13 +73,13 @@ def uniqueify(items):
 
 
 def sort_structure(structure):
-    structure._child_list.sort(key=lambda m: m.id)
-    for model in structure.values():
-        model._child_list.sort(key=lambda c: c.id)
-        for chain in model.values():
-            chain._child_list.sort(key=lambda r: r.id[1])
-            for residue in chain.values():
-                residue._child_list.sort(key=lambda a: a.id)
+    sort_ordered_dict(structure._children)
+    for model in structure:
+        sort_ordered_dict(model._children)
+        for chain in model:
+            sort_ordered_dict(chain._children)
+            for residue in chain:
+                sort_ordered_dict(residue._children)
 
 
 class uncompressed:
