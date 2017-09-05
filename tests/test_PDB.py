@@ -919,7 +919,7 @@ class Atom_Element(unittest.TestCase):
         pdb_filename = "PDB/ions.pdb"
         structure = PDBParser(PERMISSIVE=True).get_structure(pdb_filename, 'X')
         # check magnesium atom
-        atoms = list(structure[0]['A'][('H_ MG', 1, ' ')])
+        atoms = list(structure[0]['A'][('H_MG', 1, ' ')])
         self.assertEqual('MG', atoms[0].element)
 
     def test_hydrogens(self):
