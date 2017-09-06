@@ -35,28 +35,28 @@ def test_guess_pdb_type(url, pdb_type):
     assert guess_pdb_type(url) == pdb_type
 
 
-@pytest.mark.parametrize("pdb_id, pdb_type, bioassembly_id",
-                         [(pdb_id, pdb_type, bioassembly_id)
+@pytest.mark.parametrize("pdb_id, pdb_type, bioassembly_id, route",
+                         [(pdb_id, pdb_type, bioassembly_id, route)
                           for pdb_id in PDB_IDS for pdb_type in ['pdb', 'cif']
                           for bioassembly_id in ([0] if pdb_type == 'pdb' else [0, 1])
+                          for route in DEFAULT_ROUTES
                           if (pdb_id, pdb_type) not in LOCAL_REMOTE_MISMATCH
                           if (pdb_id, pdb_type, bioassembly_id) not in MISSING])
-def test_equal(pdb_id, pdb_type, bioassembly_id):
+def test_equal(pdb_id, pdb_type, bioassembly_id, route):
     """Make sure that loading local and remote files produces the same result."""
     filename = '{}.{}'.format(pdb_id, pdb_type)
     logger.debug(filename)
     structures = []
     exceptions = []
-    for route in DEFAULT_ROUTES:
-        try:
-            structure = load(route + filename, bioassembly_id=bioassembly_id)
-            structures.append(structure)
-            exceptions.append(None)
-        except BioassemblyError as exception:
-            structures.append(None)
-            exceptions.append(str(type(exception)))
+    try:
+        structure = load(route + filename, bioassembly_id=bioassembly_id)
+        structures.append(structure)
+        exceptions.append(None)
+    except BioassemblyError as exception:
+        structures.append(None)
+        exceptions.append(str(type(exception)))
     if any(s is not None for s in structures):
-        assert all(e is None for e in exceptions), (list(DEFAULT_ROUTES), structures, exceptions)
+        assert all(e is None for e in exceptions)
         for s in structures[1:]:
             assert allequal(structure, structures[0])
     else:
