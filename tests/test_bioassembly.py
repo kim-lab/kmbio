@@ -174,6 +174,7 @@ def test_mmcif_vs_pdb_ref(pdb_bioassembly_file):
     assert allequal(mmcif_structure, pdb_bioassembly_structure, 1e-2)
 
 
+@pytest.mark.skip(reason="Takes too long!")
 @pytest.mark.parametrize('mmcif_bioassembly_file',
                          random.sample(MMCIF_BIOASSEMBLY_FILES, NUMBER_OF_SAMPLES))
 def test_mmcif_vs_mmcif_ref(mmcif_bioassembly_file):
