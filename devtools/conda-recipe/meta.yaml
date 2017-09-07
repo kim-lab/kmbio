@@ -25,6 +25,7 @@ requirements:
     - reportlab
     - biopython
     - mmtf-python
+    - retrying
     # Binaries
     - bwa
     - clustalo
