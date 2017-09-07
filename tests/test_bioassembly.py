@@ -6,8 +6,8 @@ import re
 
 import pytest
 
-from kmbio.PDB import (DEFAULT_ROUTES, mmcif2dict, MMCIFParser, PDBParser, ProcessRemark350,
-                       allequal, get_mmcif_bioassembly_data, open_url, sort_structure)
+from kmbio.PDB import (DEFAULT_ROUTES, MMCIFParser, PDBParser, ProcessRemark350, allequal,
+                       get_mmcif_bioassembly_data, mmcif2dict, open_url, sort_structure)
 
 random.seed(42)
 logger = logging.getLogger(__name__)
@@ -174,7 +174,6 @@ def test_mmcif_vs_pdb_ref(pdb_bioassembly_file):
     assert allequal(mmcif_structure, pdb_bioassembly_structure, 1e-2)
 
 
-@pytest.mark.skip(reason="Takes too long!")
 @pytest.mark.parametrize('mmcif_bioassembly_file',
                          random.sample(MMCIF_BIOASSEMBLY_FILES, NUMBER_OF_SAMPLES))
 def test_mmcif_vs_mmcif_ref(mmcif_bioassembly_file):
