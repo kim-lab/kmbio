@@ -3,8 +3,9 @@
 ## 2.0.2
 
 - Entities now keep children inside a single `OrderedDict` named `_children`. Previously there was a list `_child_list` and a dictionary `_child_dict`.
-- Iteration now returns objects instead of ids. For example, `for chain in model` iterates over chain objects instead of chain ids.
-- `test_mmcif_vs_mmcif_ref` runs fast enough to be included in tests.
+- Iteration now returns objects instead of ids. For example, `for chain in model` iterates over chain objects instead of chain ids. This is consistent with `Bio.PDB`.
+- Refactor Cython code in `_mmcif_to_dict.pyx` for > 2x speed gain.
+- Add `test_mmcif_vs_mmcif_ref` tests, since now those tests are fast enough (sort of).
 
 ## 2.0.1
 
