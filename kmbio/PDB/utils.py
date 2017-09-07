@@ -1,12 +1,17 @@
 import bz2
 import contextlib
+import functools
 import gzip
 import itertools
 import logging
 import lzma
+import socket
 import tempfile
 import urllib.request
 from collections import OrderedDict
+from typing import Callable, TextIO
+
+from retrying import retry
 
 from kmbio.PDB import Atom, DisorderedAtom
 from kmbio.PDB.core.entity import Entity
@@ -82,43 +87,6 @@ def sort_structure(structure):
                 sort_ordered_dict(residue._children)
 
 
-class uncompressed:
-    @staticmethod
-    def open(*args, **kwargs):
-        return open(*args, **kwargs)
-
-    @staticmethod
-    def decompress(data):
-        return data
-
-
-def anyzip(filename):
-    if filename.endswith('.gz'):
-        return gzip
-    elif filename.endswith('.bz2'):
-        return bz2
-    elif filename.endswith('.xz'):
-        return lzma
-    else:
-        return uncompressed
-
-
-@contextlib.contextmanager
-def open_url(url):
-    if url.startswith(('ftp:', 'http:', 'https:', )):
-        with tempfile.TemporaryFile('w+t') as fh:
-            logger.debug("URL: %s", url)
-            with urllib.request.urlopen(url) as ifh:
-                data_bin = ifh.read()
-                data_txt = anyzip(url).decompress(data_bin).decode('utf-8')
-                fh.write(data_txt)
-            fh.seek(0)
-            yield fh
-    else:
-        with anyzip(url).open(url, mode='rt') as fh:
-            yield fh
-
-
 def get_unique_parents(entity_list):
     """Translate a list of entities to a list of their (unique) parents."""
     unique_parents = set(entity.parent for entity in entity_list)
@@ -173,3 +141,74 @@ def unfold_entities(entity_list, target_level):
                 if entity.parent.id not in _seen and not _seen.add(entity.parent.id)
             ]
     return list(entity_list)
+
+
+# =============================================================================
+# Open files and URLs
+# =============================================================================
+
+
+class uncompressed:
+    @staticmethod
+    def open(*args, **kwargs):
+        return open(*args, **kwargs)
+
+    @staticmethod
+    def decompress(data):
+        return data
+
+
+def anyzip(filename):
+    if filename.endswith('.gz'):
+        return gzip
+    elif filename.endswith('.bz2'):
+        return bz2
+    elif filename.endswith('.xz'):
+        return lzma
+    else:
+        return uncompressed
+
+
+def check_exception(exc, valid_exc):
+    to_retry = isinstance(exc, valid_exc)
+    logger.error("The following exception occured: '%s'! %s", exc, 'Retrying...'
+                 if to_retry else "Failed!")
+    return to_retry
+
+
+def retry_urlopen(fn: Callable) -> Callable:
+    """Retry downloading data from a url after a timeout."""
+    _check_exception = functools.partial(check_exception, valid_exc=socket.timeout)
+    wrapper = retry(
+        retry_on_exception=_check_exception,
+        wait_exponential_multiplier=1000,
+        wait_exponential_max=10000,
+        stop_max_attempt_number=5)
+    return wrapper(fn)
+
+
+@retry_urlopen
+def read_url(url: str, timeout: float=10.0, **kwargs) -> bytes:
+    """Read the contents of a URL or a file."""
+    with urllib.request.urlopen(url, timeout=timeout, **kwargs) as ifh:
+        data = ifh.read()
+    return data
+
+
+@contextlib.contextmanager
+def open_url(url: str) -> TextIO:
+    """Return a filehandle to a tempfile containig url data."""
+    logger.debug("URL: %s", url)
+    if url.startswith(('ftp:', 'http:', 'https:')):
+        logger.debug("reading...")
+        data_bin = read_url(url)
+        logger.debug("decompressing...")
+        data_txt = anyzip(url).decompress(data_bin).decode('utf-8')
+        logger.debug("writing...")
+        with tempfile.TemporaryFile('w+t') as fh:
+            fh.write(data_txt)
+            fh.seek(0)
+            yield fh
+    else:
+        with anyzip(url).open(url, mode='rt') as fh:
+            yield fh

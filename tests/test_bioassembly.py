@@ -6,7 +6,7 @@ import re
 
 import pytest
 
-from kmbio.PDB import (DEFAULT_ROUTES, MMCIF2Dict, MMCIFParser, PDBParser, ProcessRemark350,
+from kmbio.PDB import (DEFAULT_ROUTES, mmcif2dict, MMCIFParser, PDBParser, ProcessRemark350,
                        allequal, get_mmcif_bioassembly_data, open_url, sort_structure)
 
 random.seed(42)
@@ -84,7 +84,7 @@ def test_pdb_vs_mmcif_bioassembly_data(pdb_id):
         pdb_bioassembly_data = parser.header['bioassembly_data']
 
     with open_url(mmcif_url) as fh:
-        sdict = MMCIF2Dict(fh)
+        sdict = mmcif2dict(fh)
         mmcif_bioassembly_data = get_mmcif_bioassembly_data(sdict, use_auth_id=True)
 
     # Make sure we have bioassemblies with the same ids
@@ -92,8 +92,8 @@ def test_pdb_vs_mmcif_bioassembly_data(pdb_id):
     assert not (set(pdb_bioassembly_data) ^ set(mmcif_bioassembly_data))
     for bioassembly_id in pdb_bioassembly_data:
         # Make sure the bioasembly applies to the same chains
-        assert not (
-            set(pdb_bioassembly_data[bioassembly_id]) ^ set(mmcif_bioassembly_data[bioassembly_id]))
+        assert not (set(pdb_bioassembly_data[bioassembly_id]) ^
+                    set(mmcif_bioassembly_data[bioassembly_id]))
         for chain_id in pdb_bioassembly_data[bioassembly_id]:
             # Make sure the transformations are the same
             pdb_transformations = pdb_bioassembly_data[bioassembly_id][chain_id].sort(

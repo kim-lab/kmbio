@@ -3,9 +3,9 @@ import os
 
 import pytest
 
-from common import (ATOM_DEFINED_TWICE_PDBS, LOCAL_REMOTE_MISMATCH, MISSING,
-                    PDB_IDS, random_subset)
-from kmbio.PDB import allequal, DEFAULT_ROUTES, load
+import kmbio.PDB
+from common import ATOM_DEFINED_TWICE_PDBS, LOCAL_REMOTE_MISMATCH, MISSING, PDB_IDS, random_subset
+from kmbio.PDB import DEFAULT_ROUTES, allequal
 from kmbio.PDB.exceptions import BioassemblyError
 from kmbio.PDB.io.loaders import guess_pdb_type
 
@@ -49,12 +49,16 @@ def test_equal(pdb_id, pdb_type, bioassembly_id, route):
     structures = []
     exceptions = []
     try:
-        structure = load(route + filename, bioassembly_id=bioassembly_id)
+        url = route + filename
+        logger.debug("Loading structure from '%s'...", url)
+        structure = kmbio.PDB.load(url, bioassembly_id=bioassembly_id)
+        logger.debug("Done!")
         structures.append(structure)
         exceptions.append(None)
     except BioassemblyError as exception:
         structures.append(None)
         exceptions.append(str(type(exception)))
+    logger.debug("Checking for missing...")
     if any(s is not None for s in structures):
         assert all(e is None for e in exceptions)
         for s in structures[1:]:
@@ -62,6 +66,7 @@ def test_equal(pdb_id, pdb_type, bioassembly_id, route):
     else:
         for e in exceptions:
             assert e == exceptions[0]
+    logger.debug("Done!")
 
 
 @pytest.mark.parametrize("pdb_id_1, pdb_id_2, pdb_type",
@@ -72,13 +77,13 @@ def test_equal(pdb_id, pdb_type, bioassembly_id, route):
                           if (pdb_id_2, pdb_type, 0) not in MISSING])
 def test_notequal(pdb_id_1, pdb_id_2, pdb_type):
     """Make sure that structures that should be different are different."""
-    s1 = load('rcsb://{}.{}'.format(pdb_id_1, pdb_type))
-    s2 = load('rcsb://{}.{}'.format(pdb_id_2, pdb_type))
+    s1 = kmbio.PDB.load('rcsb://{}.{}'.format(pdb_id_1, pdb_type))
+    s2 = kmbio.PDB.load('rcsb://{}.{}'.format(pdb_id_2, pdb_type))
     assert not allequal(s1, s2)
 
 
 @pytest.mark.parametrize("pdb_id", random_subset(ATOM_DEFINED_TWICE_PDBS))
 def test_atom_defined_twice(pdb_id):
     """Tests for the ``Atom defined twice`` error."""
-    s = load('rcsb://{}.{}'.format(pdb_id, 'cif'))
+    s = kmbio.PDB.load('rcsb://{}.{}'.format(pdb_id, 'cif'))
     assert s

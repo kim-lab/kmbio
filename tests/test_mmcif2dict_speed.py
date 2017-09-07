@@ -3,9 +3,10 @@ import gzip
 import logging
 
 import pytest
-import urllib.request
 
-from kmbio.PDB.parsers._mmcif_to_dict import MMCIF2Dict as mmcif_to_dict
+from kmbio.PDB.parsers._mmcif_to_dict import mmcif2dict
+from kmbio.PDB.utils import read_url
+
 # from kmbio.PDB.parsers.mmcif_to_dict import MMCIF2Dict as mmcif_to_dict  # for reference
 
 logger = logging.getLogger(__name__)
@@ -31,17 +32,17 @@ def cif_file_ref_time(request, tmpdir_factory):
     cif_id, ref_time = request.param
     url = WWPDB_URL + "/{}/{}.cif.gz".format(cif_id[1:3], cif_id)
     fn = tmpdir_factory.mktemp('cif_data').join(cif_id + '.cif')
-    with urllib.request.urlopen(url) as ifh, open(str(fn), 'wb') as ofh:
-        ofh.write(gzip.decompress(ifh.read()))
+    data = read_url(url)
+    with open(str(fn), 'wb') as ofh:
+        ofh.write(gzip.decompress(data))
     return str(fn), ref_time
 
 
 def test_speed(cif_file_ref_time):
     cif_file, ref_time = cif_file_ref_time
     start_time = datetime.datetime.now()
-    mmcif_to_dict(cif_file)
+    mmcif2dict(cif_file)
     running_time = (datetime.datetime.now() - start_time).total_seconds()
-    logger.info(
-        "Processing file '%s' took %s seconds (%.2f faster than Python).",
-        cif_file, running_time, ref_time / running_time)
+    logger.info("Processing file '%s' took %s seconds (%.2f faster than Python).", cif_file,
+                running_time, ref_time / running_time)
     # assert running_time < (ref_time / MULTIPLIER)

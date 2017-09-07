@@ -12,7 +12,7 @@ from Bio.File import as_handle
 from kmbio.PDB import StructureBuilder
 from kmbio.PDB.exceptions import BioassemblyError, PDBConstructionException
 
-from . import MMCIF2Dict
+from . import mmcif2dict
 from .bioassembly import apply_bioassembly, get_mmcif_bioassembly_data
 from .parser import Parser
 
@@ -66,7 +66,7 @@ class MMCIFParser(Parser):
         structure_id : `str`
             The id that will be used for the structure
         """
-        self._mmcif_dict = MMCIF2Dict(filename)
+        self._mmcif_dict = mmcif2dict(filename)
         self._build_structure(structure_id)
 
         structure = self._structure_builder.get_structure()
