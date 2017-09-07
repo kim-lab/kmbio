@@ -7,6 +7,7 @@ import logging
 import lzma
 import socket
 import tempfile
+import urllib.error
 import urllib.request
 from collections import OrderedDict
 from typing import Callable, TextIO
@@ -149,6 +150,7 @@ def unfold_entities(entity_list, target_level):
 
 
 class uncompressed:
+
     @staticmethod
     def open(*args, **kwargs):
         return open(*args, **kwargs)
@@ -178,7 +180,8 @@ def check_exception(exc, valid_exc):
 
 def retry_urlopen(fn: Callable) -> Callable:
     """Retry downloading data from a url after a timeout."""
-    _check_exception = functools.partial(check_exception, valid_exc=socket.timeout)
+    _check_exception = functools.partial(
+        check_exception, valid_exc=(socket.timeout, urllib.error.URLError))
     wrapper = retry(
         retry_on_exception=_check_exception,
         wait_exponential_multiplier=1000,
