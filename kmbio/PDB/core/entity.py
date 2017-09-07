@@ -201,16 +201,18 @@ class Entity:
         """
         Apply rotation and translation to the atomic coordinates.
 
-        Example:
-                >>> rotation=rotmat(pi, Vector(1, 0, 0))
-                >>> translation=array((0, 0, 1))
-                >>> entity.transform(rotation, translation)
+        Parameters
+        ----------
+        rot : `numpy.Array`
+            A 3x3 rotation matrix.
+        tran: `numpy.Array`
+            A 1x3 translation vector.
 
-        @param rot: A right multiplying rotation matrix
-        @type rot: 3x3 Numeric array
-
-        @param tran: the translation vector
-        @type tran: size 3 Numeric array
+        Examples
+        --------
+        >>> rotation=rotmat(pi, Vector(1, 0, 0))
+        >>> translation=array((0, 0, 1))
+        >>> entity.transform(rotation, translation)
         """
         for entity in self:
             entity.transform(rot, tran)
