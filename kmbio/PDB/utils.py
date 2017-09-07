@@ -1,11 +1,17 @@
 import bz2
 import contextlib
+import functools
 import gzip
 import itertools
 import logging
 import lzma
+import socket
 import tempfile
 import urllib.request
+from collections import OrderedDict
+from typing import Callable, TextIO
+
+from retrying import retry
 
 from kmbio.PDB import Atom, DisorderedAtom
 from kmbio.PDB.core.entity import Entity
@@ -15,9 +21,24 @@ logger = logging.getLogger(__name__)
 ENTITY_LEVELS = ["A", "R", "C", "M", "S"]
 
 
+def sort_ordered_dict(ordered_dict: OrderedDict) -> None:
+    """Sort ordered dict in ascending order using selection sort.
+
+    Parameters
+    ----------
+    ordered_dict:
+        Dictionary to sort.
+    n_sorted:
+        Number of items *at the end of the dictionary* that are sored.
+    """
+    for n_sorted in range(len(ordered_dict)):
+        min_key = min(list(ordered_dict)[:-n_sorted or None])
+        ordered_dict.move_to_end(min_key)
+
+
 def _unfold_disordered_atom(atom):
     if isinstance(atom, DisorderedAtom):
-        return list(atom._child_dict.values())
+        return list(atom.disordered_get_list())
     else:
         return [atom]
 
@@ -44,7 +65,7 @@ def allequal(s1, s2, atol=1e-3):
         logger.error("Lengths are different: %s, %s", len(s1), len(s2))
         return False
     # Recurse
-    return all(allequal(so1, so2, atol) for (so1, so2) in zip(s1.values(), s2.values()))
+    return all(allequal(so1, so2, atol) for (so1, so2) in zip(s1, s2))
 
 
 def uniqueify(items):
@@ -57,50 +78,13 @@ def uniqueify(items):
 
 
 def sort_structure(structure):
-    structure._child_list.sort(key=lambda m: m.id)
-    for model in structure.values():
-        model._child_list.sort(key=lambda c: c.id)
-        for chain in model.values():
-            chain._child_list.sort(key=lambda r: r.id[1])
-            for residue in chain.values():
-                residue._child_list.sort(key=lambda a: a.id)
-
-
-class uncompressed:
-    @staticmethod
-    def open(*args, **kwargs):
-        return open(*args, **kwargs)
-
-    @staticmethod
-    def decompress(data):
-        return data
-
-
-def anyzip(filename):
-    if filename.endswith('.gz'):
-        return gzip
-    elif filename.endswith('.bz2'):
-        return bz2
-    elif filename.endswith('.xz'):
-        return lzma
-    else:
-        return uncompressed
-
-
-@contextlib.contextmanager
-def open_url(url):
-    if url.startswith(('ftp:', 'http:', 'https:', )):
-        with tempfile.TemporaryFile('w+t') as fh:
-            logger.debug("URL: %s", url)
-            with urllib.request.urlopen(url) as ifh:
-                data_bin = ifh.read()
-                data_txt = anyzip(url).decompress(data_bin).decode('utf-8')
-                fh.write(data_txt)
-            fh.seek(0)
-            yield fh
-    else:
-        with anyzip(url).open(url, mode='rt') as fh:
-            yield fh
+    sort_ordered_dict(structure._children)
+    for model in structure:
+        sort_ordered_dict(model._children)
+        for chain in model:
+            sort_ordered_dict(chain._children)
+            for residue in chain:
+                sort_ordered_dict(residue._children)
 
 
 def get_unique_parents(entity_list):
@@ -157,3 +141,74 @@ def unfold_entities(entity_list, target_level):
                 if entity.parent.id not in _seen and not _seen.add(entity.parent.id)
             ]
     return list(entity_list)
+
+
+# =============================================================================
+# Open files and URLs
+# =============================================================================
+
+
+class uncompressed:
+    @staticmethod
+    def open(*args, **kwargs):
+        return open(*args, **kwargs)
+
+    @staticmethod
+    def decompress(data):
+        return data
+
+
+def anyzip(filename):
+    if filename.endswith('.gz'):
+        return gzip
+    elif filename.endswith('.bz2'):
+        return bz2
+    elif filename.endswith('.xz'):
+        return lzma
+    else:
+        return uncompressed
+
+
+def check_exception(exc, valid_exc):
+    to_retry = isinstance(exc, valid_exc)
+    logger.error("The following exception occured: '%s'! %s", exc, 'Retrying...'
+                 if to_retry else "Failed!")
+    return to_retry
+
+
+def retry_urlopen(fn: Callable) -> Callable:
+    """Retry downloading data from a url after a timeout."""
+    _check_exception = functools.partial(check_exception, valid_exc=socket.timeout)
+    wrapper = retry(
+        retry_on_exception=_check_exception,
+        wait_exponential_multiplier=1000,
+        wait_exponential_max=10000,
+        stop_max_attempt_number=5)
+    return wrapper(fn)
+
+
+@retry_urlopen
+def read_url(url: str, timeout: float=10.0, **kwargs) -> bytes:
+    """Read the contents of a URL or a file."""
+    with urllib.request.urlopen(url, timeout=timeout, **kwargs) as ifh:
+        data = ifh.read()
+    return data
+
+
+@contextlib.contextmanager
+def open_url(url: str) -> TextIO:
+    """Return a filehandle to a tempfile containig url data."""
+    logger.debug("URL: %s", url)
+    if url.startswith(('ftp:', 'http:', 'https:')):
+        logger.debug("reading...")
+        data_bin = read_url(url)
+        logger.debug("decompressing...")
+        data_txt = anyzip(url).decompress(data_bin).decode('utf-8')
+        logger.debug("writing...")
+        with tempfile.TemporaryFile('w+t') as fh:
+            fh.write(data_txt)
+            fh.seek(0)
+            yield fh
+    else:
+        with anyzip(url).open(url, mode='rt') as fh:
+            yield fh

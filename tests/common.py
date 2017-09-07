@@ -7,7 +7,6 @@ PDB_IDS = [
     '1arr',
     '1dvf',
     '3mbp',
-    '4p6f',
 ]
 
 #: There are no precalculated mmCIF biounit structures for PDBs which have no biounits.

@@ -1,6 +1,6 @@
 package:
   name: kmbio
-  version: 2.0.1
+  version: 2.0.2
 
 source:
   path: ../../
@@ -25,7 +25,7 @@ requirements:
     - reportlab
     - biopython
     - mmtf-python
-    - cachetools
+    - retrying
     # Binaries
     - bwa
     - clustalo

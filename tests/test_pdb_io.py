@@ -3,9 +3,9 @@ import os
 
 import pytest
 
-from common import (ATOM_DEFINED_TWICE_PDBS, LOCAL_REMOTE_MISMATCH, MISSING,
-                    PDB_IDS, random_subset)
-from kmbio.PDB import allequal, DEFAULT_ROUTES, load
+import kmbio.PDB
+from common import ATOM_DEFINED_TWICE_PDBS, LOCAL_REMOTE_MISMATCH, MISSING, PDB_IDS, random_subset
+from kmbio.PDB import DEFAULT_ROUTES, allequal
 from kmbio.PDB.exceptions import BioassemblyError
 from kmbio.PDB.io.loaders import guess_pdb_type
 
@@ -35,33 +35,38 @@ def test_guess_pdb_type(url, pdb_type):
     assert guess_pdb_type(url) == pdb_type
 
 
-@pytest.mark.parametrize("pdb_id, pdb_type, bioassembly_id",
-                         [(pdb_id, pdb_type, bioassembly_id)
+@pytest.mark.parametrize("pdb_id, pdb_type, bioassembly_id, route",
+                         [(pdb_id, pdb_type, bioassembly_id, route)
                           for pdb_id in PDB_IDS for pdb_type in ['pdb', 'cif']
                           for bioassembly_id in ([0] if pdb_type == 'pdb' else [0, 1])
+                          for route in DEFAULT_ROUTES
                           if (pdb_id, pdb_type) not in LOCAL_REMOTE_MISMATCH
                           if (pdb_id, pdb_type, bioassembly_id) not in MISSING])
-def test_equal(pdb_id, pdb_type, bioassembly_id):
+def test_equal(pdb_id, pdb_type, bioassembly_id, route):
     """Make sure that loading local and remote files produces the same result."""
     filename = '{}.{}'.format(pdb_id, pdb_type)
     logger.debug(filename)
     structures = []
     exceptions = []
-    for route in DEFAULT_ROUTES:
-        try:
-            structure = load(route + filename, bioassembly_id=bioassembly_id)
-            structures.append(structure)
-            exceptions.append(None)
-        except BioassemblyError as exception:
-            structures.append(None)
-            exceptions.append(str(type(exception)))
+    try:
+        url = route + filename
+        logger.debug("Loading structure from '%s'...", url)
+        structure = kmbio.PDB.load(url, bioassembly_id=bioassembly_id)
+        logger.debug("Done!")
+        structures.append(structure)
+        exceptions.append(None)
+    except BioassemblyError as exception:
+        structures.append(None)
+        exceptions.append(str(type(exception)))
+    logger.debug("Checking for missing...")
     if any(s is not None for s in structures):
-        assert all(e is None for e in exceptions), (list(DEFAULT_ROUTES), structures, exceptions)
+        assert all(e is None for e in exceptions)
         for s in structures[1:]:
             assert allequal(structure, structures[0])
     else:
         for e in exceptions:
             assert e == exceptions[0]
+    logger.debug("Done!")
 
 
 @pytest.mark.parametrize("pdb_id_1, pdb_id_2, pdb_type",
@@ -72,13 +77,13 @@ def test_equal(pdb_id, pdb_type, bioassembly_id):
                           if (pdb_id_2, pdb_type, 0) not in MISSING])
 def test_notequal(pdb_id_1, pdb_id_2, pdb_type):
     """Make sure that structures that should be different are different."""
-    s1 = load('rcsb://{}.{}'.format(pdb_id_1, pdb_type))
-    s2 = load('rcsb://{}.{}'.format(pdb_id_2, pdb_type))
+    s1 = kmbio.PDB.load('rcsb://{}.{}'.format(pdb_id_1, pdb_type))
+    s2 = kmbio.PDB.load('rcsb://{}.{}'.format(pdb_id_2, pdb_type))
     assert not allequal(s1, s2)
 
 
 @pytest.mark.parametrize("pdb_id", random_subset(ATOM_DEFINED_TWICE_PDBS))
 def test_atom_defined_twice(pdb_id):
     """Tests for the ``Atom defined twice`` error."""
-    s = load('rcsb://{}.{}'.format(pdb_id, 'cif'))
+    s = kmbio.PDB.load('rcsb://{}.{}'.format(pdb_id, 'cif'))
     assert s

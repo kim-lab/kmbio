@@ -20,11 +20,10 @@ from Bio._py3k import StringIO
 from Bio.Alphabet import generic_protein
 from Bio.Seq import Seq
 
-from kmbio.PDB import (DSSP, PDBIO, Atom, CaPPBuilder, ExposureCN,
-                       HSExposureCA, HSExposureCB, PDBParser, PPBuilder,
-                       Residue, Select, Vector, make_dssp_dict, rotmat)
-from kmbio.PDB.tools.naccess import process_asa_data, process_rsa_data
+from kmbio.PDB import (DSSP, PDBIO, Atom, CaPPBuilder, ExposureCN, HSExposureCA, HSExposureCB,
+                       PDBParser, PPBuilder, Residue, Select, Vector, make_dssp_dict, rotmat)
 from kmbio.PDB.exceptions import PDBConstructionException
+from kmbio.PDB.tools.naccess import process_asa_data, process_rsa_data
 
 logger = logging.getLogger(__name__)
 
@@ -40,8 +39,8 @@ class A_ExceptionTest(unittest.TestCase):
     def test_2_strict(self):
         """Check error: Parse a flawed PDB file in strict mode."""
         parser = PDBParser(PERMISSIVE=False)
-        self.assertRaises(PDBConstructionException, parser.get_structure,
-                          "PDB/a_structure.pdb", "example")
+        self.assertRaises(PDBConstructionException, parser.get_structure, "PDB/a_structure.pdb",
+                          "example")
 
     def test_3_bad_xyz(self):
         """Check error: Parse an entry with bad x,y,z value."""
@@ -50,8 +49,7 @@ class A_ExceptionTest(unittest.TestCase):
         s = parser.get_structure(StringIO(data), "example")
         assert s
         data = "ATOM      9  N   ASP A 152      21.ish  34.953  27.691  1.00 19.26           N\n"
-        self.assertRaises(PDBConstructionException, parser.get_structure,
-                          StringIO(data), "example")
+        self.assertRaises(PDBConstructionException, parser.get_structure, StringIO(data), "example")
 
     def test_4_occupancy(self):
         """Parse file with missing occupancy"""
@@ -64,8 +62,8 @@ class A_ExceptionTest(unittest.TestCase):
         self.assertEqual(atoms['C'].occupancy, 0.0)
 
         strict = PDBParser(PERMISSIVE=False)
-        self.assertRaises(PDBConstructionException, strict.get_structure,
-                          "PDB/occupancy.pdb", "test")
+        self.assertRaises(PDBConstructionException, strict.get_structure, "PDB/occupancy.pdb",
+                          "test")
 
 
 class HeaderTests(unittest.TestCase):
@@ -193,7 +191,7 @@ class ParseTest(unittest.TestCase):
         # Chain 'A' contains 1 residue
         self.assertEqual(len(m0['A']), 1)
         # Residue ('H_PCA', 1, ' ') contains 8 atoms.
-        residue = m0['A'].ix[0]
+        residue = list(m0['A'])[0]
         self.assertEqual(residue.id, ('H_PCA', 1, ' '))
         self.assertEqual(len(residue), 9)
         # --- Checking model 1 ---
@@ -375,20 +373,19 @@ class ParseTest(unittest.TestCase):
 
         for c_idx, chn in enumerate(chain_data):
             # Check chain ID and length
-            chain = m1.ix[c_idx]
+            chain = list(m1)[c_idx]
             self.assertEqual(chain.id, chn[0])
             self.assertEqual(len(chain), chn[1])
             # Now go over all the residues:
             for r_idx, res in enumerate(chn[2]):
-                residue = chain.ix[r_idx]
+                residue = list(chain)[r_idx]
                 # Check residue ID and atom count
                 self.assertEqual(residue.id, res[0])
                 self.assertEqual(len(residue), res[1])
                 disorder_lvl = residue.disordered
                 if disorder_lvl == 1:
                     # Check the number of disordered atoms
-                    disordered_count = sum(1 for atom in residue.values()
-                                           if atom.disordered)
+                    disordered_count = sum(1 for atom in residue if atom.disordered)
                     if disordered_count:
                         self.assertEqual(disordered_count, res[2])
                 elif disorder_lvl == 2:
@@ -409,12 +406,9 @@ class ParseTest(unittest.TestCase):
         self.assertEqual(chain.id, "A")
         self.assertEqual(chain.level, "C")
         self.assertEqual(len(chain), 1)
-        self.assertEqual(" ".join(residue.resname
-                                  for residue in chain.values()), "PCA")
-        self.assertEqual(" ".join(atom.name for atom in chain.get_atoms()),
-                         "N CA CB CG CD OE C O CA  ")
-        self.assertEqual(" ".join(atom.element for atom in chain.get_atoms()),
-                         "N C C C C O C O CA")
+        self.assertEqual(" ".join(residue.resname for residue in chain), "PCA")
+        self.assertEqual(" ".join(atom.name for atom in chain.atoms), "N CA CB CG CD OE C O CA  ")
+        self.assertEqual(" ".join(atom.element for atom in chain.atoms), "N C C C C O C O CA")
         # Second model
         model = structure[1]
         self.assertEqual(model.id, 1)
@@ -424,8 +418,7 @@ class ParseTest(unittest.TestCase):
         self.assertEqual(chain.id, "A")
         self.assertEqual(chain.level, "C")
         self.assertEqual(len(chain), 86)
-        self.assertEqual(" ".join(residue.resname
-                                  for residue in chain.values()),
+        self.assertEqual(" ".join(residue.resname for residue in chain),
                          "CYS ARG CYS GLY SER GLN GLY GLY GLY SER THR CYS "
                          "PRO GLY LEU ARG CYS CYS SER ILE TRP GLY TRP CYS "
                          "GLY ASP SER GLU PRO TYR CYS GLY ARG THR CYS GLU "
@@ -434,7 +427,7 @@ class ParseTest(unittest.TestCase):
                          "ASP ARG CYS CYS SER VAL HIS GLY TRP CYS GLY GLY "
                          "GLY ASN ASP TYR CYS SER GLY GLY ASN CYS GLN TYR "
                          "ARG CYS")
-        self.assertEqual(" ".join(atom.name for atom in chain.get_atoms()),
+        self.assertEqual(" ".join(atom.name for atom in chain.atoms),
                          "C N CA C O CB CG CD NE CZ NH1 NH2 N CA C O CB SG "
                          "N CA C O N CA C O CB OG N CA C O CB CG CD OE1 NE2 "
                          "N CA C O N CA C O N CA C O N CA C O CB OG N CA C "
@@ -469,7 +462,7 @@ class ParseTest(unittest.TestCase):
                          "CA C O CB CG OD1 ND2 N CA C O CB SG N CA C O CB CG "
                          "CD OE1 NE2 N CA C O CB CG CD1 CD2 CE1 CE2 CZ OH N "
                          "CA C O CB CG CD NE CZ NH1 NH2 N CA C O CB SG")
-        self.assertEqual(" ".join(atom.element for atom in chain.get_atoms()),
+        self.assertEqual(" ".join(atom.element for atom in chain.atoms),
                          "C N C C O C C C N C N N N C C O C S N C C O N C C O "
                          "C O N C C O C C C O N N C C O N C C O N C C O N C C "
                          "O C O N C C O C O C N C C O C S N C C O C C C N C C "
@@ -508,8 +501,7 @@ class ParseTest(unittest.TestCase):
             # Check if there are lines besides 'ATOM', 'TER' and 'END'
             with open(filename, 'rU') as handle:
                 record_set = set(l[0:6] for l in handle)
-            record_set -= set(('ATOM  ', 'HETATM', 'MODEL ', 'ENDMDL', 'TER\n',
-                               'END\n'))
+            record_set -= set(('ATOM  ', 'HETATM', 'MODEL ', 'ENDMDL', 'TER\n', 'END\n'))
             self.assertEqual(record_set, set())
         finally:
             os.remove(filename)
@@ -595,8 +587,7 @@ class ParseReal(unittest.TestCase):
         self.assertEqual(chain.id, "A")
         self.assertEqual(chain.level, "C")
         self.assertEqual(len(chain), 158)
-        self.assertEqual(" ".join(residue.resname
-                                  for residue in chain.values()),
+        self.assertEqual(" ".join(residue.resname for residue in chain),
                          "MSE ASP ILE ARG GLN GLY PRO LYS GLU PRO PHE ARG "
                          "ASP TYR VAL ASP ARG PHE TYR LYS THR LEU ARG ALA "
                          "GLU GLN ALA SER GLN GLU VAL LYS ASN TRP MSE THR "
@@ -611,7 +602,7 @@ class ParseReal(unittest.TestCase):
                          "HOH HOH HOH HOH HOH HOH HOH HOH HOH HOH HOH HOH "
                          "HOH HOH HOH HOH HOH HOH HOH HOH HOH HOH HOH HOH "
                          "HOH HOH")
-        self.assertEqual(" ".join(atom.name for atom in chain.get_atoms()),
+        self.assertEqual(" ".join(atom.name for atom in chain.atoms),
                          "N CA C O CB CG SE CE N CA C O CB CG OD1 OD2 N CA "
                          "C O CB CG1 CG2 CD1 N CA C O CB CG CD NE CZ NH1 "
                          "NH2 N CA C O CB CG CD OE1 NE2 N CA C O N CA C O "
@@ -648,7 +639,7 @@ class ParseReal(unittest.TestCase):
                          "O O O O O O O O O O O O O O O O O O O O O O O O "
                          "O O O O O O O O O O O O O O O O O O O O O O O O "
                          "O O O O O O O O O O O O O O O O O O O O O O O O")
-        self.assertEqual(" ".join(atom.element for atom in chain.get_atoms()),
+        self.assertEqual(" ".join(atom.element for atom in chain.atoms),
                          "N C C O C C SE C N C C O C C O O N C C O C C C C "
                          "N C C O C C C N C N N N C C O C C C O N N C C O "
                          "N C C O C C C N C C O C C C C N N C C O C C C O "
@@ -682,7 +673,7 @@ class ParseReal(unittest.TestCase):
 
         def confirm_numbering(struct):
             self.assertEqual(len(struct), 3)
-            for idx, model in enumerate(struct.values()):
+            for idx, model in enumerate(struct):
                 self.assertEqual(model.serial_num, idx + 1)
                 self.assertEqual(model.serial_num, model.id + 1)
 
@@ -730,7 +721,7 @@ class WriteTest(unittest.TestCase):
         try:
             io.save(filename)
             struct2 = self.parser.get_structure(filename, "1a8o")
-            nresidues = len(list(struct2.get_residues()))
+            nresidues = len(list(struct2.residues))
             self.assertEqual(len(struct2), 1)
             self.assertEqual(nresidues, 158)
         finally:
@@ -740,7 +731,7 @@ class WriteTest(unittest.TestCase):
         """Write a single residue using PDBIO"""
         io = PDBIO()
         struct1 = self.structure
-        residue1 = list(struct1.get_residues())[0]
+        residue1 = list(struct1.residues)[0]
         # Write full model to temp file
         io.set_structure(residue1)
         filenumber, filename = tempfile.mkstemp()
@@ -748,7 +739,7 @@ class WriteTest(unittest.TestCase):
         try:
             io.save(filename)
             struct2 = self.parser.get_structure(filename, "1a8o")
-            nresidues = len(list(struct2.get_residues()))
+            nresidues = len(list(struct2.residues))
             self.assertEqual(nresidues, 1)
         finally:
             os.remove(filename)
@@ -768,7 +759,7 @@ class WriteTest(unittest.TestCase):
         try:
             io.save(filename)
             struct2 = self.parser.get_structure(filename, "res")
-            latoms = list(struct2.get_atoms())
+            latoms = list(struct2.atoms)
             self.assertEqual(len(latoms), 1)
             self.assertEqual(latoms[0].name, 'CA')
             self.assertEqual(latoms[0].parent.resname, 'DUM')
@@ -798,7 +789,7 @@ class WriteTest(unittest.TestCase):
         try:
             io.save(filename, CAonly())
             struct2 = self.parser.get_structure(filename, "1a8o")
-            nresidues = len(list(struct2.get_residues()))
+            nresidues = len(list(struct2.residues))
             self.assertEqual(nresidues, 70)
         finally:
             os.remove(filename)
@@ -827,7 +818,7 @@ class Exposure(unittest.TestCase):
         structure = PDBParser(PERMISSIVE=True).get_structure(pdb_filename, 'X')
         self.model = structure[1]
         # Look at first chain only
-        a_residues = list(self.model["A"].values())
+        a_residues = list(self.model["A"])
         self.assertEqual(86, len(a_residues))
         self.assertEqual(a_residues[0].resname, "CYS")
         self.assertEqual(a_residues[1].resname, "ARG")
@@ -918,7 +909,7 @@ class Atom_Element(unittest.TestCase):
 
     def test_AtomElement(self):
         """ Atom Element """
-        atoms = self.residue.ix[:]
+        atoms = list(self.residue)
         self.assertEqual('N', atoms[0].element)  # N
         self.assertEqual('C', atoms[1].element)  # Alpha Carbon
         self.assertEqual('CA', atoms[8].element)  # Calcium
@@ -928,22 +919,20 @@ class Atom_Element(unittest.TestCase):
         pdb_filename = "PDB/ions.pdb"
         structure = PDBParser(PERMISSIVE=True).get_structure(pdb_filename, 'X')
         # check magnesium atom
-        atoms = structure[0]['A'][('H_ MG', 1, ' ')].ix[:]
+        atoms = list(structure[0]['A'][('H_MG', 1, ' ')])
         self.assertEqual('MG', atoms[0].element)
 
     def test_hydrogens(self):
         def quick_assign(fullname):
-            return Atom(fullname.strip(), None, None, None, None, fullname,
-                        None).element
+            return Atom(fullname.strip(), None, None, None, None, fullname, None).element
 
         pdb_elements = dict(
-            H=(' H  ', ' HA ', ' HB ', ' HD1', ' HD2', ' HE ', ' HE1', ' HE2',
-               ' HE3', ' HG ', ' HG1', ' HH ', ' HH2', ' HZ ', ' HZ2', ' HZ3',
-               '1H  ', '1HA ', '1HB ', '1HD ', '1HD1', '1HD2', '1HE ', '1HE2',
-               '1HG ', '1HG1', '1HG2', '1HH1', '1HH2', '1HZ ', '2H  ', '2HA ',
-               '2HB ', '2HD ', '2HD1', '2HD2', '2HE ', '2HE2', '2HG ', '2HG1',
-               '2HG2', '2HH1', '2HH2', '2HZ ', '3H  ', '3HB ', '3HD1', '3HD2',
-               '3HE ', '3HG1', '3HG2', '3HZ ', 'HE21'),
+            H=(' H  ', ' HA ', ' HB ', ' HD1', ' HD2', ' HE ', ' HE1', ' HE2', ' HE3', ' HG ',
+               ' HG1', ' HH ', ' HH2', ' HZ ', ' HZ2', ' HZ3', '1H  ', '1HA ', '1HB ', '1HD ',
+               '1HD1', '1HD2', '1HE ', '1HE2', '1HG ', '1HG1', '1HG2', '1HH1', '1HH2', '1HZ ',
+               '2H  ', '2HA ', '2HB ', '2HD ', '2HD1', '2HD2', '2HE ', '2HE2', '2HG ', '2HG1',
+               '2HG2', '2HH1', '2HH2', '2HZ ', '3H  ', '3HB ', '3HD1', '3HD2', '3HE ', '3HG1',
+               '3HG2', '3HZ ', 'HE21'),
             O=(' OH ', ),
             C=(' CH2', ),
             N=(' NH1', ' NH2'), )
@@ -956,38 +945,33 @@ class Atom_Element(unittest.TestCase):
 
 class IterationTests(unittest.TestCase):
     def setUp(self):
-        self.struc = PDBParser(PERMISSIVE=True).get_structure(
-            "PDB/a_structure.pdb", 'X')
+        self.struc = PDBParser(PERMISSIVE=True).get_structure("PDB/a_structure.pdb", 'X')
 
     def test_get_chains(self):
         """Yields chains from different models separately."""
-        chains = [chain.id for chain in self.struc.get_chains()]
+        chains = [chain.id for chain in self.struc.chains]
         self.assertEqual(chains, ['A', 'A', 'B', ' '])
 
     def test_get_residues(self):
         """Yields all residues from all models."""
-        residues = [resi.id for resi in self.struc.get_residues()]
+        residues = [resi.id for resi in self.struc.residues]
         self.assertEqual(len(residues), 167)
 
     def test_get_atoms(self):
         """Yields all atoms from the structure, excluding duplicates and ALTLOCs
         which are not parsed.
         """
-        atoms = [
-            "%12s" % str((atom.id, atom.altloc))
-            for atom in self.struc.get_atoms()
-        ]
+        atoms = ["%12s" % str((atom.id, atom.altloc)) for atom in self.struc.atoms]
         self.assertEqual(len(atoms), 756)
 
 
 class ChangingIdTests(unittest.TestCase):
     def setUp(self):
-        self.struc = PDBParser(PERMISSIVE=True).get_structure(
-            "PDB/a_structure.pdb", 'X')
+        self.struc = PDBParser(PERMISSIVE=True).get_structure("PDB/a_structure.pdb", 'X')
 
     def test_change_model_id(self):
         """Change the id of a model"""
-        for model in self.struc.values():
+        for model in self.struc:
             break  # Get first model in structure
         model.id = 2
         self.assertEqual(model.id, 2)
@@ -996,7 +980,7 @@ class ChangingIdTests(unittest.TestCase):
 
     def test_change_model_id_raises(self):
         """Cannot change id to a value already in use by another child"""
-        model = next(iter(self.struc.values()))
+        model = next(iter(self.struc))
         with self.assertRaises(ValueError):
             model.id = 1
         # Make sure nothing was changed
@@ -1006,15 +990,15 @@ class ChangingIdTests(unittest.TestCase):
 
     def test_change_chain_id(self):
         """Change the id of a model"""
-        chain = next(iter(self.struc.get_chains()))
+        chain = next(iter(self.struc.chains))
         chain.id = "R"
         self.assertEqual(chain.id, "R")
-        model = next(iter(self.struc.values()))
+        model = next(iter(self.struc))
         self.assertIn("R", model)
 
     def test_change_residue_id(self):
         """Change the id of a residue"""
-        chain = next(iter(self.struc.get_chains()))
+        chain = next(iter(self.struc.chains))
         res = chain[('H_PCA', 1, ' ')]
         res.id = (' ', 1, ' ')
 
@@ -1027,13 +1011,12 @@ class ChangingIdTests(unittest.TestCase):
         """
         Invalidate cached full_ids if an id is changed.
         """
-        atom = next(iter(self.struc.get_atoms()))
+        atom = next(iter(self.struc.atoms))
 
         # Generate the original full id.
         original_id = atom.full_id
-        self.assertEqual(original_id, ('X', 0, 'A', ('H_PCA', 1, ' '), ('N',
-                                                                        ' ')))
-        residue = next(iter(self.struc.get_residues()))
+        self.assertEqual(original_id, ('X', 0, 'A', ('H_PCA', 1, ' '), ('N', ' ')))
+        residue = next(iter(self.struc.residues))
 
         # Make sure the full id was in fact cached,
         # so we need to invalidate it later.
@@ -1049,18 +1032,17 @@ class ChangingIdTests(unittest.TestCase):
         """
         Invalidate cached full_ids if an id is changed.
         """
-        atom = next(iter(self.struc.get_atoms()))
+        atom = next(iter(self.struc.atoms))
 
         # Generate the original full id.
         original_id = atom.full_id
-        self.assertEqual(original_id, ('X', 0, 'A', ('H_PCA', 1, ' '), ('N',
-                                                                        ' ')))
-        residue = next(iter(self.struc.get_residues()))
+        self.assertEqual(original_id, ('X', 0, 'A', ('H_PCA', 1, ' '), ('N', ' ')))
+        residue = next(iter(self.struc.residues))
 
         # Make sure the full id was in fact cached,
         # so we need to invalidate it later.
         self.assertEqual(residue.full_id, ('X', 0, 'A', ('H_PCA', 1, ' ')))
-        chain = next(iter(self.struc.get_chains()))
+        chain = next(iter(self.struc.chains))
 
         # Changing the chain's id should lead to an updated full id.
         chain.id = 'Q'
@@ -1087,12 +1069,11 @@ class ChangingIdTests(unittest.TestCase):
 
 class TransformTests(unittest.TestCase):
     def setUp(self):
-        self.s = PDBParser(PERMISSIVE=True).get_structure(
-            "PDB/a_structure.pdb", 'X')
-        self.m = self.s.ix[0]
-        self.c = self.m.ix[0]
-        self.r = self.c.ix[0]
-        self.a = self.r.ix[0]
+        self.s = PDBParser(PERMISSIVE=True).get_structure("PDB/a_structure.pdb", 'X')
+        self.m = list(self.s)[0]
+        self.c = list(self.m)[0]
+        self.r = list(self.c)[0]
+        self.a = list(self.r)[0]
 
     def get_total_pos(self, o):
         """
@@ -1103,7 +1084,7 @@ class TransformTests(unittest.TestCase):
             return o.coord, 1
         total_pos = np.array((0.0, 0.0, 0.0))
         total_count = 0
-        for p in o.values():
+        for p in o:
             pos, count = self.get_total_pos(p)
             total_pos += pos
             total_count += count
@@ -1131,12 +1112,11 @@ class TransformTests(unittest.TestCase):
 
 class CopyTests(unittest.TestCase):
     def setUp(self):
-        self.s = PDBParser(PERMISSIVE=True).get_structure(
-            "PDB/a_structure.pdb", 'X')
-        self.m = list(self.s.values())[0]
-        self.c = list(self.m.values())[0]
-        self.r = list(self.c.values())[0]
-        self.a = list(self.r.values())[0]
+        self.s = PDBParser(PERMISSIVE=True).get_structure("PDB/a_structure.pdb", 'X')
+        self.m = list(self.s)[0]
+        self.c = list(self.m)[0]
+        self.r = list(self.c)[0]
+        self.a = list(self.r)[0]
 
     def test_atom_copy(self):
         aa = self.a.copy()
@@ -1148,7 +1128,7 @@ class CopyTests(unittest.TestCase):
         for e in (self.s, self.m, self.c, self.r):
             ee = e.copy()
             self.assertFalse(e is ee)
-            self.assertFalse(e.ix[0] is ee.ix[0])
+            self.assertFalse(list(e)[0] is list(ee)[0])
 
 
 def eprint(*args, **kwargs):
@@ -1163,7 +1143,7 @@ def will_it_float(s):
     try:
         return float(s)
     except ValueError:
-        return (s)
+        return s
 
 
 class DsspTests(unittest.TestCase):
@@ -1186,7 +1166,7 @@ class DsspTests(unittest.TestCase):
     def test_DSSP_hbonds(self):
         """Test parsing of DSSP hydrogen bond information."""
         dssp, keys = make_dssp_dict("PDB/2BEG.dssp")
-
+        print(dssp)
         dssp_indices = set(v[5] for v in dssp.values())
         hb_indices = set()
 
@@ -1197,8 +1177,7 @@ class DsspTests(unittest.TestCase):
         # that actual h-bonds are typically determined by an energetic
         # threshold.
         for val in dssp.values():
-            hb_indices |= set((val[5] + x)
-                              for x in (val[6], val[8], val[10], val[12]))
+            hb_indices |= set((val[5] + x) for x in (val[6], val[8], val[10], val[12]))
 
         # Check if all h-bond partner indices were successfully parsed.
         self.assertEqual((dssp_indices & hb_indices), hb_indices)
@@ -1218,8 +1197,8 @@ class DsspTests(unittest.TestCase):
         i = 0
         with open("PDB/dssp_xtra_Sander.txt", 'r') as fh_ref:
             ref_lines = fh_ref.readlines()
-            for chain in m.values():
-                for res in chain.values():
+            for chain in m:
+                for res in chain:
                     # Split the pre-computed values into a list:
                     xtra_list_ref = ref_lines[i].rstrip().split('\t')
                     # Then convert each element to float where possible:
@@ -1250,8 +1229,8 @@ class DsspTests(unittest.TestCase):
         i = 0
         with open("PDB/Sander_RASA.txt", 'r') as fh_ref:
             ref_lines = fh_ref.readlines()
-            for chain in m.values():
-                for res in chain.values():
+            for chain in m:
+                for res in chain:
                     rasa_ref = float(ref_lines[i].rstrip())
                     rasa = float(res.xtra['EXP_DSSP_RASA'])
                     self.assertAlmostEqual(rasa, rasa_ref)
@@ -1264,8 +1243,8 @@ class DsspTests(unittest.TestCase):
         i = 0
         with open("PDB/Wilke_RASA.txt", 'r') as fh_ref:
             ref_lines = fh_ref.readlines()
-            for chain in m.values():
-                for res in chain.values():
+            for chain in m:
+                for res in chain:
                     rasa_ref = float(ref_lines[i].rstrip())
                     rasa = float(res.xtra['EXP_DSSP_RASA'])
                     self.assertAlmostEqual(rasa, rasa_ref)
@@ -1279,8 +1258,8 @@ class DsspTests(unittest.TestCase):
         i = 0
         with open("PDB/Miller_RASA.txt", 'r') as fh_ref:
             ref_lines = fh_ref.readlines()
-            for chain in m.values():
-                for res in chain.values():
+            for chain in m:
+                for res in chain:
                     rasa_ref = float(ref_lines[i].rstrip())
                     rasa = float(res.xtra['EXP_DSSP_RASA'])
                     self.assertAlmostEqual(rasa, rasa_ref)

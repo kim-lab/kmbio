@@ -4,7 +4,7 @@
 # as part of this package.
 """Vector class, including rotation-related functions."""
 
-import numpy
+import numpy as np
 
 
 def m2rotaxis(m):
@@ -13,14 +13,14 @@ def m2rotaxis(m):
     """
     # Angle always between 0 and pi
     # Sense of rotation is defined by axis orientation
-    t = 0.5 * (numpy.trace(m) - 1)
+    t = 0.5 * (np.trace(m) - 1)
     t = max(-1, t)
     t = min(1, t)
-    angle = numpy.arccos(t)
+    angle = np.arccos(t)
     if angle < 1e-15:
         # Angle is 0
         return 0.0, Vector(1, 0, 0)
-    elif angle < numpy.pi:
+    elif angle < np.pi:
         # Angle is smaller than pi
         x = m[2, 1] - m[1, 2]
         y = m[0, 2] - m[2, 0]
@@ -34,20 +34,20 @@ def m2rotaxis(m):
         m11 = m[1, 1]
         m22 = m[2, 2]
         if m00 > m11 and m00 > m22:
-            x = numpy.sqrt(m00 - m11 - m22 + 0.5)
+            x = np.sqrt(m00 - m11 - m22 + 0.5)
             y = m[0, 1] / (2 * x)
             z = m[0, 2] / (2 * x)
         elif m11 > m00 and m11 > m22:
-            y = numpy.sqrt(m11 - m00 - m22 + 0.5)
+            y = np.sqrt(m11 - m00 - m22 + 0.5)
             x = m[0, 1] / (2 * y)
             z = m[1, 2] / (2 * y)
         else:
-            z = numpy.sqrt(m22 - m00 - m11 + 0.5)
+            z = np.sqrt(m22 - m00 - m11 + 0.5)
             x = m[0, 2] / (2 * z)
             y = m[1, 2] / (2 * z)
         axis = Vector(x, y, z)
         axis.normalize()
-        return numpy.pi, axis
+        return np.pi, axis
 
 
 def vector_to_axis(line, point):
@@ -63,9 +63,9 @@ def vector_to_axis(line, point):
     @param point: vector defining the point
     """
     line = line.normalized()
-    np = point.norm()
+    norm = point.norm()
     angle = line.angle(point)
-    return point - line**(np * numpy.cos(angle))
+    return point - line**(norm * np.cos(angle))
 
 
 def rotaxis2m(theta, vector):
@@ -89,11 +89,11 @@ def rotaxis2m(theta, vector):
     """
     vector = vector.copy()
     vector.normalize()
-    c = numpy.cos(theta)
-    s = numpy.sin(theta)
+    c = np.cos(theta)
+    s = np.sin(theta)
     t = 1 - c
     x, y, z = vector.get_array()
-    rot = numpy.zeros((3, 3))
+    rot = np.zeros((3, 3))
     # 1st row
     rot[0, 0] = t * x * x + c
     rot[0, 1] = t * x * y - s * z
@@ -128,13 +128,13 @@ def refmat(p, q):
     p.normalize()
     q.normalize()
     if (p - q).norm() < 1e-5:
-        return numpy.identity(3)
+        return np.identity(3)
     pq = p - q
     pq.normalize()
     b = pq.get_array()
     b.shape = (3, 1)
-    i = numpy.identity(3)
-    ref = i - 2 * numpy.dot(b, numpy.transpose(b))
+    i = np.identity(3)
+    ref = i - 2 * np.dot(b, np.transpose(b))
     return ref
 
 
@@ -156,7 +156,7 @@ def rotmat(p, q):
     @return: rotation matrix that rotates p onto q
     @rtype: 3x3 Numeric array
     """
-    rot = numpy.dot(refmat(q, -p), refmat(p, -p))
+    rot = np.dot(refmat(q, -p), refmat(p, -p))
     return rot
 
 
@@ -209,12 +209,11 @@ class Vector(object):
         if y is None and z is None:
             # Array, list, tuple...
             if len(x) != 3:
-                raise ValueError("Vector: x is not a "
-                                 "list/tuple/array of 3 numbers")
-            self._ar = numpy.array(x, 'd')
+                raise ValueError("Vector: x is not a " "list/tuple/array of 3 numbers")
+            self._ar = np.array(x, 'd')
         else:
             # Three numbers
-            self._ar = numpy.array((x, y, z), 'd')
+            self._ar = np.array((x, y, z), 'd')
 
     def __repr__(self):
         x, y, z = self._ar
@@ -230,7 +229,7 @@ class Vector(object):
         if isinstance(other, Vector):
             a = self._ar + other._ar
         else:
-            a = self._ar + numpy.array(other)
+            a = self._ar + np.array(other)
         return Vector(a)
 
     def __sub__(self, other):
@@ -238,7 +237,7 @@ class Vector(object):
         if isinstance(other, Vector):
             a = self._ar - other._ar
         else:
-            a = self._ar - numpy.array(other)
+            a = self._ar - np.array(other)
         return Vector(a)
 
     def __mul__(self, other):
@@ -247,7 +246,7 @@ class Vector(object):
 
     def __div__(self, x):
         "Return Vector(coords/a)"
-        a = self._ar / numpy.array(x)
+        a = self._ar / np.array(x)
         return Vector(a)
 
     def __pow__(self, other):
@@ -255,12 +254,12 @@ class Vector(object):
         if isinstance(other, Vector):
             a, b, c = self._ar
             d, e, f = other._ar
-            c1 = numpy.linalg.det(numpy.array(((b, c), (e, f))))
-            c2 = -numpy.linalg.det(numpy.array(((a, c), (d, f))))
-            c3 = numpy.linalg.det(numpy.array(((a, b), (d, e))))
+            c1 = np.linalg.det(np.array(((b, c), (e, f))))
+            c2 = -np.linalg.det(np.array(((a, c), (d, f))))
+            c3 = np.linalg.det(np.array(((a, b), (d, e))))
             return Vector(c1, c2, c3)
         else:
-            a = self._ar * numpy.array(other)
+            a = self._ar * np.array(other)
             return Vector(a)
 
     def __getitem__(self, i):
@@ -274,7 +273,7 @@ class Vector(object):
 
     def norm(self):
         "Return vector norm"
-        return numpy.sqrt(sum(self._ar * self._ar))
+        return np.sqrt(sum(self._ar * self._ar))
 
     def normsq(self):
         "Return square of vector norm"
@@ -298,20 +297,20 @@ class Vector(object):
         # Take care of roundoff errors
         c = min(c, 1)
         c = max(-1, c)
-        return numpy.arccos(c)
+        return np.arccos(c)
 
     def get_array(self):
         "Return (a copy of) the array of coordinates"
-        return numpy.array(self._ar)
+        return np.array(self._ar)
 
     def left_multiply(self, matrix):
         "Return Vector=Matrix x Vector"
-        a = numpy.dot(matrix, self._ar)
+        a = np.dot(matrix, self._ar)
         return Vector(a)
 
     def right_multiply(self, matrix):
         "Return Vector=Vector x Matrix"
-        a = numpy.dot(self._ar, matrix)
+        a = np.dot(self._ar, matrix)
         return Vector(a)
 
     def copy(self):
@@ -321,7 +320,7 @@ class Vector(object):
 
 if __name__ == "__main__":
 
-    from numpy.random import random
+    from np.random import random
 
     v1 = Vector(0, 0, 1)
     v2 = Vector(0, 0, 0)
@@ -335,7 +334,7 @@ if __name__ == "__main__":
     print(calc_angle(v1, v2, v3))
     dih = calc_dihedral(v1, v2, v3, v4)
     # Test dihedral sign
-    assert (dih > 0)
+    assert dih > 0
     print("DIHEDRAL %f" % dih)
 
     ref = refmat(v1, v3)
@@ -344,7 +343,7 @@ if __name__ == "__main__":
     print(v3)
     print(v1.left_multiply(ref))
     print(v1.left_multiply(rot))
-    print(v1.right_multiply(numpy.transpose(rot)))
+    print(v1.right_multiply(np.transpose(rot)))
 
     # -
     print(v1 - v2)
@@ -373,11 +372,11 @@ if __name__ == "__main__":
     # getitem
     print(v1[2])
 
-    print(numpy.array(v1))
+    print(np.array(v1))
 
     print("ROT")
 
-    angle = random() * numpy.pi
+    angle = random() * np.pi
     axis = Vector(random(3) - random(3))
     axis.normalize()
 

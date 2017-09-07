@@ -51,7 +51,7 @@ class ParseMMTF(unittest.TestCase):
 
     def check_mmtf_vs_cif(self, mmtf_filename, cif_filename):
         """Compare parsed structures for MMTF and CIF files."""
-        mmtf_struct = MMTFParser.get_structure(mmtf_filename)
+        mmtf_struct = MMTFParser().get_structure(mmtf_filename)
         mmcif_parser = MMCIFParser()
         mmcif_struct = mmcif_parser.get_structure(
             op.basename(op.splitext(cif_filename)[0]), cif_filename)
@@ -94,10 +94,10 @@ class SimpleParseMMTF(unittest.TestCase):
 
     def test_4ZHL(self):
         """Parse 4ZHL.mmtf"""
-        structure = MMTFParser.get_structure("PDB/4ZHL.mmtf")
+        structure = MMTFParser().get_structure("PDB/4ZHL.mmtf")
         assert len(structure)
 
     def test_1A80(self):
         """Parse 1A8O.mmtf"""
-        structure = MMTFParser.get_structure("PDB/1A8O.mmtf")
+        structure = MMTFParser().get_structure("PDB/1A8O.mmtf")
         assert len(structure)

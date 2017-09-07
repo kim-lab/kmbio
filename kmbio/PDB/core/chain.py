@@ -95,7 +95,7 @@ class Chain(Entity):
         ie. it returns a list of simple Residue objects.
         """
         unpacked_list = []
-        for residue in self.values():
+        for residue in self:
             if isinstance(residue, DisorderedResidue):
                 for dresidue in residue.disordered_get_list():
                     unpacked_list.append(dresidue)
@@ -105,11 +105,8 @@ class Chain(Entity):
 
     # Public
 
-    def get_residues(self):
-        for r in self.values():
-            yield r
-
-    def get_atoms(self):
-        for r in self.get_residues():
-            for a in r.values():
+    @property
+    def atoms(self):
+        for r in self:
+            for a in r:
                 yield a
