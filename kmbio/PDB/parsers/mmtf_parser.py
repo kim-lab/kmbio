@@ -14,7 +14,7 @@ def get_from_decoded(decoder):
 class MMTFParser(Parser):
     """Class to get a BioPython structure from a URL or a filename."""
 
-    def get_structure(filename, structure_id=None):
+    def get_structure(self, filename, structure_id=None):
         """Get a structrue from a file - given a file path.
 
         :param file_path: the input file path
@@ -26,7 +26,7 @@ class MMTFParser(Parser):
             structure.id = structure_id
         return structure
 
-    def get_structure_from_url(pdb_id):
+    def get_structure_from_url(self, pdb_id):
         """Get a structure from a URL - given a PDB id.
 
         :param pdb_id: the input PDB id
