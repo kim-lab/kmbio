@@ -3,7 +3,6 @@ import logging
 import os.path as op
 import random
 import re
-import sys
 
 import pytest
 
