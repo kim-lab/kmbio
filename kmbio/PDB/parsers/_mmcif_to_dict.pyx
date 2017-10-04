@@ -56,7 +56,7 @@ def tokenize(handle):
 
     for line in handle:
         if line.startswith(u"#"):
-            continue
+            yield line.strip()
         elif line.startswith(u";"):
             # Multi-line string are enclosed in ';'
             token = line[1:].strip()
@@ -94,21 +94,22 @@ def process_tokens(tokens):
             n = 0  # Number of columns in this "DataFrame"
             continue
         elif loop_flag:
-            if token.startswith(u"_"):
-                if i == 0:
-                    # Parse column names into `keys`
-                    mmcif_dict[token] = []
-                    keys.append(token)
-                    n += 1
-                    continue
-                else:
-                    # Done with this loop, parse as key-value...
-                    loop_flag = False
+            if token == '#':
+                loop_flag = False
+                continue
+            elif token.startswith(u"_") and i == 0:
+                # Parse column names into `keys`
+                mmcif_dict[token] = []
+                keys.append(token)
+                n += 1
+                continue
             else:
                 # Add elements one column at a time
                 mmcif_dict[keys[i % n]].append(token)
                 i += 1
                 continue
+        if token == '#':
+            continue 
         # Key-value pairs
         if key is None:
             key = token
