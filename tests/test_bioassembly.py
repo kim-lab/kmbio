@@ -3,7 +3,6 @@ import logging
 import os.path as op
 import random
 import re
-import sys
 
 import pytest
 
@@ -199,9 +198,5 @@ def test_mmcif_vs_mmcif_ref(mmcif_bioassembly_file):
 
     with open_url(mmcif_bioassembly_url) as fh:
         mmcif_bioassembly_structure = MMCIFParser().get_structure(fh)
-
-    if sys.version_info[:2] <= (3, 5):
-        sort_structure(mmcif_structure)
-        sort_structure(mmcif_bioassembly_structure)
 
     assert allequal(mmcif_structure, mmcif_bioassembly_structure)

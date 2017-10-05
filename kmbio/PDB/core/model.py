@@ -57,6 +57,11 @@ class Model(Entity):
     # Public
 
     @property
+    def chains(self):
+        for c in self:
+            yield c
+
+    @property
     def residues(self):
         for c in self:
             for r in c:

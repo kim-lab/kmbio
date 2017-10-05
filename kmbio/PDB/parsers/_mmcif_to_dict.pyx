@@ -56,8 +56,9 @@ def tokenize(handle):
 
     for line in handle:
         if line.startswith(u"#"):
-            continue
+            yield line.strip()
         elif line.startswith(u";"):
+            # Multi-line string are enclosed in ';'
             token = line[1:].strip()
             for line in handle:
                 line = line.strip()
@@ -65,8 +66,11 @@ def tokenize(handle):
                     break
                 token += line
             yield token
+        elif '"' in line or "'" in line:
+            for token in split(line.strip()):
+                yield token
         else:
-            for token in split(line):
+            for token in line.strip().split():
                 yield token
 
 
@@ -81,25 +85,32 @@ def process_tokens(tokens):
     i = 0
     n = 0
     for token in tokens:
+        # Parse loops
         if token == u"loop_":
+            # Start a new loop block
             loop_flag = True
             keys = []
-            i = 0
-            n = 0
+            i = 0  # Index of the current column
+            n = 0  # Number of columns in this "DataFrame"
             continue
         elif loop_flag:
-            if token.startswith(u"_"):
-                if i > 0:
-                    loop_flag = False
-                else:
-                    mmcif_dict[token] = []
-                    keys.append(token)
-                    n += 1
-                    continue
+            if token == '#':
+                loop_flag = False
+                continue
+            elif token.startswith(u"_") and i == 0:
+                # Parse column names into `keys`
+                mmcif_dict[token] = []
+                keys.append(token)
+                n += 1
+                continue
             else:
+                # Add elements one column at a time
                 mmcif_dict[keys[i % n]].append(token)
                 i += 1
                 continue
+        if token == '#':
+            continue 
+        # Key-value pairs
         if key is None:
             key = token
         else:

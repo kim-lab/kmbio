@@ -106,6 +106,11 @@ class Chain(Entity):
     # Public
 
     @property
+    def residues(self):
+        for r in self:
+            yield r
+
+    @property
     def atoms(self):
         for r in self:
             for a in r:

@@ -298,7 +298,7 @@ def get_mmcif_bioassembly_data(sdict, use_auth_id=False):
                     if t.transformation_id not in existing_transformation_ids
                 ]
                 bioassembly_data \
-                    .setdefault(str(bioassembly_id), {}) \
+                    .setdefault(str(bioassembly_id), OrderedDict()) \
                     .setdefault(chain_id, []) \
                     .extend(new_transformations)
     return bioassembly_data

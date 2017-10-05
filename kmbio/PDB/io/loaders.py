@@ -89,6 +89,7 @@ def guess_pdb_type(pdb_file):
     """Guess PDB file type from file name.
 
     Examples
+    --------
     >>> _guess_pdb_type('4dkl.pdb')
     'pdb'
     >>> _guess_pdb_type('/tmp/4dkl.cif.gz')

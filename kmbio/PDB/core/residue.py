@@ -67,6 +67,11 @@ class Residue(Entity):
     def is_hetatm(self):
         bool(self.id[0].strip())
 
+    @property
+    def atoms(self):
+        for a in self:
+            yield a
+
 
 class DisorderedResidue(DisorderedEntityWrapper):
     """
