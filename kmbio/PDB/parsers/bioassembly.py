@@ -267,7 +267,7 @@ def get_mmcif_bioassembly_data(sdict, use_auth_id=False):
         label_id_to_auth_id = get_label_id_to_auth_id_mapping(sdict)
 
     bioassembly_data = OrderedDict()
-    for bioassembly_id in _pdbx_struct_assembly_gen.index:
+    for bioassembly_id in _pdbx_struct_assembly_gen.index.drop_duplicates():
         logger.debug("bioassembly_id: %s", bioassembly_id)
         df = _pdbx_struct_assembly_gen.loc[bioassembly_id:bioassembly_id]
         for chain_ids, transformation_ids in zip(df['_pdbx_struct_assembly_gen.asym_id_list'],
