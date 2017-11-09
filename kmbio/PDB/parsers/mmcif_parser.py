@@ -35,8 +35,8 @@ class MMCIFParser(Parser):
          structure_builder : :class:`StructureBuilder`
             An optional user implemented StructureBuilder class.
          use_auth_id : `bool`
-            If `False` (default) the author chain and sequence id is used
-            (match with PDB information). If True, the mmCIF seq and chain id is used.
+            If `True` (default) the author chain and sequence id is used
+            (match with PDB information). If `False`, the mmCIF seq and chain id is used.
         """
         if structure_builder is not None:
             self._structure_builder = structure_builder
@@ -94,16 +94,14 @@ class MMCIFParser(Parser):
         except KeyError:
             element_list = None
 
-        if "_atom_site.auth_seq_id" in mmcif_dict and self.use_auth_id:
-            seq_id_list = mmcif_dict["_atom_site.auth_seq_id"]
-        else:
-            seq_id_list = mmcif_dict["_atom_site.label_seq_id"]
-            seq_id_auth_list = mmcif_dict["_atom_site.auth_seq_id"]
-
         if self.use_auth_id:
+            seq_id_list = mmcif_dict["_atom_site.auth_seq_id"]
             chain_id_list = mmcif_dict["_atom_site.auth_asym_id"]
         else:
+            seq_id_list = mmcif_dict["_atom_site.label_seq_id"]
             chain_id_list = mmcif_dict["_atom_site.label_asym_id"]
+            seq_id_auth_list = mmcif_dict["_atom_site.auth_seq_id"]
+
         # coords
         x_list = [float(x) for x in mmcif_dict["_atom_site.Cartn_x"]]
         y_list = [float(x) for x in mmcif_dict["_atom_site.Cartn_y"]]
@@ -162,7 +160,8 @@ class MMCIFParser(Parser):
                 altloc = " "
             # hetero atoms do not have seq_id number in seq_label only '.'
             # use the auth_seq number
-            if not self.use_auth_id and seq_id_list[i] == '.':
+            if seq_id_list[i] == '.':
+                assert not self.use_auth_id
                 int_resseq = int(seq_id_auth_list[i])
             else:
                 int_resseq = int(seq_id_list[i])
