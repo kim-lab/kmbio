@@ -5,36 +5,24 @@ import random
 import re
 
 import pytest
+import yaml
 
+import kmbio.PDB
+from conftest import parametrize
 from kmbio.PDB import (DEFAULT_ROUTES, MMCIFParser, PDBParser, ProcessRemark350, allequal,
                        get_mmcif_bioassembly_data, mmcif2dict, open_url, sort_structure)
 
 random.seed(42)
 logger = logging.getLogger(__name__)
 
-NUMBER_OF_SAMPLES = 20
 URL = "ftp://ftp.wwpdb.org/pub/pdb/data/"
+NUMBER_OF_SAMPLES = 20
 
-TEST_DATA = [
-    # (pdb_id, bioassembly_id)
-    ('1y0x', 2),
-    ('1y0o', 1),
-    ('1y0y', 1),
-    ('1dvf', 1),
-]
+# PDB_BIOASSEMBLY_DATA
 
 with open(op.join(op.splitext(__file__)[0], 'test_bioassembly.json'), 'rt') as ifh:
     # (remark_350_data, bioassembly_data_ref)
     PDB_BIOASSEMBLY_DATA = json.load(ifh)
-
-with open(op.join(op.splitext(__file__)[0], 'pdb_ids.json'), 'rt') as ifh:
-    PDB_IDS = json.load(ifh)
-
-with open(op.join(op.splitext(__file__)[0], 'pdb_bioassembly_files.json'), 'rt') as ifh:
-    PDB_BIOASSEMBLY_FILES = json.load(ifh)
-
-with open(op.join(op.splitext(__file__)[0], 'mmcif_bioassembly_files.json'), 'rt') as ifh:
-    MMCIF_BIOASSEMBLY_FILES = json.load(ifh)
 
 
 @pytest.mark.parametrize(
@@ -54,6 +42,19 @@ def test_process_line_350_1(remark_350_data, bioassembly_data_ref):
     assert bioassembly_data == bioassembly_data_ref
 
 
+# #############################################################################
+# TEST_DATA
+# #############################################################################
+
+TEST_DATA = [
+    # (pdb_id, bioassembly_id)
+    ('1y0x', 2),
+    ('1y0o', 1),
+    ('1y0y', 1),
+    ('1dvf', 1),
+]
+
+
 @pytest.mark.parametrize("pdb_id, bioassembly_id", TEST_DATA)
 def test_process_line_350_2(pdb_id, bioassembly_id):
     """Make sure that ProcessRemark350 correctly parses bioassembly data in PDBs.
@@ -69,7 +70,15 @@ def test_process_line_350_2(pdb_id, bioassembly_id):
     logger.debug(bioassembly_data)
 
 
-@pytest.mark.parametrize("pdb_id", PDB_IDS)
+# #############################################################################
+# TEST_DATA
+# #############################################################################
+
+with open(op.join(op.splitext(__file__)[0], 'test_data.yml'), 'rt') as ifh:
+    TEST_DATA = yaml.load(ifh)
+
+
+@parametrize("pdb_id", TEST_DATA['pdb_vs_mmcif_bioassembly_data'])
 def test_pdb_vs_mmcif_bioassembly_data(pdb_id):
     """Make sure that the bioassembly data is the same in PDB and MMCIF files."""
     pdb_url = DEFAULT_ROUTES['rcsb://'](pdb_id, 'pdb')
@@ -92,8 +101,8 @@ def test_pdb_vs_mmcif_bioassembly_data(pdb_id):
     assert not (set(pdb_bioassembly_data) ^ set(mmcif_bioassembly_data))
     for bioassembly_id in pdb_bioassembly_data:
         # Make sure the bioasembly applies to the same chains
-        assert not (set(pdb_bioassembly_data[bioassembly_id]) ^
-                    set(mmcif_bioassembly_data[bioassembly_id]))
+        assert not (
+            set(pdb_bioassembly_data[bioassembly_id]) ^ set(mmcif_bioassembly_data[bioassembly_id]))
         for chain_id in pdb_bioassembly_data[bioassembly_id]:
             # Make sure the transformations are the same
             pdb_transformations = pdb_bioassembly_data[bioassembly_id][chain_id].sort(
@@ -101,6 +110,21 @@ def test_pdb_vs_mmcif_bioassembly_data(pdb_id):
             mmcif_transformations = mmcif_bioassembly_data[bioassembly_id][chain_id].sort(
                 key=lambda x: x.transformation_id)
             assert pdb_transformations == mmcif_transformations
+
+
+@parametrize("pdb_id, pdb_type, bioassembly_id", TEST_DATA['can_load_bioassembly'])
+def test_can_load_bioassembly(pdb_id, pdb_type, bioassembly_id):
+    url = DEFAULT_ROUTES['rcsb://'](pdb_id, pdb_type)
+    structure = kmbio.PDB.load(url, bioassembly_id=bioassembly_id, use_auth_id=False)
+    assert structure
+
+
+# #############################################################################
+# PDB_BIOASSEMBLY_FILES
+# #############################################################################
+
+with open(op.join(op.splitext(__file__)[0], 'pdb_bioassembly_files.json'), 'rt') as ifh:
+    PDB_BIOASSEMBLY_FILES = json.load(ifh)
 
 
 @pytest.mark.parametrize('pdb_bioassembly_file',
@@ -172,6 +196,14 @@ def test_mmcif_vs_pdb_ref(pdb_bioassembly_file):
     sort_structure(pdb_bioassembly_structure)
 
     assert allequal(mmcif_structure, pdb_bioassembly_structure, 1e-2)
+
+
+# #############################################################################
+# MMCIF_BIOASSEMBLY_FILES
+# #############################################################################
+
+with open(op.join(op.splitext(__file__)[0], 'mmcif_bioassembly_files.json'), 'rt') as ifh:
+    MMCIF_BIOASSEMBLY_FILES = json.load(ifh)
 
 
 @pytest.mark.parametrize('mmcif_bioassembly_file',

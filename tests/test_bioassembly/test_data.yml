@@ -1,0 +1,57 @@
+pdb_vs_mmcif_bioassembly_data:
+  - pdb_id: "3lki"
+  - pdb_id: "3s88"
+  - pdb_id: "5f5l"
+  - pdb_id: "4jz4"
+  - pdb_id: "1m1p"
+  - pdb_id: "3evm"
+  - pdb_id: "2vmw"
+  - pdb_id: "1y0y"
+  - pdb_id: "4dkl"
+  - pdb_id: "1dvf"
+can_load_bioassembly:
+  - pdb_id: "3lki"
+    pdb_type: cif
+    bioassembly_id: 1
+  - pdb_id: "5if0"
+    pdb_type: cif
+    bioassembly_id: 1
+  - pdb_id: "3aze"
+    pdb_type: cif
+    bioassembly_id: 1
+  - pdb_id: "5j7g"
+    pdb_type: cif
+    bioassembly_id: 1
+  - pdb_id: "1qlh"
+    pdb_type: cif
+    bioassembly_id: 1
+  - pdb_id: "5uaw"
+    pdb_type: cif
+    bioassembly_id: 1
+  - pdb_id: "3s88"
+    pdb_type: cif
+    bioassembly_id: 1
+  - pdb_id: "5f5l"
+    pdb_type: cif
+    bioassembly_id: 1
+  - pdb_id: "4jz4"
+    pdb_type: cif
+    bioassembly_id: 1
+  - pdb_id: "1m1p"
+    pdb_type: cif
+    bioassembly_id: 1
+  - pdb_id: "3evm"
+    pdb_type: cif
+    bioassembly_id: 1
+  - pdb_id: "2vmw"
+    pdb_type: cif
+    bioassembly_id: 1
+  - pdb_id: "1y0y"
+    pdb_type: cif
+    bioassembly_id: 1
+  - pdb_id: "4dkl"
+    pdb_type: cif
+    bioassembly_id: 1
+  - pdb_id: "1dvf"
+    pdb_type: cif
+    bioassembly_id: 1
