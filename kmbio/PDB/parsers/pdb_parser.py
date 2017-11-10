@@ -519,7 +519,7 @@ def _parse_pdb_header_list(header):
                 r = re.sub("\s+ANGSTROM.*", "", r)
                 try:
                     dict['resolution'] = float(r)
-                except:
+                except Exception:
                     # print('nonstandard resolution %r' % r)
                     dict['resolution'] = None
             elif hh.startswith('REMARK 350 '):
