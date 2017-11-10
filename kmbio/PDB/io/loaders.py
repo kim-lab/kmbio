@@ -13,7 +13,6 @@ from .routes import DEFAULT_ROUTES
 logger = logging.getLogger(__name__)
 
 
-@functools.lru_cache(maxsize=512)
 def load(pdb_file, structure_id=None, **kwargs) -> Structure:
     """Load local PDB file.
 
@@ -124,6 +123,7 @@ def _get_parser(pdb_type, **kwargs) -> Parser:
         parser.get_structure, **{k: kwargs.pop(k)
                                  for k in list(kwargs) if k in func_params})
     if kwargs:
-        warnings.warn("Not all arguments where used during the call to _get_parser! (kwargs = {})".
-                      format(kwargs))
+        warnings.warn(
+            "Not all arguments where used during the call to _get_parser! (kwargs = {})".format(
+                kwargs))
     return parser
