@@ -123,7 +123,7 @@ class _AbstractHSExposure(AbstractPropertyMap):
             n_v = residue["N"].get_vector()
             c_v = residue["C"].get_vector()
             ca_v = residue["CA"].get_vector()
-        except:
+        except Exception:
             return None
         # center at origin
         n_v = n_v - ca_v
@@ -177,7 +177,7 @@ class HSExposureCA(_AbstractHSExposure):
             ca1 = r1['CA'].get_vector()
             ca2 = r2['CA'].get_vector()
             ca3 = r3['CA'].get_vector()
-        except:
+        except Exception:
             return None
         # center
         d1 = ca2 - ca1
@@ -352,5 +352,5 @@ if __name__ == "__main__":
         for r in c:
             try:
                 print(r.xtra['PCB_CB_ANGLE'])
-            except:
+            except Exception:
                 pass
