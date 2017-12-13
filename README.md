@@ -5,6 +5,8 @@
 [![build status](https://gitlab.com/kimlab/kmbio/badges/master/build.svg)](https://gitlab.com/kimlab/kmbio/commits/master/)
 [![coverage report](https://gitlab.com/kimlab/kmbio/badges/master/coverage.svg)](https://gitlab.com/kimlab/kmbio/commits/master/)
 
+Fork of [biopython's](https://github.com/biopython/biopython) [`Bio.PDB`](http://biopython.org/wiki/The_Biopython_Structural_Bioinformatics_FAQ), with special powers.
+
 ## Development
 
 ```bash
