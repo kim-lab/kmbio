@@ -5,6 +5,8 @@ import os.path as op
 import re
 import string
 import warnings
+from pathlib import Path
+from typing import Union
 
 from kmbio.PDB import MMCIFParser, MMTFParser, Parser, PDBParser, Structure, open_url
 
@@ -13,32 +15,29 @@ from .routes import DEFAULT_ROUTES
 logger = logging.getLogger(__name__)
 
 
-def load(pdb_file, structure_id=None, **kwargs) -> Structure:
+def load(pdb_file: Union[str, Path], structure_id: str = None, **kwargs) -> Structure:
     """Load local PDB file.
 
-    Parameters
-    ----------
-    pdb_file : :obj:`str`
-        File to load
-    kwargs : :obj:`dict`
-        Optional keyword arguments to be passed to the parser ``__init__`` and ``get_structure``
-        methods.
+    Args:
+        pdb_file: File to load.
+        kwargs: Optional keyword arguments to be passed to the parser
+            ``__init__`` and ``get_structure`` methods.
 
-    Load Examples
-    -------------
-    >>> import urllib.request
-    >>> pdb_file = op.join(tempfile.gettempdir(), '4dkl.pdb')
-    >>> r = urllib.request.urlretrieve('http://files.rcsb.org/download/4dkl.pdb', pdb_file)
-    >>> load(pdb_file)
-    <Structure id=4dkl>
+    Load example:
+        >>> import urllib.request
+        >>> pdb_file = op.join(tempfile.gettempdir(), '4dkl.pdb')
+        >>> r = urllib.request.urlretrieve('http://files.rcsb.org/download/4dkl.pdb', pdb_file)
+        >>> load(pdb_file)
+        <Structure id=4dkl>
 
-    Fetch Examples
-    --------------
-    >>> load('wwpdb://4dkl')
-    <Structure id=4dkl>
-    >>> load('wwpdb://4dkl.cif')
-    <Structure id=4dkl>
+    Fetch example:
+        >>> load('wwpdb://4dkl')
+        <Structure id=4dkl>
+        >>> load('wwpdb://4dkl.cif')
+        <Structure id=4dkl>
     """
+    if isinstance(pdb_file, Path):
+        pdb_file = pdb_file.as_posix()
     for default_route in DEFAULT_ROUTES:
         if pdb_file.startswith(default_route):
             pdb_filename = pdb_file.partition(default_route)[-1]
