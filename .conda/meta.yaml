@@ -13,7 +13,6 @@ requirements:
   build:
     - python
     - numpy
-    - reportlab
     - mmtf-python
     - cython
     - setuptools
@@ -22,21 +21,22 @@ requirements:
     - python
     - numpy
     - pandas
-    - reportlab
+    - pytz  # Required by pandas but not included by default on Python 3.5?
+    - pytz
     - biopython
     - mmtf-python
     - retrying
     # Binaries
-    - bwa
+    # - bwa
     - clustalo
     - clustalw
     - emboss
     - mafft
     - muscle
-    - paml
+    # - paml
     # - phyml
     # - probcons
-    - samtools
+    # - samtools
     # - wise2
 
 test:
