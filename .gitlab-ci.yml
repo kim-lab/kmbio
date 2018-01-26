@@ -21,8 +21,10 @@ variables:
 .conda_configure: &conda_configure
   before_script:
     # Conda configure
-    - conda config --append channels bioconda
+    - conda config --set channel_priority true
+    - conda config --append channels conda-forge
     - conda config --append channels ostrokach-forge
+    - conda config --append channels bioconda
     - case "${PACKAGE_VERSION}" in
       *dev*)
         conda config --append channels kimlab/label/dev;
