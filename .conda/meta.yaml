@@ -22,7 +22,6 @@ requirements:
     - numpy
     - pandas
     - pytz  # Required by pandas but not included by default on Python 3.5?
-    - pytz
     - biopython
     - mmtf-python
     - retrying
