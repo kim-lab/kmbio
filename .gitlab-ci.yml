@@ -37,6 +37,8 @@ variables:
         conda config --append channels ostrokach;
       ;;
       esac
+    # Update conda
+    - conda update -n root conda conda-build
 
 .build: &build
   stage: build
