@@ -12,20 +12,19 @@ build:
 requirements:
   build:
     - python
-    - numpy
+    - numpy {{ numpy }}.*
     - mmtf-python
     - cython
     - setuptools
     - wheel
   run:
     - python
-    - numpy
+    - numpy {{ numpy }}.*
     - pandas
-    - pytz  # Required by pandas but not included by default on Python 3.5?
-    - pytz
     - biopython
     - mmtf-python
     - retrying
+    - pyyaml
     # Binaries
     # - bwa
     - clustalo

@@ -21,8 +21,10 @@ variables:
 .conda_configure: &conda_configure
   before_script:
     # Conda configure
-    - conda config --append channels bioconda
+    - conda config --set channel_priority true
+    - conda config --append channels conda-forge
     - conda config --append channels ostrokach-forge
+    - conda config --append channels bioconda
     - case "${PACKAGE_VERSION}" in
       *dev*)
         conda config --append channels kimlab/label/dev;
@@ -35,6 +37,9 @@ variables:
         conda config --append channels ostrokach;
       ;;
       esac
+    # Update conda
+    - conda update -n root -yq conda
+    - conda update -n root -yq conda-build python
 
 .build: &build
   stage: build
@@ -44,7 +49,7 @@ variables:
     - cd $CI_PROJECT_DIR/.conda
     - conda build --python $PYTHON_VERSION .
     # Save built packages as artifacts
-    - mkdir $CI_PROJECT_DIR/conda-bld
+    - mkdir -p $CI_PROJECT_DIR/conda-bld
     - cp -r /opt/conda/conda-bld/{linux-64,noarch} $CI_PROJECT_DIR/conda-bld
   artifacts:
     paths:
@@ -65,20 +70,29 @@ build-py36:
 .test: &test
   stage: test
   script:
-    # Conda install
+    # Environment variables
+    - export PACKAGE_NAME="$(basename $(pwd))"
+    - export TOKEN="$(cat /dev/urandom | tr -cd [:alnum:] | head -c 32)"
+    - export ENV_NAME="test_${PACKAGE_NAME}_${TOKEN}"
+    - SITE_PACKAGES=$(python -c "import site; print(site.getsitepackages()[0])")
+    # Create conda environment
+    - conda create -n "${ENV_NAME}" "python=$PYTHON_VERSION"
+    - conda activate "${ENV_NAME}"
+    # Install built package
     - cp -r $CI_PROJECT_DIR/conda-bld/* /opt/conda/conda-bld/
     - conda index /opt/conda/conda-bld/
-    - conda install -y -q --use-local "python=$PYTHON_VERSION" ${CI_PROJECT_NAME}
-    - SITE_PACKAGES=$(python -c "import site; print(site.getsitepackages()[0])")
-    # Test
+    - conda install -yq --use-local ${CI_PROJECT_NAME}
+    # Run tests
     - pip install -q flake8 pytest pytest-cov codecov pytest-logging hypothesis
     - flake8  # should probably go in a separate test, so no duplication?
     - py.test --cov="${SITE_PACKAGES}/${CI_PROJECT_NAME}"
     - conda env export -f ${CI_PROJECT_DIR}/environment-py${PYTHON_VERSION/./}.yml
+  after_script:
+    - conda remove -n "${ENV_NAME}" --all
   coverage: /^TOTAL.* (\d+\%)/
   artifacts:
     paths:
-    - environment-py${PYTHON_VERSION/./}.yml
+      - environment-py${PYTHON_VERSION/./}.yml
 
 test-py35:
   <<: [*conda_configure, *test]
