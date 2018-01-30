@@ -13,19 +13,21 @@ build:
   number: 0
 
 requirements:
-  build:
+  host:
+    - setuptools
+    - wheel
+    - cython
     - python
     - numpy {{ numpy }}.*
     - mmtf-python
-    - cython
-    - setuptools
-    - wheel
+  build:
+    - {{ compiler('c') }}
   run:
     - python
     - numpy {{ numpy }}.*
+    - mmtf-python
     - pandas
     - biopython
-    - mmtf-python
     - retrying
     - pyyaml
     # Binaries
@@ -63,5 +65,8 @@ test:
 outputs:
   - name: {{ name }}
     type: conda
-  - name: {{ name }}
-    type: wheel
+  - type: wheel
+    requirements:
+      build:
+        - numpy {{ numpy }}.*
+        - cython
