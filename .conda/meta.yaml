@@ -1,6 +1,9 @@
+{% set name = "kmbio" %}
+{% set version = "2.0.4" %}
+
 package:
-  name: kmbio
-  version: 2.0.4
+  name: {{ name|lower }}
+  version: {{ version }}
 
 source:
   path: ../
@@ -56,3 +59,9 @@ test:
     - flake8
     - pytest
     - pytest-cov
+
+outputs:
+  - name: {{ name }}
+    type: conda
+  - name: {{ name }}
+    type: wheel
