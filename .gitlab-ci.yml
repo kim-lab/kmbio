@@ -5,6 +5,10 @@ stages:
   - test
   - deploy
 
+cache:
+  paths:
+    - conda-cache
+
 # === Variables ===
 
 variables:
@@ -20,6 +24,8 @@ variables:
 
 .conda_configure: &conda_configure
   before_script:
+    # Make conda cache and bld folders
+    - mkdir -p "${CI_PROJECT_DIR}/conda-bld" "${CI_PROJECT_DIR}/conda-cache"
     # Conda configure
     - conda config --set channel_priority true
     - conda config --append channels conda-forge
@@ -49,11 +55,12 @@ variables:
   stage: build
   script:
     # Build conda packages
-    - cd $CI_PROJECT_DIR/.conda
-    - conda build --python $PYTHON_VERSION --no-test .
-    # Save built packages as artifacts
-    - mkdir -p $CI_PROJECT_DIR/conda-bld
-    - cp -r /opt/conda/conda-bld/{linux-64,noarch} $CI_PROJECT_DIR/conda-bld
+    - cd "${CI_PROJECT_DIR}/.conda"
+    - conda build . 
+      --python $PYTHON_VERSION
+      --no-test
+      --cache-dir "${CI_PROJECT_DIR}/conda-cache"
+      --output-folder "${CI_PROJECT_DIR}/conda-bld"
   artifacts:
     paths:
       - conda-bld
