@@ -20,7 +20,7 @@ variables:
 .py36: &py36
   PYTHON_VERSION: "3.6"
 
-# === Configure ===
+# === Configurations ===
 
 .conda_configure: &conda_configure
   before_script:
@@ -57,8 +57,8 @@ variables:
     # Build conda packages
     - cd "${CI_PROJECT_DIR}/.conda"
     - conda build . 
-      --python $PYTHON_VERSION
       --no-test
+      --python $PYTHON_VERSION
       --cache-dir "${CI_PROJECT_DIR}/conda-cache"
       --output-folder "${CI_PROJECT_DIR}/conda-bld"
   artifacts:
@@ -85,7 +85,10 @@ build-py36:
     - conda index /opt/conda/conda-bld/
     # Run tests
     - cd $CI_PROJECT_DIR/.conda
-    - conda build --python $PYTHON_VERSION --test .
+    - conda build .
+      --test
+      --python $PYTHON_VERSION 
+      --cache-dir "${CI_PROJECT_DIR}/conda-cache"
   coverage: /^TOTAL.* (\d+\%)/
   artifacts:
     paths:
