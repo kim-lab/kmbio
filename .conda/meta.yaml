@@ -52,3 +52,7 @@ test:
     - kmbio.PDB.tools
     - kmbio.PDB.tools.QCPSuperimposer
     - Bio.SVDSuperimposer
+  requires:
+    - flake8
+    - pytest
+    - pytest-cov

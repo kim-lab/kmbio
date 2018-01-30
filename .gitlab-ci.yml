@@ -38,16 +38,15 @@ variables:
       ;;
       esac
     # Update conda
-    - conda update -n root -yq conda
-    - conda update -n root -yq conda-build python
+    - conda update -n root -yq conda --no-channel-priority
+    - conda update -n root -yq conda-build python --no-channel-priority
 
 .build: &build
   stage: build
-  <<: *conda_configure
   script:
     # Build conda packages
     - cd $CI_PROJECT_DIR/.conda
-    - conda build --python $PYTHON_VERSION .
+    - conda build --python $PYTHON_VERSION --no-test .
     # Save built packages as artifacts
     - mkdir -p $CI_PROJECT_DIR/conda-bld
     - cp -r /opt/conda/conda-bld/{linux-64,noarch} $CI_PROJECT_DIR/conda-bld
@@ -56,12 +55,12 @@ variables:
     - conda-bld
 
 build-py35:
-  <<: *build
+  <<: [*conda_configure, *build]
   variables:
     <<: [*py35]
 
 build-py36:
-  <<: *build
+  <<: [*conda_configure, *build]
   variables:
     <<: [*py36]
 
@@ -70,25 +69,12 @@ build-py36:
 .test: &test
   stage: test
   script:
-    # Environment variables
-    - export PACKAGE_NAME="$(basename $(pwd))"
-    - export TOKEN="$(cat /dev/urandom | tr -cd [:alnum:] | head -c 32)"
-    - export ENV_NAME="test_${PACKAGE_NAME}_${TOKEN}"
-    - SITE_PACKAGES=$(python -c "import site; print(site.getsitepackages()[0])")
-    # Create conda environment
-    - conda create -n "${ENV_NAME}" "python=$PYTHON_VERSION"
-    - conda activate "${ENV_NAME}"
-    # Install built package
+    # Restore built packages
     - cp -r $CI_PROJECT_DIR/conda-bld/* /opt/conda/conda-bld/
     - conda index /opt/conda/conda-bld/
-    - conda install -yq --use-local ${CI_PROJECT_NAME}
     # Run tests
-    - pip install -q flake8 pytest pytest-cov codecov pytest-logging hypothesis
-    - flake8  # should probably go in a separate test, so no duplication?
-    - py.test --cov="${SITE_PACKAGES}/${CI_PROJECT_NAME}"
-    - conda env export -f ${CI_PROJECT_DIR}/environment-py${PYTHON_VERSION/./}.yml
-  after_script:
-    - conda remove -n "${ENV_NAME}" --all
+    - cd $CI_PROJECT_DIR/.conda
+    - conda build --python $PYTHON_VERSION --test .
   coverage: /^TOTAL.* (\d+\%)/
   artifacts:
     paths:
