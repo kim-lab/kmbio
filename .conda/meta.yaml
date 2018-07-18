@@ -62,10 +62,10 @@ test:
     - pytest
     - pytest-cov
 
-outputs:
-  - name: {{ name }}
-    type: conda
-  - type: wheel
-    requirements:
-      - numpy
-      - cython
+# outputs:
+#   - name: {{ name }}
+#     type: conda
+#   - type: wheel
+#     requirements:
+#       - numpy
+#       - cython
