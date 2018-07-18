@@ -18,13 +18,13 @@ requirements:
     - wheel
     - cython
     - python
-    - numpy {{ numpy }}.*
+    - numpy
     - mmtf-python
   build:
     - {{ compiler('c') }}
   run:
     - python
-    - numpy {{ numpy }}.*
+    - numpy
     - mmtf-python
     - pandas
     - biopython
