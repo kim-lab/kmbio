@@ -22,8 +22,6 @@ requirements:
     - mmtf-python
   build:
     - {{ compiler('c') }}
-    - numpy
-    - cython
   run:
     - python
     - numpy
