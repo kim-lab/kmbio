@@ -34,13 +34,14 @@ class NeighborSearch(object):
          - bucket_size - bucket size of KD tree. You can play around
            with this to optimize speed if you feel like it.
         """
+        assert isinstance(atom_list, (list, tuple))
         self.atom_list = atom_list
         # get the coordinates
         coord_list = [a.coord for a in atom_list]
         # to Nx3 array of type float
         self.coords = np.array(coord_list).astype(np.float64)
-        assert (bucket_size > 1)
-        assert (self.coords.shape[1] == 3)
+        assert bucket_size > 1
+        assert self.coords.shape[1] == 3
         self.kdt = KDTree(3, bucket_size)
         self.kdt.set_coords(self.coords)
 
