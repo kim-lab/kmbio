@@ -1,5 +1,3 @@
-# flake8: noqa
-# 3D vector class
 from .vector import (
     Vector,
     calc_angle,
