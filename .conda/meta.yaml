@@ -18,10 +18,11 @@ requirements:
     - wheel
     - cython
     - python
-    - numpy
     - mmtf-python
   build:
     - {{ compiler('c') }}
+    - numpy
+    - cython
   run:
     - python
     - numpy
