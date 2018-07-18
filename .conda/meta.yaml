@@ -70,5 +70,5 @@ outputs:
   - type: wheel
     requirements:
       build:
-        - numpy {{ numpy }}.*
+        - numpy
         - cython
