@@ -16,6 +16,7 @@ requirements:
   host:
     - setuptools
     - wheel
+    - numpy
     - cython
     - python
     - mmtf-python
