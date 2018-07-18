@@ -14,6 +14,7 @@ class Structure(Entity):
     """
     The Structure class contains a collection of Model instances.
     """
+
     level = "S"
 
     def __repr__(self):

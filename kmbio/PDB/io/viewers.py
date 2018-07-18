@@ -7,10 +7,9 @@ from .. import Entity
 
 
 class KMBioStructure(nglview.Structure):
-
-    def __init__(self, entity, ext='pdb', params={}):
+    def __init__(self, entity, ext="pdb", params={}):
         super().__init__()
-        self.path = ''
+        self.path = ""
         self.ext = ext
         self.params = params
         self._entity = entity

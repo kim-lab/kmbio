@@ -47,7 +47,7 @@ class Chain(Entity):
         o id - int, residue resseq
         """
         if isinstance(id, int):
-            id = (' ', id, ' ')
+            id = (" ", id, " ")
         return id
 
     # Special methods

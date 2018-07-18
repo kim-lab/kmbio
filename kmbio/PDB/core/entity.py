@@ -90,9 +90,12 @@ class Entity:
         and invalidate all cached full ids involving this entity.
         """
         if self.parent and new_id in self.parent:
-            raise ValueError("Cannot change id from `{0}` to `{1}`. "
-                             "The id `{1}` is already used for a sibling of this entity."
-                             .format(self._id, new_id))
+            raise ValueError(
+                "Cannot change id from `{0}` to `{1}`. "
+                "The id `{1}` is already used for a sibling of this entity.".format(
+                    self._id, new_id
+                )
+            )
         old_id = self._id
         self._id = new_id
         self.reset_full_id()
@@ -161,7 +164,7 @@ class Entity:
         if len({c.id for c in entities}) < len(entities):
             raise PDBConstructionException("Some of the entities are duplicates")
         self.add(entities)
-        for id_ in list(self._children.keys())[pos:-len(entities)]:
+        for id_ in list(self._children.keys())[pos : -len(entities)]:
             self._children.move_to_end(id_)
 
     @property
@@ -247,7 +250,7 @@ class DisorderedEntityWrapper(object):
 
     def __getattr__(self, method):
         """Forward the method call to the selected child."""
-        if not hasattr(self, 'selected_sibling'):
+        if not hasattr(self, "selected_sibling"):
             # Avoid problems with pickling
             # Unpickling goes into infinite loop!
             raise AttributeError

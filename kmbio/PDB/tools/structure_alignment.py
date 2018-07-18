@@ -18,6 +18,7 @@ class StructureAlignment(object):
     This class aligns two structures based on an alignment of their
     sequences.
     """
+
     def __init__(self, fasta_align, m1, m2, si=0, sj=1):
         """
         Attributes:
@@ -29,8 +30,8 @@ class StructureAlignment(object):
         """
         l = fasta_align.get_alignment_length()
         # Get the residues in the models
-        rl1 = unfold_entities(m1, 'R')
-        rl2 = unfold_entities(m2, 'R')
+        rl1 = unfold_entities(m1, "R")
+        rl2 = unfold_entities(m2, "R")
         # Residue positions
         p1 = 0
         p2 = 0
@@ -81,7 +82,7 @@ class StructureAlignment(object):
         "Test if aa in sequence fits aa in structure."
         resname = r1.resname
         resname = SCOPData.protein_letters_3to1[resname]
-        assert(aa1 == resname)
+        assert aa1 == resname
 
     def get_maps(self):
         """
@@ -119,9 +120,9 @@ if __name__ == "__main__":
 
     # The structures
     p = PDBParser()
-    s1 = p.get_structure('1', pdb_file1)
+    s1 = p.get_structure("1", pdb_file1)
     p = PDBParser()
-    s2 = p.get_structure('2', pdb_file2)
+    s2 = p.get_structure("2", pdb_file2)
 
     # Get the models
     m1 = s1[0]

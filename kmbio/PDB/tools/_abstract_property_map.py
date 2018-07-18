@@ -28,7 +28,7 @@ class AbstractPropertyMap(object):
         @type res_id: char
         """
         translated_id = self._translate_id(id)
-        return (translated_id in self.property_dict)
+        return translated_id in self.property_dict
 
     def __getitem__(self, key):
         """
@@ -76,7 +76,7 @@ class AbstractPropertyMap(object):
         @param res_id: residue id
         @type res_id: char
         """
-        return (id in self)
+        return id in self
 
     def keys(self):
         """
@@ -104,20 +104,18 @@ class AbstractPropertyMap(object):
 
 class AbstractResiduePropertyMap(AbstractPropertyMap):
     def __init__(self, property_dict, property_keys, property_list):
-        AbstractPropertyMap.__init__(self, property_dict, property_keys,
-                                     property_list)
+        AbstractPropertyMap.__init__(self, property_dict, property_keys, property_list)
 
     def _translate_id(self, ent_id):
         chain_id, res_id = ent_id
         if isinstance(res_id, int):
-            ent_id = (chain_id, (' ', res_id, ' '))
+            ent_id = (chain_id, (" ", res_id, " "))
         return ent_id
 
 
 class AbstractAtomPropertyMap(AbstractPropertyMap):
     def __init__(self, property_dict, property_keys, property_list):
-        AbstractPropertyMap.__init__(self, property_dict, property_keys,
-                                     property_list)
+        AbstractPropertyMap.__init__(self, property_dict, property_keys, property_list)
 
     def _translate_id(self, ent_id):
         if len(ent_id) == 4:
@@ -126,5 +124,5 @@ class AbstractAtomPropertyMap(AbstractPropertyMap):
             chain_id, res_id, atom_name = ent_id
             icode = None
         if isinstance(res_id, int):
-            ent_id = (chain_id, (' ', res_id, ' '), atom_name, icode)
+            ent_id = (chain_id, (" ", res_id, " "), atom_name, icode)
         return ent_id

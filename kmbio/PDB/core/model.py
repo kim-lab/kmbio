@@ -15,6 +15,7 @@ class Model(Entity):
     model will be present (with some exceptions). NMR structures
     normally contain many different models.
     """
+
     level = "M"
 
     def __init__(self, id, serial_num=None, **kwargs):

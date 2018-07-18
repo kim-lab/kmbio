@@ -19,16 +19,18 @@ logger = logging.getLogger(__name__)
 class Atom(Entity):
     level = "A"
 
-    def __init__(self,
-                 name,
-                 coord,
-                 bfactor,
-                 occupancy,
-                 altloc,
-                 fullname,
-                 serial_number,
-                 element=None,
-                 **kwargs):
+    def __init__(
+        self,
+        name,
+        coord,
+        bfactor,
+        occupancy,
+        altloc,
+        fullname,
+        serial_number,
+        element=None,
+        **kwargs,
+    ):
         """Create Atom object.
 
         The Atom object stores atom name (both with and without spaces),
@@ -98,12 +100,18 @@ class Atom(Entity):
                     putative_element = self.name[0]
 
             if putative_element.capitalize() in IUPACData.atom_weights:
-                msg = "Used element %r for Atom (name=%s) with given element %r" \
-                      % (putative_element, self.name, element)
+                msg = "Used element %r for Atom (name=%s) with given element %r" % (
+                    putative_element,
+                    self.name,
+                    element,
+                )
                 element = putative_element
             else:
-                msg = "Could not assign element %r for Atom (name=%s) with given element %r" \
-                      % (putative_element, self.name, element)
+                msg = "Could not assign element %r for Atom (name=%s) with given element %r" % (
+                    putative_element,
+                    self.name,
+                    element,
+                )
                 element = ""
             logger.info(msg)
 
@@ -114,7 +122,7 @@ class Atom(Entity):
         if self.element:
             return IUPACData.atom_weights[self.element.capitalize()]
         else:
-            return float('NaN')
+            return float("NaN")
 
     def __repr__(self):
         """Print Atom object as <Atom atom_name>."""
@@ -153,7 +161,7 @@ class Atom(Entity):
         The full id of an atom is the tuple
         (structure id, model id, chain id, residue id, atom name, altloc).
         """
-        return self.parent.full_id + ((self.name, self.altloc), )
+        return self.parent.full_id + ((self.name, self.altloc),)
 
     def transform(self, rot, tran):
         """Apply rotation and translation to the atomic coordinates.

@@ -23,13 +23,7 @@ class _AbstractHSExposure(AbstractPropertyMap):
     subclasses.
     """
 
-    def __init__(self,
-                 model,
-                 radius,
-                 offset,
-                 hse_up_key,
-                 hse_down_key,
-                 angle_key=None):
+    def __init__(self, model, radius, offset, hse_up_key, hse_down_key, angle_key=None):
         """
         @param model: model
         @type model: L{Model}
@@ -51,7 +45,7 @@ class _AbstractHSExposure(AbstractPropertyMap):
         the entity.xtra attribute
         @type angle_key: string
         """
-        assert (offset >= 0)
+        assert offset >= 0
         # For PyMOL visualization
         self.ca_cb_list = []
         ppb = CaPPBuilder()
@@ -78,17 +72,17 @@ class _AbstractHSExposure(AbstractPropertyMap):
                 pcb, angle = result
                 hse_u = 0
                 hse_d = 0
-                ca2 = r2['CA'].get_vector()
+                ca2 = r2["CA"].get_vector()
                 for pp2 in ppl:
                     for j in range(0, len(pp2)):
                         if pp1 is pp2 and abs(i - j) <= offset:
                             # neighboring residues in the chain are ignored
                             continue
                         ro = pp2[j]
-                        if not is_aa(ro) or 'CA' not in ro:
+                        if not is_aa(ro) or "CA" not in ro:
                             continue
-                        cao = ro['CA'].get_vector()
-                        d = (cao - ca2)
+                        cao = ro["CA"].get_vector()
+                        d = cao - ca2
                         if d.norm() < radius:
                             if d.angle(pcb) < (pi / 2):
                                 hse_u += 1
@@ -156,9 +150,9 @@ class HSExposureCA(_AbstractHSExposure):
             of the number of neighbors
         @type offset: int
         """
-        _AbstractHSExposure.__init__(self, model, radius, offset,
-                                     'EXP_HSE_A_U', 'EXP_HSE_A_D',
-                                     'EXP_CB_PCB_ANGLE')
+        _AbstractHSExposure.__init__(
+            self, model, radius, offset, "EXP_HSE_A_U", "EXP_HSE_A_D", "EXP_CB_PCB_ANGLE"
+        )
 
     def _get_cb(self, r1, r2, r3):
         """
@@ -174,9 +168,9 @@ class HSExposureCA(_AbstractHSExposure):
         if r1 is None or r3 is None:
             return None
         try:
-            ca1 = r1['CA'].get_vector()
-            ca2 = r2['CA'].get_vector()
-            ca3 = r3['CA'].get_vector()
+            ca1 = r1["CA"].get_vector()
+            ca2 = r2["CA"].get_vector()
+            ca3 = r3["CA"].get_vector()
         except Exception:
             return None
         # center
@@ -185,16 +179,16 @@ class HSExposureCA(_AbstractHSExposure):
         d1.normalize()
         d3.normalize()
         # bisection
-        b = (d1 + d3)
+        b = d1 + d3
         b.normalize()
         # Add to ca_cb_list for drawing
         self.ca_cb_list.append((ca2, b + ca2))
-        if 'CB' in r2:
-            cb = r2['CB'].get_vector()
+        if "CB" in r2:
+            cb = r2["CB"].get_vector()
             cb_ca = cb - ca2
             cb_ca.normalize()
             angle = cb_ca.angle(b)
-        elif r2.resname == 'GLY':
+        elif r2.resname == "GLY":
             cb_ca = self._get_gly_cb_vector(r2)
             if cb_ca is None:
                 angle = None
@@ -248,8 +242,7 @@ class HSExposureCB(_AbstractHSExposure):
             of the number of neighbors
         @type offset: int
         """
-        _AbstractHSExposure.__init__(self, model, radius, offset,
-                                     'EXP_HSE_B_U', 'EXP_HSE_B_D')
+        _AbstractHSExposure.__init__(self, model, radius, offset, "EXP_HSE_B_U", "EXP_HSE_B_D")
 
     def _get_cb(self, r1, r2, r3):
         """
@@ -258,12 +251,12 @@ class HSExposureCB(_AbstractHSExposure):
         @param r1, r2, r3: three consecutive residues (only r2 is used)
         @type r1, r2, r3: L{Residue}
         """
-        if r2.resname == 'GLY':
+        if r2.resname == "GLY":
             return self._get_gly_cb_vector(r2), 0.0
         else:
-            if 'CB' in r2 and 'CA' in r2:
-                vcb = r2['CB'].get_vector()
-                vca = r2['CA'].get_vector()
+            if "CB" in r2 and "CA" in r2:
+                vcb = r2["CB"].get_vector()
+                vca = r2["CA"].get_vector()
                 return (vcb - vca), 0.0
         return None
 
@@ -286,7 +279,7 @@ class ExposureCN(AbstractPropertyMap):
         @type offset: int
 
         """
-        assert (offset >= 0)
+        assert offset >= 0
         ppb = CaPPBuilder()
         ppl = ppb.build_peptides(model)
         fs_map = {}
@@ -296,18 +289,18 @@ class ExposureCN(AbstractPropertyMap):
             for i in range(0, len(pp1)):
                 fs = 0
                 r1 = pp1[i]
-                if not is_aa(r1) or 'CA' not in r1:
+                if not is_aa(r1) or "CA" not in r1:
                     continue
-                ca1 = r1['CA']
+                ca1 = r1["CA"]
                 for pp2 in ppl:
                     for j in range(0, len(pp2)):
                         if pp1 is pp2 and abs(i - j) <= offset:
                             continue
                         r2 = pp2[j]
-                        if not is_aa(r2) or 'CA' not in r2:
+                        if not is_aa(r2) or "CA" not in r2:
                             continue
-                        ca2 = r2['CA']
-                        d = (ca2 - ca1)
+                        ca2 = r2["CA"]
+                        d = ca2 - ca1
                         if d < radius:
                             fs += 1
                 res_id = r1.id
@@ -317,7 +310,7 @@ class ExposureCN(AbstractPropertyMap):
                 fs_list.append((r1, fs))
                 fs_keys.append((chain_id, res_id))
                 # Add to xtra
-                r1.xtra['EXP_CN'] = fs
+                r1.xtra["EXP_CN"] = fs
         AbstractPropertyMap.__init__(self, fs_map, fs_keys, fs_list)
 
 
@@ -326,7 +319,7 @@ if __name__ == "__main__":
     import sys
 
     p = PDBParser()
-    s = p.get_structure('X', sys.argv[1])
+    s = p.get_structure("X", sys.argv[1])
     model = s[0]
 
     # Neighbor sphere radius
@@ -351,6 +344,6 @@ if __name__ == "__main__":
     for c in model:
         for r in c:
             try:
-                print(r.xtra['PCB_CB_ANGLE'])
+                print(r.xtra["PCB_CB_ANGLE"])
             except Exception:
                 pass

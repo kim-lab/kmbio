@@ -41,18 +41,18 @@ def load(pdb_file: Union[str, Path], structure_id: str = None, **kwargs) -> Stru
     for default_route in DEFAULT_ROUTES:
         if pdb_file.startswith(default_route):
             pdb_filename = pdb_file.partition(default_route)[-1]
-            pdb_id, _, pdb_type = pdb_filename.rpartition('.')
+            pdb_id, _, pdb_type = pdb_filename.rpartition(".")
             pdb_file = DEFAULT_ROUTES[default_route](pdb_id, pdb_type)
             break
 
-    if pdb_file.startswith('file://'):
-        pdb_file = pdb_file.partition('file://')[-1]
+    if pdb_file.startswith("file://"):
+        pdb_file = pdb_file.partition("file://")[-1]
 
-    logger.debug('pdb_file: %s', pdb_file)
+    logger.debug("pdb_file: %s", pdb_file)
     pdb_type = guess_pdb_type(pdb_file)
-    logger.debug('pdb_type: %s', pdb_type)
+    logger.debug("pdb_type: %s", pdb_type)
     parser = _get_parser(pdb_type, **kwargs)
-    logger.debug('parser: %s', parser)
+    logger.debug("parser: %s", parser)
     with open_url(pdb_file) as fh:
         structure = parser.get_structure(fh)
         if not structure.id:
@@ -73,13 +73,13 @@ def guess_pdb_id(pdb_file):
     '100d'
     """
     pdb_id = op.basename(pdb_file)
-    for extension in ['.gz', '.pdb', '.ent', '.cif']:
+    for extension in [".gz", ".pdb", ".ent", ".cif"]:
         pdb_id = pdb_id.partition(extension)[0]
-    if len(pdb_id) == 7 and (pdb_id.startswith('ent') or pdb_id.startswith('pdb')):
+    if len(pdb_id) == 7 and (pdb_id.startswith("ent") or pdb_id.startswith("pdb")):
         pdb_id = pdb_id[3:]
         assert len(pdb_id) == 4
     pdb_id = pdb_id.lower()
-    pdb_id = pdb_id.replace('.', '')
+    pdb_id = pdb_id.replace(".", "")
     return pdb_id
 
 
@@ -93,25 +93,25 @@ def guess_pdb_type(pdb_file):
     >>> _guess_pdb_type('/tmp/4dkl.cif.gz')
     'cif'
     """
-    for chunk in reversed(re.split('/|\.|:', pdb_file)):
+    for chunk in reversed(re.split("/|\.|:", pdb_file)):
         chunk = chunk.lower().strip(string.digits)
-        if chunk in ['pdb', 'ent']:
-            return 'pdb'
-        elif chunk in ['cif', 'mmcif']:
-            return 'cif'
-        elif chunk in ['mmtf']:
-            return 'mmtf'
+        if chunk in ["pdb", "ent"]:
+            return "pdb"
+        elif chunk in ["cif", "mmcif"]:
+            return "cif"
+        elif chunk in ["mmtf"]:
+            return "mmtf"
     raise Exception("Count not guess pdb type for file '{}'!".format(pdb_file))
 
 
 def _get_parser(pdb_type, **kwargs) -> Parser:
     """Get kmbioPython PDB parser appropriate for `pdb_type`."""
-    if pdb_type == 'pdb':
+    if pdb_type == "pdb":
         Parser = PDBParser
-    elif pdb_type == 'cif':
-        kwargs.setdefault('use_auth_id', False)
+    elif pdb_type == "cif":
+        kwargs.setdefault("use_auth_id", False)
         Parser = MMCIFParser
-    elif pdb_type == 'mmtf':
+    elif pdb_type == "mmtf":
         Parser = MMTFParser
     else:
         raise Exception("Wrong pdb_type: '{}'".format(pdb_type))
@@ -119,10 +119,12 @@ def _get_parser(pdb_type, **kwargs) -> Parser:
     parser = Parser(**{k: kwargs.pop(k) for k in list(kwargs) if k in init_params})
     func_params = set(inspect.signature(parser.get_structure).parameters)
     parser.get_structure = functools.partial(
-        parser.get_structure, **{k: kwargs.pop(k)
-                                 for k in list(kwargs) if k in func_params})
+        parser.get_structure, **{k: kwargs.pop(k) for k in list(kwargs) if k in func_params}
+    )
     if kwargs:
         warnings.warn(
             "Not all arguments where used during the call to _get_parser! (kwargs = {})".format(
-                kwargs))
+                kwargs
+            )
+        )
     return parser

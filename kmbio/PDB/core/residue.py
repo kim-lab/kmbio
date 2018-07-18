@@ -21,6 +21,7 @@ class Residue(Entity):
     """
     Represents a residue. A Residue object stores atoms.
     """
+
     level = "R"
 
     def __init__(self, id, resname, segid, **kwargs):
@@ -58,7 +59,7 @@ class Residue(Entity):
         undisordered_atom_list = []
         for atom in self:
             if isinstance(atom, DisorderedAtom):
-                undisordered_atom_list = (undisordered_atom_list + atom.disordered_get_list())
+                undisordered_atom_list = undisordered_atom_list + atom.disordered_get_list()
             else:
                 undisordered_atom_list.append(atom)
         return undisordered_atom_list
@@ -79,6 +80,7 @@ class DisorderedResidue(DisorderedEntityWrapper):
     used to represent point mutations (e.g. there is a Ser 60 and a Cys 60 residue,
     each with 50 % occupancy).
     """
+
     def __init__(self, id):
         DisorderedEntityWrapper.__init__(self, id)
 
@@ -98,8 +100,8 @@ class DisorderedResidue(DisorderedEntityWrapper):
             # add atom anyway, if PDBParser ignores exception the atom will be part of the residue
             residue.add(atom)
             raise PDBConstructionException(
-                "Blank altlocs in duplicate residue %s (%s, %i, %s)"
-                % (resname, het, resseq, icode))
+                "Blank altlocs in duplicate residue %s (%s, %i, %s)" % (resname, het, resseq, icode)
+            )
         residue.add(atom)
 
     def sort(self):
@@ -117,6 +119,6 @@ class DisorderedResidue(DisorderedEntityWrapper):
         # add chain parent to residue
         chain = self.parent
         residue.parent = chain
-        assert(not self.disordered_has_id(resname))
+        assert not self.disordered_has_id(resname)
         self[resname] = residue
         self.disordered_select(resname)

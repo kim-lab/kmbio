@@ -66,7 +66,7 @@ def _read_fragments(size, length, dir="."):
         # ID of fragment=rank in spec file
         fid = 0
         for l in fp.readlines():
-                    # skip comment and blank lines
+            # skip comment and blank lines
             if l[0] == "*" or l[0] == "\n":
                 continue
             sl = l.split()
@@ -88,6 +88,7 @@ class Fragment(object):
     """
     Represent a polypeptide C-alpha fragment.
     """
+
     def __init__(self, length, fid):
         """
         @param length: length of the fragment
@@ -186,7 +187,7 @@ def _make_fragment_list(pp, length):
         for j in range(0, length):
             residue = pp[i + j]
             resname = residue.resname
-            if 'CA' in residue:
+            if "CA" in residue:
                 ca = residue["CA"]
             else:
                 raise PDBException("CHAINBREAK")
@@ -228,6 +229,7 @@ class FragmentMapper(object):
     """
     Map polypeptides in a model to lists of representative fragments.
     """
+
     def __init__(self, model, lsize=20, flength=5, fdir="."):
         """Create instance of FragmentMapper
 
@@ -281,10 +283,10 @@ class FragmentMapper(object):
                     else:
                         # fragment
                         index = i - self.edge
-                        assert(index >= 0)
+                        assert index >= 0
                         fd[res] = mflist[index]
             except PDBException as why:
-                if why == 'CHAINBREAK':
+                if why == "CHAINBREAK":
                     # Funny polypeptide - skip
                     pass
                 else:
@@ -296,14 +298,14 @@ class FragmentMapper(object):
 
         @type res: L{Residue}
         """
-        return (res in self)
+        return res in self
 
     def __contains__(self, res):
         """True if the given residue is in any of the mapped fragments.
 
         @type res: L{Residue}
         """
-        return (res in self.fd)
+        return res in self.fd
 
     def __getitem__(self, res):
         """

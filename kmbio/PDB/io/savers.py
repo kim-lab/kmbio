@@ -4,28 +4,35 @@
 # as part of this package.
 """Output of PDB files."""
 import logging
+from pathlib import Path
+from typing import Union
 
 from Bio._py3k import basestring
 from Bio.Data.IUPACData import atom_weights
 
-from kmbio.PDB import StructureBuilder
+from kmbio.PDB import Structure, StructureBuilder
 
 logger = logging.getLogger(__name__)
 
 _ATOM_FORMAT_STRING = "%s%5i %-4s%c%3s %c%4i%c   %8.3f%8.3f%8.3f%s%6.2f      %4s%2s%2s\n"
 
 
-def save(structure, filename, model_ids=None, chain_ids=None, include_disordered=True):
-    """Save kmbioPython structure object as a PDB.
+def save(
+    structure: Structure,
+    filename: Union[str, Path],
+    model_ids=None,
+    chain_ids=None,
+    include_disordered=True,
+):
+    """Save kmbio `Structure` object as a PDB.
 
-    Examples
-    --------
-    >>> tmpfile = tempfile.NamedTemporaryFile()
-    >>> s1 = fetch_structure('4dkl')
-    >>> save_structure(s1, tmpfile.name)
-    >>> s2 = load_structure(tmpfile.name)
-    >>> allequal(s1, s2)
-    True
+    Examples:
+        >>> tmpfile = tempfile.NamedTemporaryFile()
+        >>> s1 = fetch_structure('4dkl')
+        >>> save_structure(s1, tmpfile.name)
+        >>> s2 = load_structure(tmpfile.name)
+        >>> allequal(s1, s2)
+        True
     """
     io = PDBIO()
     io.set_structure(structure)
@@ -79,9 +86,9 @@ class NotDisordered(Select):
     def accept_atom(self, atom):
         if not atom.disordered_flag:
             return True
-        elif atom.altloc == 'A':
+        elif atom.altloc == "A":
             atom.disordered_flag = False
-            atom.altloc = ' '
+            atom.altloc = " "
             return True
         else:
             logger.debug("Ignoring atom %s.", atom)
@@ -110,16 +117,9 @@ class PDBIO(object):
 
     # private mathods
 
-    def _get_atom_line(self,
-                       atom,
-                       hetfield,
-                       segid,
-                       atom_number,
-                       resname,
-                       resseq,
-                       icode,
-                       chain_id,
-                       charge="  "):
+    def _get_atom_line(
+        self, atom, hetfield, segid, atom_number, resname, resseq, icode, chain_id, charge="  "
+    ):
         """Returns an ATOM PDB string (PRIVATE)."""
         if hetfield != " ":
             record_type = "HETATM"
@@ -142,15 +142,28 @@ class PDBIO(object):
         except TypeError:
             if occupancy is None:
                 occupancy_str = " " * 6
-                logger.warning("Missing occupancy in atom %s written as blank",
-                               repr(atom.full_id))
+                logger.warning("Missing occupancy in atom %s written as blank", repr(atom.full_id))
             else:
-                raise TypeError("Invalid occupancy %r in atom %r" %
-                                (occupancy, atom.full_id))
+                raise TypeError("Invalid occupancy %r in atom %r" % (occupancy, atom.full_id))
 
-        args = (record_type, atom_number, name, altloc, resname, chain_id,
-                resseq, icode, x, y, z, occupancy_str, bfactor, segid, element,
-                charge)
+        args = (
+            record_type,
+            atom_number,
+            name,
+            altloc,
+            resname,
+            chain_id,
+            resseq,
+            icode,
+            x,
+            y,
+            z,
+            occupancy_str,
+            bfactor,
+            segid,
+            element,
+            charge,
+        )
         return _ATOM_FORMAT_STRING % args
 
     # Public methods
@@ -161,8 +174,8 @@ class PDBIO(object):
             structure = pdb_object
         else:
             sb = StructureBuilder()
-            sb.init_structure('pdb')
-            sb.init_seg(' ')
+            sb.init_structure("pdb")
+            sb.init_seg(" ")
             # Build parts as necessary
             if pdb_object.level == "M":
                 sb.structure.add(pdb_object)
@@ -172,55 +185,47 @@ class PDBIO(object):
                 if pdb_object.level == "C":
                     sb.structure[0].add(pdb_object)
                 else:
-                    sb.init_chain('A')
+                    sb.init_chain("A")
                     if pdb_object.level == "R":
                         try:
                             parent_id = pdb_object.parent.id
-                            sb.structure[0]['A'].id = parent_id
+                            sb.structure[0]["A"].id = parent_id
                         except Exception:
                             pass
-                        sb.structure[0]['A'].add(pdb_object)
+                        sb.structure[0]["A"].add(pdb_object)
                     else:
                         # Atom
-                        sb.init_residue('DUM', ' ', 1, ' ')
+                        sb.init_residue("DUM", " ", 1, " ")
                         try:
                             parent_id = pdb_object.parent.parent.id
-                            sb.structure[0]['A'].id = parent_id
+                            sb.structure[0]["A"].id = parent_id
                         except Exception:
                             pass
-                        sb.structure[0]['A'].ix[0].add(pdb_object)
+                        sb.structure[0]["A"].ix[0].add(pdb_object)
 
             # Return structure
             structure = sb.structure
         self.structure = structure
 
-    def save(self,
-             file,
-             select=Select(),
-             write_end=True,
-             preserve_atom_numbering=False):
+    def save(self, file, select=Select(), write_end=True, preserve_atom_numbering=False):
         """
-        @param file: output file
-        @type file: string or filehandle
+        Args:
+            file: output file
+            file: string or filehandle
+            select: selects which entities will be written.
+                Typically select is a subclass of L{Select}.
+                It should have the following methods:
 
-        @param select: selects which entities will be written.
-        @type select: object
+                - accept_model(model)
+                - accept_chain(chain)
+                - accept_residue(residue)
+                - accept_atom(atom)
 
-        Typically select is a subclass of L{Select}, it should
-        have the following methods:
-
-         - accept_model(model)
-         - accept_chain(chain)
-         - accept_residue(residue)
-         - accept_atom(atom)
-
-        These methods should return 1 if the entity is to be
-        written out, 0 otherwise.
-
-        Typically select is a subclass of L{Select}.
+                These methods should return 1 if the entity is to be
+                written out, 0 otherwise.
         """
         get_atom_line = self._get_atom_line
-        if isinstance(file, basestring):
+        if isinstance(file, (basestring, Path)):
             fp = open(file, "w")
             close_file = 1
         else:
@@ -263,9 +268,9 @@ class PDBIO(object):
                             model_residues_written = 1
                             if preserve_atom_numbering:
                                 atom_number = atom.serial_number
-                            s = get_atom_line(atom, hetfield, segid,
-                                              atom_number, resname, resseq,
-                                              icode, chain_id)
+                            s = get_atom_line(
+                                atom, hetfield, segid, atom_number, resname, resseq, icode, chain_id
+                            )
                             fp.write(s)
                             if not preserve_atom_numbering:
                                 atom_number += 1
@@ -274,7 +279,7 @@ class PDBIO(object):
             if model_flag and model_residues_written:
                 fp.write("ENDMDL\n")
         if write_end:
-            fp.write('END\n')
+            fp.write("END\n")
         if close_file:
             fp.close()
 

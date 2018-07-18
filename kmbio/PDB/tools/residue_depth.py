@@ -77,16 +77,16 @@ def get_surface(pdb_file, PDB_TO_XYZR="pdb_to_xyzr", MSMS="msms"):
     PDB_TO_XYZR = PDB_TO_XYZR + " %s > %s"
     make_xyz = PDB_TO_XYZR % (pdb_file, xyz_tmp)
     os.system(make_xyz)
-    assert os.path.isfile(xyz_tmp), \
-        "Failed to generate XYZR file using command:\n%s" % make_xyz
+    assert os.path.isfile(xyz_tmp), "Failed to generate XYZR file using command:\n%s" % make_xyz
     # make surface
     surface_tmp = tempfile.mktemp()
     MSMS = MSMS + " -probe_radius 1.5 -if %s -of %s > " + tempfile.mktemp()
     make_surface = MSMS % (xyz_tmp, surface_tmp)
     os.system(make_surface)
     surface_file = surface_tmp + ".vert"
-    assert os.path.isfile(surface_file), \
+    assert os.path.isfile(surface_file), (
         "Failed to generate surface file using command:\n%s" % make_surface
+    )
     # read surface vertices from vertex file
     surface = _read_vertex_array(surface_file)
     # clean up tmp files
@@ -133,12 +133,13 @@ class ResidueDepth(AbstractPropertyMap):
     """
     Calculate residue and CA depth for all residues.
     """
+
     def __init__(self, model, pdb_file):
         depth_dict = {}
         depth_list = []
         depth_keys = []
         # get_residue
-        residue_list = unfold_entities(model, 'R')
+        residue_list = unfold_entities(model, "R")
         # make surface from PDB file
         surface = get_surface(pdb_file)
         # calculate rdepth for each residue
@@ -154,8 +155,8 @@ class ResidueDepth(AbstractPropertyMap):
             depth_list.append((residue, (rd, ca_rd)))
             depth_keys.append((chain_id, res_id))
             # Update xtra information
-            residue.xtra['EXP_RD'] = rd
-            residue.xtra['EXP_RD_CA'] = ca_rd
+            residue.xtra["EXP_RD"] = rd
+            residue.xtra["EXP_RD_CA"] = ca_rd
         AbstractPropertyMap.__init__(self, depth_dict, depth_keys, depth_list)
 
 
