@@ -164,7 +164,7 @@ class Entity:
         if len({c.id for c in entities}) < len(entities):
             raise PDBConstructionException("Some of the entities are duplicates")
         self.add(entities)
-        for id_ in list(self._children.keys())[pos : -len(entities)]:
+        for id_ in list(self._children.keys())[pos:-len(entities)]:
             self._children.move_to_end(id_)
 
     @property
