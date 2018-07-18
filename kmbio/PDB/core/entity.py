@@ -90,12 +90,9 @@ class Entity:
         and invalidate all cached full ids involving this entity.
         """
         if self.parent and new_id in self.parent:
-            raise ValueError(
-                "Cannot change id from `{0}` to `{1}`. "
-                "The id `{1}` is already used for a sibling of this entity.".format(
-                    self._id, new_id
-                )
-            )
+            raise ValueError("Cannot change id from `{0}` to `{1}`. "
+                             "The id `{1}` is already used for a sibling of this entity.".format(
+                                 self._id, new_id))
         old_id = self._id
         self._id = new_id
         self.reset_full_id()

@@ -2,7 +2,6 @@
 # This code is part of the Biopython distribution and governed by its
 # license.  Please see the LICENSE file that should have been included
 # as part of this package.
-
 """Calculation of residue depth using command line tool MSMS.
 
 This module uses Michel Sanner's MSMS program for the surface calculation
@@ -85,8 +84,7 @@ def get_surface(pdb_file, PDB_TO_XYZR="pdb_to_xyzr", MSMS="msms"):
     os.system(make_surface)
     surface_file = surface_tmp + ".vert"
     assert os.path.isfile(surface_file), (
-        "Failed to generate surface file using command:\n%s" % make_surface
-    )
+        "Failed to generate surface file using command:\n%s" % make_surface)
     # read surface vertices from vertex file
     surface = _read_vertex_array(surface_file)
     # clean up tmp files

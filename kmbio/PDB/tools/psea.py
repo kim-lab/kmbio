@@ -2,7 +2,6 @@
 # This code is part of the Biopython distribution and governed by its
 # license.  Please see the LICENSE file that should have been included
 # as part of this package.
-
 """Wrappers for PSEA, a program for secondary structure assignment.
 
 See this citation for P-SEA, PMID: 9183534

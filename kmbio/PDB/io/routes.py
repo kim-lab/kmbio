@@ -29,11 +29,11 @@ def _get_wwpdb_url(pdb_id, pdb_type):
     pdb_filename = {
         "pdb": "{pdb_id_middle}/pdb{pdb_id}.ent.gz",
         "cif": "{pdb_id_middle}/{pdb_id}.cif.gz",
-    }[pdb_type].format(pdb_id_middle=pdb_id[1:3], pdb_id=pdb_id)
+    }[pdb_type].format(
+        pdb_id_middle=pdb_id[1:3], pdb_id=pdb_id)
     url = URL.format(pdb_format=pdb_format, pdb_filename=pdb_filename)
     return url
 
 
-DEFAULT_ROUTES = OrderedDict(
-    [("rcsb://", _get_rcsb_url), ("ebi://", _get_ebi_url), ("wwpdb://", _get_wwpdb_url)]
-)
+DEFAULT_ROUTES = OrderedDict([("rcsb://", _get_rcsb_url), ("ebi://", _get_ebi_url),
+                              ("wwpdb://", _get_wwpdb_url)])

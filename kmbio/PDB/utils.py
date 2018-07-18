@@ -58,8 +58,8 @@ def allequal(s1, s2, atol=1e-3):
         return False
     # Check if object types are the same
     if type(s1) != type(s2):
-        raise Exception(
-            "Can't compare objects of different types! ({}, {})".format(type(s1), type(s2)))
+        raise Exception("Can't compare objects of different types! ({}, {})".format(
+            type(s1), type(s2)))
     # Check if lengths are the same
     lengths_equal = len(s1) == len(s2)
     if not lengths_equal:
@@ -150,7 +150,6 @@ def unfold_entities(entity_list, target_level):
 
 
 class uncompressed:
-
     @staticmethod
     def open(*args, **kwargs):
         return open(*args, **kwargs)
@@ -191,7 +190,7 @@ def retry_urlopen(fn: Callable) -> Callable:
 
 
 @retry_urlopen
-def read_url(url: str, timeout: float=10.0, **kwargs) -> bytes:
+def read_url(url: str, timeout: float = 10.0, **kwargs) -> bytes:
     """Read the contents of a URL or a file."""
     with urllib.request.urlopen(url, timeout=timeout, **kwargs) as ifh:
         data = ifh.read()

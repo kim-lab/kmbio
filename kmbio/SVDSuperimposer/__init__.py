@@ -86,6 +86,7 @@ class SVDSuperimposer(object):
     0.00
 
     """
+
     def __init__(self):
         self._clear()
 
@@ -126,7 +127,7 @@ class SVDSuperimposer(object):
         self.coords = coords
         n = reference_coords.shape
         m = coords.shape
-        if n != m or not(n[1] == m[1] == 3):
+        if n != m or not (n[1] == m[1] == 3):
             raise Exception("Coordinate number/dimension mismatch.")
         self.n = n[0]
 

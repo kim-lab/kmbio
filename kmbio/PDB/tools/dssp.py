@@ -264,18 +264,18 @@ def _make_dssp_dict(handle):
             if l[34] != " ":
                 shift = l[34:].find(" ")
 
-                NH_O_1_relidx = int(l[38 + shift : 45 + shift])
-                NH_O_1_energy = float(l[46 + shift : 50 + shift])
-                O_NH_1_relidx = int(l[50 + shift : 56 + shift])
-                O_NH_1_energy = float(l[57 + shift : 61 + shift])
-                NH_O_2_relidx = int(l[61 + shift : 67 + shift])
-                NH_O_2_energy = float(l[68 + shift : 72 + shift])
-                O_NH_2_relidx = int(l[72 + shift : 78 + shift])
-                O_NH_2_energy = float(l[79 + shift : 83 + shift])
+                NH_O_1_relidx = int(l[38 + shift:45 + shift])
+                NH_O_1_energy = float(l[46 + shift:50 + shift])
+                O_NH_1_relidx = int(l[50 + shift:56 + shift])
+                O_NH_1_energy = float(l[57 + shift:61 + shift])
+                NH_O_2_relidx = int(l[61 + shift:67 + shift])
+                NH_O_2_energy = float(l[68 + shift:72 + shift])
+                O_NH_2_relidx = int(l[72 + shift:78 + shift])
+                O_NH_2_energy = float(l[79 + shift:83 + shift])
 
-                acc = int((l[34 + shift : 38 + shift]))
-                phi = float(l[103 + shift : 109 + shift])
-                psi = float(l[109 + shift : 115 + shift])
+                acc = int((l[34 + shift:38 + shift]))
+                phi = float(l[103 + shift:109 + shift])
+                psi = float(l[109 + shift:115 + shift])
             else:
                 raise ValueError(exc)
         res_id = (" ", resseq, icode)
@@ -327,9 +327,7 @@ class DSSP(AbstractResiduePropertyMap):
     -42.399999999999999)
     """
 
-    def __init__(
-        self, model, in_file, dssp="dssp", acc_array="Sander", file_type="PDB"
-    ):
+    def __init__(self, model, in_file, dssp="dssp", acc_array="Sander", file_type="PDB"):
         """Create a DSSP object.
 
         Parameters
@@ -428,9 +426,7 @@ class DSSP(AbstractResiduePropertyMap):
                     res_seq_icode = resid2code(res_id)
                     for r in chain:
                         if r.id[0] not in (" ", "W"):
-                            if resid2code(r.id) == res_seq_icode and r.ix[
-                                0
-                            ].altloc in tuple("A1 "):
+                            if resid2code(r.id) == res_seq_icode and r.ix[0].altloc in tuple("A1 "):
                                 res = r
                                 break
 
@@ -529,4 +525,3 @@ if __name__ == "__main__":
         print(s[0]["A"][1].xtra)
     # Secondary structure
     print("".join(item[1] for item in d))
-

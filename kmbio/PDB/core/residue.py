@@ -2,7 +2,6 @@
 # This code is part of the Biopython distribution and governed by its
 # license.  Please see the LICENSE file that should have been included
 # as part of this package.
-
 """Residue class, used by Structure objects."""
 
 # My Stuff
@@ -99,9 +98,8 @@ class DisorderedResidue(DisorderedEntityWrapper):
             het, resseq, icode = residue.id
             # add atom anyway, if PDBParser ignores exception the atom will be part of the residue
             residue.add(atom)
-            raise PDBConstructionException(
-                "Blank altlocs in duplicate residue %s (%s, %i, %s)" % (resname, het, resseq, icode)
-            )
+            raise PDBConstructionException("Blank altlocs in duplicate residue %s (%s, %i, %s)" %
+                                           (resname, het, resseq, icode))
         residue.add(atom)
 
     def sort(self):

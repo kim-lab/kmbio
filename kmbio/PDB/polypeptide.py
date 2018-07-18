@@ -59,8 +59,8 @@ from kmbio.PDB.exceptions import PDBException
 logger = logging.getLogger(__name__)
 
 standard_aa_names = [
-    "ALA", "CYS", "ASP", "GLU", "PHE", "GLY", "HIS", "ILE", "LYS", "LEU",
-    "MET", "ASN", "PRO", "GLN", "ARG", "SER", "THR", "VAL", "TRP", "TYR"
+    "ALA", "CYS", "ASP", "GLU", "PHE", "GLY", "HIS", "ILE", "LYS", "LEU", "MET", "ASN", "PRO",
+    "GLN", "ARG", "SER", "THR", "VAL", "TRP", "TYR"
 ]
 
 aa1 = "ACDEFGHIKLMNPQRSTVWY"
@@ -250,8 +250,7 @@ class Polypeptide(list):
         ca_list = self.get_ca_list()
         tau_list = []
         for i in range(0, len(ca_list) - 3):
-            atom_list = (ca_list[i], ca_list[i + 1], ca_list[i + 2],
-                         ca_list[i + 3])
+            atom_list = (ca_list[i], ca_list[i + 1], ca_list[i + 2], ca_list[i + 3])
             v1, v2, v3, v4 = [a.get_vector() for a in atom_list]
             tau = calc_dihedral(v1, v2, v3, v4)
             tau_list.append(tau)

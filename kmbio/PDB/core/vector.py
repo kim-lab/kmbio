@@ -65,7 +65,7 @@ def vector_to_axis(line, point):
     line = line.normalized()
     norm = point.norm()
     angle = line.angle(point)
-    return point - line ** (norm * np.cos(angle))
+    return point - line**(norm * np.cos(angle))
 
 
 def rotaxis2m(theta, vector):
@@ -188,9 +188,9 @@ def calc_dihedral(v1, v2, v3, v4):
     ab = v1 - v2
     cb = v3 - v2
     db = v4 - v3
-    u = ab ** cb
-    v = db ** cb
-    w = u ** v
+    u = ab**cb
+    v = db**cb
+    w = u**v
     angle = u.angle(v)
     # Determine sign of angle
     try:
@@ -359,9 +359,9 @@ if __name__ == "__main__":
     print(v1 / 2)
     print(v1 / (1, 2, 3))
     # **
-    print(v1 ** v2)
-    print(v1 ** 2)
-    print(v1 ** (1, 2, 3))
+    print(v1**v2)
+    print(v1**2)
+    print(v1**(1, 2, 3))
     # norm
     print(v1.norm())
     # norm squared

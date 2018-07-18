@@ -119,12 +119,10 @@ def _get_parser(pdb_type, **kwargs) -> Parser:
     parser = Parser(**{k: kwargs.pop(k) for k in list(kwargs) if k in init_params})
     func_params = set(inspect.signature(parser.get_structure).parameters)
     parser.get_structure = functools.partial(
-        parser.get_structure, **{k: kwargs.pop(k) for k in list(kwargs) if k in func_params}
-    )
+        parser.get_structure, **{k: kwargs.pop(k)
+                                 for k in list(kwargs) if k in func_params})
     if kwargs:
         warnings.warn(
             "Not all arguments where used during the call to _get_parser! (kwargs = {})".format(
-                kwargs
-            )
-        )
+                kwargs))
     return parser
