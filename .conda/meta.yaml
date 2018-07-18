@@ -69,6 +69,5 @@ outputs:
     type: conda
   - type: wheel
     requirements:
-      build:
-        - numpy
-        - cython
+      - numpy
+      - cython
