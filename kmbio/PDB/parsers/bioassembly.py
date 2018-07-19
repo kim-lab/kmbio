@@ -171,7 +171,8 @@ class ProcessRemark350:
         assert row['transformation_id'] == int(transformation_id)
         previous_matrix_data_is_present = [
             '_pdbx_struct_oper_list.matrix[{}][{}]'.format(k, i) in row
-            for k in range(1, int(matrix_id)) for i in range(1, 3)
+            for k in range(1, int(matrix_id))
+            for i in range(1, 3)
         ]
         previous_vector_data_is_present = [
             '_pdbx_struct_oper_list.vector[{}]'.format(k) in row for k in range(1, int(matrix_id))
@@ -221,7 +222,7 @@ def mmcif_key_to_dataframe(sdict, key):
     if isinstance(data_element, (list, tuple)):
         assert all(len(data_element) == len(v) for v in data.values())
         _data = []
-        for row in zip(* [v for v in data.values()]):
+        for row in zip(*[v for v in data.values()]):
             _data.append(dict(zip(data.keys(), row)))
         data = _data
     else:
@@ -277,11 +278,10 @@ def get_mmcif_bioassembly_data(sdict, use_auth_id=False):
             transformation_ids = _decode_transformation_ids(transformation_ids)
             logger.debug("(transformed) chain_ids: %s, transformation_ids: %s", chain_ids,
                          transformation_ids)
-            transformations = \
-                _pdbx_struct_oper_list \
-                .loc[map(str, transformation_ids),
-                     ['transformation_id', 'rotation', 'translation']] \
-                .itertuples(index=False, name='Transformation')
+            transformations = (
+                _pdbx_struct_oper_list.loc[[str(i) for i in transformation_ids],
+                                           ['transformation_id', 'rotation', 'translation']]
+                .itertuples(index=False, name='Transformation'))
             transformations = list(transformations)  # Required to materialize generator
             if use_auth_id:
                 chain_ids = uniqueify([label_id_to_auth_id[c] for c in chain_ids])
