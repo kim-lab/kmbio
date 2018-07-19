@@ -29,8 +29,8 @@ def _get_local_url(pdb_id, pdb_type):
 
 
 @pytest.mark.parametrize(
-    "url, pdb_type", [('ftp://ftp.wwpdb.org/pub/pdb/data/structures/divided/mmCIF/dk/4dkl.cif.gz',
-                       'cif')])
+    "url, pdb_type",
+    [('ftp://ftp.wwpdb.org/pub/pdb/data/structures/divided/mmCIF/dk/4dkl.cif.gz', 'cif')])
 def test_guess_pdb_type(url, pdb_type):
     assert guess_pdb_type(url) == pdb_type
 

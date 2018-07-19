@@ -18,8 +18,8 @@ import kmbio
 
 logger = logging.getLogger(__name__)
 
-DOCTEST_OPTIONFLAGS = (
-    doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS | doctest.IGNORE_EXCEPTION_DETAIL)
+DOCTEST_OPTIONFLAGS = (doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS
+                       | doctest.IGNORE_EXCEPTION_DETAIL)
 
 DOCTEST_EXTRAGLOBS = {'os': os, 'op': op, 'tempfile': tempfile, 'np': np}
 

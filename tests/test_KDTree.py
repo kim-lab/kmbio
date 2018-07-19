@@ -12,7 +12,6 @@ radius = 0.01
 
 
 class KDTreeTest(unittest.TestCase):
-
     def test_KDTree_neighbour(self):
         for i in range(0, 10):
             self.assertTrue(_neighbor_test(nr_points, dim, bucket_size, radius))

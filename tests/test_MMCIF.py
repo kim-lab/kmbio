@@ -6,7 +6,6 @@
 # This code is part of the Biopython distribution and governed by its
 # license. Please see the LICENSE file that should have been included
 # as part of this package.
-
 """Unit tests for the MMCIF portion of the Bio.PDB module."""
 
 import unittest
@@ -165,8 +164,7 @@ class ParseReal(unittest.TestCase):
             self.assertTrue(isinstance(s, Seq))
             self.assertEqual(s.alphabet, generic_protein)
             # Here non-standard MSE are shown as M
-            self.assertEqual("MKPVTLYDVAEYAGVSYQTVSRVVNQASHVSAKTREKVEAAMAELNYIPNR",
-                             str(s))
+            self.assertEqual("MKPVTLYDVAEYAGVSYQTVSRVVNQASHVSAKTREKVEAAMAELNYIPNR", str(s))
             # ==========================================================
             # Now try strict version with only standard amino acids
             polypeptides = ppbuild.build_peptides(structure[0], True)
@@ -179,8 +177,7 @@ class ParseReal(unittest.TestCase):
             s = pp.get_sequence()
             self.assertTrue(isinstance(s, Seq))
             self.assertEqual(s.alphabet, generic_protein)
-            self.assertEqual("MKPVTLYDVAEYAGVSYQTVSRVVNQASHVSAKTREKVEAAMAELNYIPNR",
-                             str(s))
+            self.assertEqual("MKPVTLYDVAEYAGVSYQTVSRVVNQASHVSAKTREKVEAAMAELNYIPNR", str(s))
 
         # This structure contains several models with multiple lengths.
         # The tests were failing.
@@ -275,31 +272,23 @@ class ParseReal(unittest.TestCase):
 
         # Check a non-mutated residue just to be sure we didn't break the
         # parser and cause everyhing to be disordered.
-        self.assertFalse(
-            structure[0]["A"][13].disordered,
-            "Residue 13 is not disordered")
+        self.assertFalse(structure[0]["A"][13].disordered, "Residue 13 is not disordered")
 
         # Check that the residue types were parsed correctly.
         self.assertSetEqual(
-            set(res_1.disordered_get_id_list()),
-            {"PRO", "SER"},
-            "Residue 1 is proline/serine")
+            set(res_1.disordered_get_id_list()), {"PRO", "SER"}, "Residue 1 is proline/serine")
         self.assertSetEqual(
-            set(res_15.disordered_get_id_list()),
-            {"ARG", "GLN", "GLU"},
+            set(res_15.disordered_get_id_list()), {"ARG", "GLN", "GLU"},
             "Residue 15 is arginine/glutamine/glutamic acid")
 
         # Quickly check that we can switch between residues and that the
         # correct set of residues was parsed.
         res_1.disordered_select('PRO')
-        self.assertAlmostEqual(
-            res_1["CA"].occupancy,
-            0.83, 2, "Residue 1 proline occupancy correcy")
+        self.assertAlmostEqual(res_1["CA"].occupancy, 0.83, 2,
+                               "Residue 1 proline occupancy correcy")
 
         res_1.disordered_select('SER')
-        self.assertAlmostEqual(
-            res_1["CA"].occupancy,
-            0.17, 2, "Residue 1 serine occupancy correcy")
+        self.assertAlmostEqual(res_1["CA"].occupancy, 0.17, 2, "Residue 1 serine occupancy correcy")
 
 
 if __name__ == '__main__':

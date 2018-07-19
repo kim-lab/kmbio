@@ -70,13 +70,13 @@ class ParseMMTF(unittest.TestCase):
         self.mmtf_res = [x for x in mmtf_struct.get_residues()]
         self.check_residues()
         self.assertEqual(
-            len([x for x in mmcif_struct.get_models()]),
-            len([x for x in mmtf_struct.get_models()]))
+            len([x for x in mmcif_struct.get_models()]), len([x for x in mmtf_struct.get_models()]))
 
     @pytest.mark.xfail
     def test_4CUP(self):
         """Compare parsing 4CUP.mmtf and 4CUP.cif"""
         self.check_mmtf_vs_cif("PDB/4CUP.mmtf", "PDB/4CUP.cif")
+
 
 # TODO:
 #    def test_1A8O(self):

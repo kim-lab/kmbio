@@ -1,0 +1,3 @@
+{
+  "tests/test_bioassembly.py::test_pdb_vs_mmcif_bioassembly_data[3lki]": true
+}

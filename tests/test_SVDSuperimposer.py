@@ -7,15 +7,11 @@ from kmbio.SVDSuperimposer import SVDSuperimposer
 
 # start with two coordinate sets (Nx3 arrays - Float0)
 
-x = array([[51.65, -1.90, 50.07],
-          [50.40, -1.23, 50.65],
-          [50.68, -0.04, 51.54],
-          [50.22, -0.02, 52.85]])
+x = array([[51.65, -1.90, 50.07], [50.40, -1.23, 50.65], [50.68, -0.04, 51.54],
+           [50.22, -0.02, 52.85]])
 
-y = array([[51.30, -2.99, 46.54],
-          [51.09, -1.88, 47.58],
-          [52.36, -1.20, 48.03],
-          [52.71, -1.18, 49.38]])
+y = array([[51.30, -2.99, 46.54], [51.09, -1.88, 47.58], [52.36, -1.20, 48.03],
+           [52.71, -1.18, 49.38]])
 
 sup = SVDSuperimposer()
 
@@ -51,8 +47,7 @@ def simple_matrix_print(matrix):
     versions of the underlying libraries or the compilation options
     they used).
     """
-    return "[%s]" % "\n ".join("[%s]" % " ".join("% 1.4f" % v for v in row)
-                               for row in matrix)
+    return "[%s]" % "\n ".join("[%s]" % " ".join("% 1.4f" % v for v in row) for row in matrix)
 
 
 # output results

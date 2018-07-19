@@ -16,18 +16,14 @@ PACKAGES = [
 
 EXTENSIONS = [
     Extension(
-        'kmbio.KDTree._CKDTree',
-        ["kmbio/KDTree/KDTree.c", "kmbio/KDTree/KDTreemodule.c"],
+        'kmbio.KDTree._CKDTree', ["kmbio/KDTree/KDTree.c", "kmbio/KDTree/KDTreemodule.c"],
         include_dirs=[np.get_include()]),
     Extension(
         'kmbio.PDB.tools.QCPSuperimposer.qcprotmodule',
         ["kmbio/PDB/tools/QCPSuperimposer/qcprotmodule.c"],
         include_dirs=[np.get_include()]),
-    Extension(
-        '*',
-        ["kmbio/PDB/parsers/*.pyx"]),
+    Extension('*', ["kmbio/PDB/parsers/*.pyx"]),
 ]
-
 
 setup(
     name='kmbio',

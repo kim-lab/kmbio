@@ -48,8 +48,7 @@ def simple_matrix_print(matrix):
     versions of the underlying libraries or the compilation options
     they used).
     """
-    return "[%s]" % "\n ".join("[%s]" % " ".join("% 1.4f" % v for v in row)
-                               for row in matrix)
+    return "[%s]" % "\n ".join("[%s]" % " ".join("% 1.4f" % v for v in row) for row in matrix)
 
 
 # output results

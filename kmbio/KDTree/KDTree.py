@@ -214,8 +214,7 @@ class KDTree(object):
         the indices of the point pairs, where N
         is the number of neighbor pairs.
         """
-        a = array([[neighbor.index1, neighbor.index2]
-                   for neighbor in self.neighbors])
+        a = array([[neighbor.index1, neighbor.index2] for neighbor in self.neighbors])
         return a
 
     def all_get_radii(self):
@@ -254,8 +253,7 @@ if __name__ == "__main__":
     indices = kdtree.all_get_indices()
     radii = kdtree.all_get_radii()
 
-    print("Found %i point pairs within radius %f." % (len(indices),
-                                                      query_radius))
+    print("Found %i point pairs within radius %f." % (len(indices), query_radius))
 
     # Do 10 individual queries
 
@@ -271,6 +269,5 @@ if __name__ == "__main__":
         radii = kdtree.get_radii()
 
         x, y, z = center
-        print(
-            "Found %i points in radius %f around center (%.2f, %.2f, %.2f)." %
-            (len(indices), query_radius, x, y, z))
+        print("Found %i points in radius %f around center (%.2f, %.2f, %.2f)." %
+              (len(indices), query_radius, x, y, z))
