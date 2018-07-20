@@ -19,18 +19,16 @@ logger = logging.getLogger(__name__)
 class Atom(Entity):
     level = "A"
 
-    def __init__(
-        self,
-        name,
-        coord,
-        bfactor,
-        occupancy,
-        altloc,
-        fullname,
-        serial_number,
-        element=None,
-        **kwargs,
-    ):
+    def __init__(self,
+                 name,
+                 coord,
+                 bfactor,
+                 occupancy,
+                 altloc,
+                 fullname,
+                 serial_number,
+                 element=None,
+                 **kwargs):
         """Create Atom object.
 
         The Atom object stores atom name (both with and without spaces),
