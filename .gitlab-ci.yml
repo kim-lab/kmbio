@@ -11,6 +11,9 @@ stages:
 variables:
   PACKAGE_VERSION: "2.0.6"
 
+.py35: &py35
+  PYTHON_VERSION: "3.5"
+
 .py36: &py36
   PYTHON_VERSION: "3.6"
 
@@ -79,7 +82,7 @@ lint:
       - conda-bld
 
 build-py35:
-  <<: [*conda_configure, *build]
+  <<: [*configure, *build]
   variables:
     <<: [*py35]
 
@@ -108,7 +111,7 @@ build-py36:
       - .ci/conda/.coverage
 
 test-py35:
-  <<: [*conda_configure, *test]
+  <<: [*configure, *test]
   dependencies:
     - build-py35
   variables:
