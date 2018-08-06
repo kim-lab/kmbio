@@ -2,7 +2,7 @@ default_context:
     full_name: KimLab
     email: alex.strokach@utoronto.ca
     git_url: https://gitlab.com
-    git_username: kmbio 
+    git_username: kimlab
     anaconda_username: kimlab
     pypi_username: kimlab
     project_name: kmbio

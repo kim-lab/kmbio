@@ -72,7 +72,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "kmbio"
-copyright = "2018, Alexey Strokach"
+copyright = "2018, KimLab"
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout
@@ -229,7 +229,7 @@ latex_elements = {
 latex_documents = [
     ("index", "kmbio.tex",
      "kmbio Documentation",
-     "Alexey Strokach", "manual"),
+     "KimLab", "manual"),
 ]
 
 # The name of an image file (relative to this directory) to place at
@@ -260,7 +260,7 @@ latex_documents = [
 man_pages = [
     ("index", "kmbio",
      "kmbio Documentation",
-     ["Alexey Strokach"], 1)
+     ["KimLab"], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -275,7 +275,7 @@ man_pages = [
 texinfo_documents = [
     ("index", "kmbio",
      "kmbio Documentation",
-     "Alexey Strokach",
+     "KimLab",
      "kmbio",
      "One line description of project.",
      "Miscellaneous"),

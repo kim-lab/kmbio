@@ -1,9 +1,6 @@
-{% set name = "kmbio" %}
-{% set version = "2.0.6" %}
-
 package:
-  name: {{ name|lower }}
-  version: {{ version }}
+  name: kmbio
+  version: 2.0.6
 
 source:
   path: ../../
@@ -61,11 +58,14 @@ test:
     - flake8
     - pytest
     - pytest-cov
+    - hypothesis
 
-# outputs:
-#   - name: {{ name }}
-#     type: conda
-#   - type: wheel
-#     requirements:
-#       - numpy
-#       - cython
+outputs:
+  - name: kmbio
+    type: conda
+  - type: wheel
+
+about:
+  home: https://gitlab.com/kimlab/kmbio
+  license: BioPython License
+  summary: "Fork of `biopython.PDB` with special powers."
