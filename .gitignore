@@ -1,51 +1,74 @@
-#Ignore the build directory (and its sub-directories):
-build
-.cache
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
 .coverage
-.mypy_cache
-__pycache__
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*,cover
+.hypothesis/
 
-#Ignore the distribution directory
-dist
+# Translations
+*.mo
+*.pot
 
-#Ignore backup files from some Unix editors,
-*~
-*.swp
-*.bak
+# Django stuff:
+*.log
 
-#Ignore patches and any original files created by patch command
-*.diff
-*.patch
-*.orig
-*.rej
+# Sphinx documentation
+docs/_build/
+docs/_modules/
 
-#Ignore these hidden files from Mac OS X
-.DS_Store
+# PyBuilder
+target/
 
-#Ignore hidden files from Dolphin window manager
-.directory
+# pyenv python configuration file
+.python-version
 
-#Ignore all compiled python files (e.g. from running the unit tests):
-*.pyc
-*.pyo
-*.py{}
-*.py-e
-
-#Ignore all Jython class files (present if using Jython)
-*.class
-
-#Ignore the MANIFEST file created automatically from MANIFEST.in
-MANIFEST
-
-#Ignore potential directory created during install:
-*.egg-info
-
-#Ignore IntelliJ IDEA directory and project files
-.idea
-*.iml
-
-#Ignore NFS lock files
-.nfs*
+# AS
+public/
+.mypy_cache/
+.pytest_cache/
+.idea/
+.vscode/
+*-bak.py
 
 # Ignore compiled Cython code
 kmbio/PDB/parsers/_shlex*.c
@@ -54,7 +77,3 @@ kmbio/PDB/parsers/_mmcif_to_dict*.c
 kmbio/PDB/parsers/_mmcif_to_dict*.so
 kmbio/PDB/tools/QCPSuperimposer/qcprotmodule*.so
 kmbio/KDTree/_CKDTree*.so
-
-job_1
-job_2
-job_3
