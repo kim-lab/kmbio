@@ -7,10 +7,10 @@
 
 from __future__ import print_function
 
-from Bio.File import as_handle
-from Bio._py3k import input as _input
-
 import shlex
+
+from Bio._py3k import input as _input
+from Bio.File import as_handle
 
 
 class MMCIF2Dict(dict):
@@ -66,7 +66,7 @@ class MMCIF2Dict(dict):
                 token = line[1:].strip()
                 for line in handle:
                     line = line.strip()
-                    if line == ';':
+                    if line == ";":
                         break
                     token += line
                 yield token
@@ -89,7 +89,7 @@ if __name__ == "__main__":
 
     entry = ""
     print("Now type a key ('q' to end, 'k' for a list of all keys):")
-    while(entry != "q"):
+    while entry != "q":
         entry = _input("MMCIF dictionary key ==> ")
         if entry == "q":
             sys.exit()
