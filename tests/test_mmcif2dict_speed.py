@@ -15,14 +15,14 @@ WWPDB_URL = "ftp://ftp.wwpdb.org/pub/pdb/data/structures/divided/mmCIF"
 
 # Times are for the reference Python MMCIF2Dict
 PDB_ID_REFS = [
-    ('4dkl', 3),
-    ('4ug0', 100),
-    ('4v6x', 120),
-    ('5lks', 110),
-    ('1arr', 0.5),
-    ('1dvf', 2),
-    ('3mbp', 1.5),
-    ('4p6f', 250),
+    ("4dkl", 3),
+    ("4ug0", 100),
+    ("4v6x", 120),
+    ("5lks", 110),
+    ("1arr", 0.5),
+    ("1dvf", 2),
+    ("3mbp", 1.5),
+    ("4p6f", 250),
 ]
 MULTIPLIER = 1
 
@@ -31,9 +31,9 @@ MULTIPLIER = 1
 def cif_file_ref_time(request, tmpdir_factory):
     cif_id, ref_time = request.param
     url = WWPDB_URL + "/{}/{}.cif.gz".format(cif_id[1:3], cif_id)
-    fn = tmpdir_factory.mktemp('cif_data').join(cif_id + '.cif')
+    fn = tmpdir_factory.mktemp("cif_data").join(cif_id + ".cif")
     data = read_url(url)
-    with open(str(fn), 'wb') as ofh:
+    with open(str(fn), "wb") as ofh:
         ofh.write(gzip.decompress(data))
     return str(fn), ref_time
 
@@ -43,6 +43,10 @@ def test_speed(cif_file_ref_time):
     start_time = datetime.datetime.now()
     mmcif2dict(cif_file)
     running_time = (datetime.datetime.now() - start_time).total_seconds()
-    logger.info("Processing file '%s' took %s seconds (%.2f faster than Python).", cif_file,
-                running_time, ref_time / running_time)
+    logger.info(
+        "Processing file '%s' took %s seconds (%.2f faster than Python).",
+        cif_file,
+        running_time,
+        ref_time / running_time,
+    )
     # assert running_time < (ref_time / MULTIPLIER)

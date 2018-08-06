@@ -5,8 +5,8 @@
 """Superimpose two structures."""
 import numpy as np
 
-from kmbio.SVDSuperimposer import SVDSuperimposer
 from kmbio.PDB.exceptions import PDBException
+from kmbio.SVDSuperimposer import SVDSuperimposer
 
 
 class Superimposer(object):

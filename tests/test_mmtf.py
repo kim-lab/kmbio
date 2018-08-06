@@ -1,6 +1,6 @@
+import logging
 import os.path as op
 import unittest
-import logging
 
 import pytest
 
@@ -54,7 +54,8 @@ class ParseMMTF(unittest.TestCase):
         mmtf_struct = MMTFParser().get_structure(mmtf_filename)
         mmcif_parser = MMCIFParser()
         mmcif_struct = mmcif_parser.get_structure(
-            op.basename(op.splitext(cif_filename)[0]), cif_filename)
+            op.basename(op.splitext(cif_filename)[0]), cif_filename
+        )
         self.mmcif_atoms = [x for x in mmcif_struct.get_atoms()]
         self.mmtf_atoms = [x for x in mmtf_struct.get_atoms()]
         self.check_atoms()
@@ -70,7 +71,8 @@ class ParseMMTF(unittest.TestCase):
         self.mmtf_res = [x for x in mmtf_struct.get_residues()]
         self.check_residues()
         self.assertEqual(
-            len([x for x in mmcif_struct.get_models()]), len([x for x in mmtf_struct.get_models()]))
+            len([x for x in mmcif_struct.get_models()]), len([x for x in mmtf_struct.get_models()])
+        )
 
     @pytest.mark.xfail
     def test_4CUP(self):

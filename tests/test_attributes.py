@@ -3,7 +3,7 @@ import pytest
 import kmbio
 
 
-@pytest.mark.parametrize('attribute', ['__version__'])
+@pytest.mark.parametrize("attribute", ["__version__"])
 def test_attribute(attribute):
     assert getattr(kmbio, attribute)
 

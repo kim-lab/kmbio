@@ -10,10 +10,10 @@
 
 import unittest
 
-from Bio.Seq import Seq
 from Bio.Alphabet import generic_protein
+from Bio.Seq import Seq
 
-from kmbio.PDB import PPBuilder, CaPPBuilder, MMCIFParser, FastMMCIFParser
+from kmbio.PDB import CaPPBuilder, FastMMCIFParser, MMCIFParser, PPBuilder
 
 
 class ParseReal(unittest.TestCase):
@@ -78,8 +78,9 @@ class ParseReal(unittest.TestCase):
             self.assertEqual(s.alphabet, generic_protein)
 
             # Here non-standard MSE are shown as M
-            self.assertEqual("MDIRQGPKEPFRDYVDRFYKTLRAEQASQEVKNWMTETLLVQ"
-                             "NANPDCKTILKALGPGATLEEMMTACQG", str(s))
+            self.assertEqual(
+                "MDIRQGPKEPFRDYVDRFYKTLRAEQASQEVKNWMTETLLVQ" "NANPDCKTILKALGPGATLEEMMTACQG", str(s)
+            )
 
             # ==========================================================
             # Now try strict version with only standard amino acids
@@ -208,10 +209,7 @@ class ParseReal(unittest.TestCase):
                 self.assertEqual(pp[0].id[1], 16)
                 self.assertEqual(pp[-1].id[1], 244)
             # Check the sequence
-            refseq = "IIGGEFTTIENQPWFAAIYRRHRGGSVTYVCGGSLISPCWVISATHCFIDYPKKEDYIVYLGR" \
-                     "SRLNSNTQGEMKFEVENLILHKDYSADTLAYHNDIALLKIRSKEGRCAQPSRTIQTIALPSMY" \
-                     "NDPQFGTSCEITGFGKEQSTDYLYPEQLKMTVVKLISHRECQQPHYYGSEVTTKMLCAADPQW" \
-                     "KTDSCQGDSGGPLVCSLQGRMTLTGIVSWGRGCALKDKPGVYTRVSHFLPWIRSHTKE"
+            refseq = "IIGGEFTTIENQPWFAAIYRRHRGGSVTYVCGGSLISPCWVISATHCFIDYPKKEDYIVYLGR" "SRLNSNTQGEMKFEVENLILHKDYSADTLAYHNDIALLKIRSKEGRCAQPSRTIQTIALPSMY" "NDPQFGTSCEITGFGKEQSTDYLYPEQLKMTVVKLISHRECQQPHYYGSEVTTKMLCAADPQW" "KTDSCQGDSGGPLVCSLQGRMTLTGIVSWGRGCALKDKPGVYTRVSHFLPWIRSHTKE"
 
             s = pp.get_sequence()
             self.assertTrue(isinstance(s, Seq))
@@ -276,21 +274,25 @@ class ParseReal(unittest.TestCase):
 
         # Check that the residue types were parsed correctly.
         self.assertSetEqual(
-            set(res_1.disordered_get_id_list()), {"PRO", "SER"}, "Residue 1 is proline/serine")
+            set(res_1.disordered_get_id_list()), {"PRO", "SER"}, "Residue 1 is proline/serine"
+        )
         self.assertSetEqual(
-            set(res_15.disordered_get_id_list()), {"ARG", "GLN", "GLU"},
-            "Residue 15 is arginine/glutamine/glutamic acid")
+            set(res_15.disordered_get_id_list()),
+            {"ARG", "GLN", "GLU"},
+            "Residue 15 is arginine/glutamine/glutamic acid",
+        )
 
         # Quickly check that we can switch between residues and that the
         # correct set of residues was parsed.
-        res_1.disordered_select('PRO')
-        self.assertAlmostEqual(res_1["CA"].occupancy, 0.83, 2,
-                               "Residue 1 proline occupancy correcy")
+        res_1.disordered_select("PRO")
+        self.assertAlmostEqual(
+            res_1["CA"].occupancy, 0.83, 2, "Residue 1 proline occupancy correcy"
+        )
 
-        res_1.disordered_select('SER')
+        res_1.disordered_select("SER")
         self.assertAlmostEqual(res_1["CA"].occupancy, 0.17, 2, "Residue 1 serine occupancy correcy")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     runner = unittest.TextTestRunner(verbosity=2)
     unittest.main(testRunner=runner)

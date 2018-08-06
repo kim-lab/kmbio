@@ -20,8 +20,22 @@ from Bio._py3k import StringIO
 from Bio.Alphabet import generic_protein
 from Bio.Seq import Seq
 
-from kmbio.PDB import (DSSP, PDBIO, Atom, CaPPBuilder, ExposureCN, HSExposureCA, HSExposureCB,
-                       PDBParser, PPBuilder, Residue, Select, Vector, make_dssp_dict, rotmat)
+from kmbio.PDB import (
+    DSSP,
+    PDBIO,
+    Atom,
+    CaPPBuilder,
+    ExposureCN,
+    HSExposureCA,
+    HSExposureCB,
+    PDBParser,
+    PPBuilder,
+    Residue,
+    Select,
+    Vector,
+    make_dssp_dict,
+    rotmat,
+)
 from kmbio.PDB.exceptions import PDBConstructionException
 from kmbio.PDB.tools.naccess import process_asa_data, process_rsa_data
 

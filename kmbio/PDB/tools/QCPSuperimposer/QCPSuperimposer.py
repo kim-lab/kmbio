@@ -8,7 +8,8 @@ two point sets on top of each other (minimizing the RMSD). This is
 eg. useful to superimpose crystal structures. QCP stands for
 Quaternion Characteristic Polynomial, which is used in the algorithm.
 """
-from numpy import dot, sqrt, array, inner
+from numpy import array, dot, inner, sqrt
+
 from .qcprotmodule import FastCalcRMSDAndRotation
 
 
@@ -58,8 +59,19 @@ class QCPSuperimposer(object):
     def _align(self, centered_coords1, centered_coords2):
         (E0, A) = self._inner_product(centered_coords1, centered_coords2)
         (rmsd, r0, r1, r2, r3, r4, r5, r6, r7, r8, q1, q2, q3, q4) = FastCalcRMSDAndRotation(
-            A[0][0], A[0][1], A[0][2], A[1][0], A[1][1], A[1][2], A[2][0], A[2][1], A[2][2],
-            E0, len(centered_coords1), -1.0)
+            A[0][0],
+            A[0][1],
+            A[0][2],
+            A[1][0],
+            A[1][1],
+            A[1][2],
+            A[2][0],
+            A[2][1],
+            A[2][2],
+            E0,
+            len(centered_coords1),
+            -1.0,
+        )
         rot = array([r0, r1, r2, r3, r4, r5, r6, r7, r8]).reshape(3, 3)
         return (rmsd, rot.T, [q1, q2, q3, q4])
 
@@ -83,7 +95,7 @@ class QCPSuperimposer(object):
         self.coords = coords
         n = reference_coords.shape
         m = coords.shape
-        if n != m or not(n[1] == m[1] == 3):
+        if n != m or not (n[1] == m[1] == 3):
             raise Exception("Coordinate number/dimension mismatch.")
         self.n = n[0]
 
@@ -99,8 +111,7 @@ class QCPSuperimposer(object):
         coords = coords - av1
         reference_coords = reference_coords - av2
         #
-        (self.rms, self.rot, self.lquart) = self._align(
-            coords, reference_coords)
+        (self.rms, self.rot, self.lquart) = self._align(coords, reference_coords)
         self.tran = av2 - dot(av1, self.rot)
 
     def get_transformed(self):
@@ -139,21 +150,29 @@ if __name__ == "__main__":
 
     # start with two coordinate sets (Nx3 arrays - float)
 
-    x = array([[-2.803, -15.373, 24.556],
-               [0.893, -16.062, 25.147],
-               [1.368, -12.371, 25.885],
-               [-1.651, -12.153, 28.177],
-               [-0.440, -15.218, 30.068],
-               [2.551, -13.273, 31.372],
-               [0.105, -11.330, 33.567]])
+    x = array(
+        [
+            [-2.803, -15.373, 24.556],
+            [0.893, -16.062, 25.147],
+            [1.368, -12.371, 25.885],
+            [-1.651, -12.153, 28.177],
+            [-0.440, -15.218, 30.068],
+            [2.551, -13.273, 31.372],
+            [0.105, -11.330, 33.567],
+        ]
+    )
 
-    y = array([[-14.739, -18.673, 15.040],
-               [-12.473, -15.810, 16.074],
-               [-14.802, -13.307, 14.408],
-               [-17.782, -14.852, 16.171],
-               [-16.124, -14.617, 19.584],
-               [-15.029, -11.037, 18.902],
-               [-18.577, -10.001, 17.996]])
+    y = array(
+        [
+            [-14.739, -18.673, 15.040],
+            [-12.473, -15.810, 16.074],
+            [-14.802, -13.307, 14.408],
+            [-17.782, -14.852, 16.171],
+            [-16.124, -14.617, 19.584],
+            [-15.029, -11.037, 18.902],
+            [-18.577, -10.001, 17.996],
+        ]
+    )
 
     t0 = datetime.now()
     for loop in range(0, 10000):

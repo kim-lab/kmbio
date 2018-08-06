@@ -7,10 +7,10 @@ Base class for Residue, Chain, Model and Structure classes.
 
 It is a simple container class, with list and dictionary like properties.
 """
-from abc import abstractmethod
 import logging
-from copy import copy
+from abc import abstractmethod
 from collections import OrderedDict
+from copy import copy
 
 from kmbio.PDB.exceptions import PDBConstructionException
 
@@ -90,9 +90,12 @@ class Entity:
         and invalidate all cached full ids involving this entity.
         """
         if self.parent and new_id in self.parent:
-            raise ValueError("Cannot change id from `{0}` to `{1}`. "
-                             "The id `{1}` is already used for a sibling of this entity.".format(
-                                 self._id, new_id))
+            raise ValueError(
+                "Cannot change id from `{0}` to `{1}`. "
+                "The id `{1}` is already used for a sibling of this entity.".format(
+                    self._id, new_id
+                )
+            )
         old_id = self._id
         self._id = new_id
         self.reset_full_id()
@@ -161,7 +164,7 @@ class Entity:
         if len({c.id for c in entities}) < len(entities):
             raise PDBConstructionException("Some of the entities are duplicates")
         self.add(entities)
-        for id_ in list(self._children.keys())[pos:-len(entities)]:
+        for id_ in list(self._children.keys())[pos : -len(entities)]:
             self._children.move_to_end(id_)
 
     @property

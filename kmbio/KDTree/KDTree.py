@@ -12,8 +12,9 @@ that are within a certain radius of each other. See "Computational Geometry:
 Algorithms and Applications" (Mark de Berg, Marc van Kreveld, Mark Overmars,
 Otfried Schwarzkopf). Author: Thomas Hamelryck.
 """
-from kmbio.KDTree import _CKDTree
 from numpy import array, random, sqrt, sum
+
+from kmbio.KDTree import _CKDTree
 
 
 def _dist(p, q):
@@ -164,7 +165,7 @@ class KDTree(object):
         """
         if not self.built:
             raise Exception("No point set specified")
-        if center.shape != (self.dim, ):
+        if center.shape != (self.dim,):
             raise Exception("Expected a %i-dimensional NumPy array" % self.dim)
         self.kdt.search_center_radius(center, radius)
 
@@ -269,5 +270,7 @@ if __name__ == "__main__":
         radii = kdtree.get_radii()
 
         x, y, z = center
-        print("Found %i points in radius %f around center (%.2f, %.2f, %.2f)." %
-              (len(indices), query_radius, x, y, z))
+        print(
+            "Found %i points in radius %f around center (%.2f, %.2f, %.2f)."
+            % (len(indices), query_radius, x, y, z)
+        )

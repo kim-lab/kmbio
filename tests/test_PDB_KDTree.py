@@ -44,6 +44,6 @@ class NeighborTest(unittest.TestCase):
         self.assertEqual([], ns.search(x, 5.0, "S"))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     runner = unittest.TextTestRunner(verbosity=2)
     unittest.main(testRunner=runner)

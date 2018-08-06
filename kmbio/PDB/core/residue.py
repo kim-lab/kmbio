@@ -6,8 +6,9 @@
 
 # My Stuff
 from kmbio.PDB.exceptions import PDBConstructionException
-from .entity import Entity, DisorderedEntityWrapper
+
 from .atom import DisorderedAtom
+from .entity import DisorderedEntityWrapper, Entity
 
 _atom_name_dict = {}
 _atom_name_dict["N"] = 1
@@ -98,8 +99,9 @@ class DisorderedResidue(DisorderedEntityWrapper):
             het, resseq, icode = residue.id
             # add atom anyway, if PDBParser ignores exception the atom will be part of the residue
             residue.add(atom)
-            raise PDBConstructionException("Blank altlocs in duplicate residue %s (%s, %i, %s)" %
-                                           (resname, het, resseq, icode))
+            raise PDBConstructionException(
+                "Blank altlocs in duplicate residue %s (%s, %i, %s)" % (resname, het, resseq, icode)
+            )
         residue.add(atom)
 
     def sort(self):
