@@ -27,18 +27,6 @@ requirements:
     - biopython
     - retrying
     - pyyaml
-    # Binaries
-    # - bwa
-    - clustalo
-    - clustalw
-    - emboss
-    - mafft
-    - muscle
-    # - paml
-    # - phyml
-    # - probcons
-    # - samtools
-    # - wise2
 
 test:
   imports:
