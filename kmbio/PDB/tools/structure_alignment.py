@@ -27,7 +27,6 @@ class StructureAlignment(object):
             - si, sj --- the sequences in the Alignment object that
               correspond to the structures
         """
-        l = fasta_align.get_alignment_length()
         # Get the residues in the models
         rl1 = unfold_entities(m1, "R")
         rl2 = unfold_entities(m2, "R")
@@ -39,7 +38,7 @@ class StructureAlignment(object):
         map21 = {}
         # List of residue pairs (None if -)
         duos = []
-        for i in range(0, l):
+        for i in range(0, fasta_align.get_alignment_length()):
             column = fasta_align.get_column(i)
             aa1 = column[si]
             aa2 = column[sj]

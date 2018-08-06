@@ -355,12 +355,12 @@ def _chop_end_misc(line):
 
 def _nice_case(line):
     """Makes A Lowercase String With Capitals."""
-    l = line.lower()
+    line = line.lower()
     s = ""
     i = 0
     nextCap = 1
-    while i < len(l):
-        c = l[i]
+    while i < len(line):
+        c = line[i]
         if c >= 'a' and c <= 'z' and nextCap:
             c = c.upper()
             nextCap = 0
