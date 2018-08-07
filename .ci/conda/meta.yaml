@@ -6,22 +6,19 @@ source:
   path: ../../
 
 build:
-  script: $PYTHON setup.py install --single-version-externally-managed --record=record.txt
+  # script: python setup.py install --single-version-externally-managed --record=record.txt
   number: 0
 
 requirements:
-  host:
-    - setuptools
-    - wheel
-    - numpy
-    - cython
-    - python
-    - mmtf-python
   build:
     - {{ compiler('c') }}
+  host:
+    - python
+    - cython
+    - numpy
   run:
     - python
-    - numpy
+    - {{ pin_compatible('numpy') }}
     - mmtf-python
     - pandas
     - biopython
