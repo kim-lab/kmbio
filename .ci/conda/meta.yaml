@@ -52,10 +52,10 @@ test:
     - pytest-benchmark
     - hypothesis
 
-outputs:
-  - name: kmbio
-    type: conda
-  # - type: wheel
+# outputs:
+#   - name: kmbio
+#     type: conda
+#   - type: wheel
 
 about:
   home: https://gitlab.com/kimlab/kmbio
