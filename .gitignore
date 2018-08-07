@@ -64,6 +64,7 @@ target/
 
 # AS
 public/
+conda-bld/
 .mypy_cache/
 .pytest_cache/
 .idea/
