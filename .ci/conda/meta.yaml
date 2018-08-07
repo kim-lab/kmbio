@@ -30,9 +30,9 @@ test:
     - setup.cfg
     - tests
   imports:
-    - Bio
-    - Bio.KDTree
-    - Bio.KDTree._CKDTree
+    - kmbio
+    - kmbio.KDTree
+    - kmbio.KDTree._CKDTree
     - kmbio.PDB
     - kmbio.PDB.core
     - kmbio.PDB.io
@@ -41,6 +41,7 @@ test:
     - kmbio.PDB.parsers._mmcif_to_dict
     - kmbio.PDB.tools
     - kmbio.PDB.tools.QCPSuperimposer
+    - kmbio.PDB.tools.QCPSuperimposer.qcprotmodule
     - Bio.SVDSuperimposer
   requires:
     - flake8
