@@ -5,8 +5,9 @@
 """Parser for PDB files."""
 import logging
 import re
-from collections import Counter, namedtuple
+from collections import namedtuple
 from typing import Dict
+
 import numpy as np
 from Bio import File
 from Bio.File import as_handle
