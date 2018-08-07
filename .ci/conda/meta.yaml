@@ -29,6 +29,9 @@ requirements:
     - pyyaml
 
 test:
+  source_files:
+    - setup.cfg
+    - tests
   imports:
     - Bio
     - Bio.KDTree
@@ -46,12 +49,13 @@ test:
     - flake8
     - pytest
     - pytest-cov
+    - pytest-benchmark
     - hypothesis
 
 outputs:
   - name: kmbio
     type: conda
-  - type: wheel
+  # - type: wheel
 
 about:
   home: https://gitlab.com/kimlab/kmbio
