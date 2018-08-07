@@ -1,9 +1,7 @@
-import os
-
 import numpy as np
 from Cython.Build import cythonize
 from setuptools import Extension, setup
-from setuptools.command.build_ext import build_ext
+
 
 PACKAGES = [
     "kmbio",
@@ -31,17 +29,6 @@ EXTENSIONS = [
     Extension("*", ["kmbio/PDB/parsers/*.pyx"]),
 ]
 
-
-class build_ext_compiler_check(build_ext):
-    def build_extensions(self):
-        # import pdb; pdb.set_trace()
-        assert self.compiler.compiler[0] == os.environ["CC"], (
-            self.compiler.compiler[0],
-            os.environ["CC"],
-        )
-        build_ext.build_extensions(self)
-
-
 setup(
     name="kmbio",
     version="2.0.6",
@@ -53,5 +40,4 @@ setup(
     packages=PACKAGES,
     ext_modules=cythonize(EXTENSIONS),
     package_data={},
-    cmdclass={"build_ext": build_ext_compiler_check},
 )
