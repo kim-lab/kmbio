@@ -18,11 +18,11 @@ _ATOM_FORMAT_STRING = "%s%5i %-4s%c%3s %c%4i%c   %8.3f%8.3f%8.3f%s%6.2f      %4s
 
 
 def save(
-        structure: Structure,
-        filename: Union[str, Path],
-        model_ids=None,
-        chain_ids=None,
-        include_disordered=True,
+    structure: Structure,
+    filename: Union[str, Path],
+    model_ids=None,
+    chain_ids=None,
+    include_disordered=True,
 ):
     """Save kmbio `Structure` object as a PDB.
 
@@ -117,16 +117,9 @@ class PDBIO(object):
 
     # private mathods
 
-    def _get_atom_line(self,
-                       atom,
-                       hetfield,
-                       segid,
-                       atom_number,
-                       resname,
-                       resseq,
-                       icode,
-                       chain_id,
-                       charge="  "):
+    def _get_atom_line(
+        self, atom, hetfield, segid, atom_number, resname, resseq, icode, chain_id, charge="  "
+    ):
         """Returns an ATOM PDB string (PRIVATE)."""
         if hetfield != " ":
             record_type = "HETATM"
@@ -275,8 +268,9 @@ class PDBIO(object):
                             model_residues_written = 1
                             if preserve_atom_numbering:
                                 atom_number = atom.serial_number
-                            s = get_atom_line(atom, hetfield, segid, atom_number, resname, resseq,
-                                              icode, chain_id)
+                            s = get_atom_line(
+                                atom, hetfield, segid, atom_number, resname, resseq, icode, chain_id
+                            )
                             fp.write(s)
                             if not preserve_atom_numbering:
                                 atom_number += 1
