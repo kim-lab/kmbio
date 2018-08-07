@@ -5,8 +5,8 @@
 """Parser for PDB files."""
 import logging
 import re
-from collections import namedtuple
-
+from collections import Counter, namedtuple
+from typing import Dict
 import numpy as np
 from Bio import File
 from Bio.File import as_handle
@@ -20,15 +20,21 @@ from .parser import Parser
 logger = logging.getLogger(__name__)
 
 AtomData = namedtuple(
-    'AtomData',
-    ('record_type, fullname, altloc, resname, chainid, serial_number, resseq, icode, hetero_flag,'
-     'coord, occupancy, bfactor, segid, element, name, residue_id'))
+    "AtomData",
+    (
+        "record_type, fullname, altloc, resname, chainid, serial_number, resseq, icode, "
+        "hetero_flag, coord, occupancy, bfactor, segid, element, name, residue_id"
+    ),
+)
 
 # If PDB spec says "COLUMNS 18-20" this means line[17:20]
 
 
 class PDBParser(Parser):
     """Parse a PDB file and return a Structure object."""
+
+    # Private
+    _error_message_counter: Dict[str, int]
 
     def __init__(self, PERMISSIVE=True, get_header=False, structure_builder=None):
         """Create a PDBParser object.
@@ -56,6 +62,7 @@ class PDBParser(Parser):
 
         self.header = None
         self.trailer = None
+        self._error_message_counter = {}
 
     # Public methods
 
@@ -66,12 +73,12 @@ class PDBParser(Parser):
          - id - string, the id that will be used for the structure
          - file - name of the PDB file OR an open filehandle
         """
-        with as_handle(filename, mode='rU') as handle:
+        with as_handle(filename, mode="rU") as handle:
             data = handle.readlines()
 
         self.header, coords_trailer = self._get_header(data)
         if structure_id is None:
-            structure_id = self.header['id']
+            structure_id = self.header["id"]
 
         self.structure_builder.init_structure(structure_id)
         self.trailer = self._parse_coordinates(coords_trailer)
@@ -79,7 +86,7 @@ class PDBParser(Parser):
         structure = self.structure_builder.get_structure()
 
         if bioassembly_id != 0:
-            bioassembly_data = self.header['bioassembly_data'][str(bioassembly_id)]
+            bioassembly_data = self.header["bioassembly_data"][str(bioassembly_id)]
             structure = apply_bioassembly(structure, bioassembly_data)
 
         return structure
@@ -115,7 +122,7 @@ class PDBParser(Parser):
         current_residue_id = None
         current_resname = None
         for i in range(0, len(coords_trailer)):
-            line = coords_trailer[i].rstrip('\n')
+            line = coords_trailer[i].rstrip("\n")
             record_type = line[0:6]
             global_line_counter = self.line_counter + local_line_counter + 1
             structure_builder.set_line_counter(global_line_counter)
@@ -136,32 +143,54 @@ class PDBParser(Parser):
                     current_residue_id = atom_data.residue_id
                     current_resname = atom_data.resname
                     try:
-                        structure_builder.init_residue(atom_data.resname, atom_data.hetero_flag,
-                                                       atom_data.resseq, atom_data.icode)
+                        structure_builder.init_residue(
+                            atom_data.resname,
+                            atom_data.hetero_flag,
+                            atom_data.resseq,
+                            atom_data.icode,
+                        )
                     except PDBConstructionException as message:
                         self._handle_PDB_exception(message, global_line_counter)
-                elif (current_residue_id != atom_data.residue_id
-                      or current_resname != atom_data.resname):
+                elif (
+                    current_residue_id != atom_data.residue_id
+                    or current_resname != atom_data.resname
+                ):
                     current_residue_id = atom_data.residue_id
                     current_resname = atom_data.resname
                     try:
-                        structure_builder.init_residue(atom_data.resname, atom_data.hetero_flag,
-                                                       atom_data.resseq, atom_data.icode)
+                        structure_builder.init_residue(
+                            atom_data.resname,
+                            atom_data.hetero_flag,
+                            atom_data.resseq,
+                            atom_data.icode,
+                        )
                     except PDBConstructionException as message:
                         self._handle_PDB_exception(message, global_line_counter)
                 # init atom
                 try:
-                    structure_builder.init_atom(atom_data.name, atom_data.coord, atom_data.bfactor,
-                                                atom_data.occupancy, atom_data.altloc,
-                                                atom_data.fullname, atom_data.serial_number,
-                                                atom_data.element)
+                    structure_builder.init_atom(
+                        atom_data.name,
+                        atom_data.coord,
+                        atom_data.bfactor,
+                        atom_data.occupancy,
+                        atom_data.altloc,
+                        atom_data.fullname,
+                        atom_data.serial_number,
+                        atom_data.element,
+                    )
                 except PDBConstructionException as message:
                     self._handle_PDB_exception(message, global_line_counter)
             elif record_type == "ANISOU":
                 anisou = [
                     float(x)
-                    for x in (line[28:35], line[35:42], line[43:49], line[49:56], line[56:63],
-                              line[63:70])
+                    for x in (
+                        line[28:35],
+                        line[35:42],
+                        line[43:49],
+                        line[49:56],
+                        line[56:63],
+                        line[63:70],
+                    )
                 ]
                 # U's are scaled by 10^4
                 anisou_array = np.array(anisou, np.float64) / 10000.0
@@ -170,8 +199,9 @@ class PDBParser(Parser):
                 try:
                     serial_num = int(line[10:14])
                 except Exception:
-                    self._handle_PDB_exception("Invalid or missing model serial number",
-                                               global_line_counter)
+                    self._handle_PDB_exception(
+                        "Invalid or missing model serial number", global_line_counter
+                    )
                     serial_num = 0
                 structure_builder.init_model(current_model_id, serial_num)
                 current_model_id += 1
@@ -190,8 +220,14 @@ class PDBParser(Parser):
                 # standard deviation of anisotropic B factor
                 siguij = [
                     float(x)
-                    for x in (line[28:35], line[35:42], line[42:49], line[49:56], line[56:63],
-                              line[63:70])
+                    for x in (
+                        line[28:35],
+                        line[35:42],
+                        line[42:49],
+                        line[49:56],
+                        line[56:63],
+                        line[63:70],
+                    )
                 ]
                 # U sigma's are scaled by 10^4
                 siguij_array = np.array(siguij, np.float64) / 10000.0
@@ -222,7 +258,7 @@ class PDBParser(Parser):
             # atom name is like " CA ", so we can strip spaces
             name = split_list[0]
         altloc = line[16]
-        resname = line[17:20].strip(' ')
+        resname = line[17:20].strip(" ")
         chainid = line[21]
         try:
             serial_number = int(line[6:11])
@@ -247,14 +283,15 @@ class PDBParser(Parser):
             # Should we allow parsing to continue in permissive mode?
             # If so, what coordinates should we default to?  Easier to abort!
             raise PDBConstructionException(
-                "Invalid or missing coordinate(s) at line %i." % global_line_counter)
+                "Invalid or missing coordinate(s) at line %i." % global_line_counter
+            )
         coord = np.array((x, y, z), np.float64)
         # occupancy & B factor
         try:
             occupancy = float(line[54:60])
         except Exception:
             self._handle_PDB_exception("Invalid or missing occupancy", global_line_counter)
-            occupancy = None  # Rather than arbitrary zero or one
+            occupancy = 0
         if occupancy is not None and occupancy < 0:
             # TODO - Should this be an error in strict mode?
             # self._handle_PDB_exception("Negative occupancy",
@@ -268,9 +305,24 @@ class PDBParser(Parser):
             bfactor = 0.0  # The PDB use a default of zero if the data is missing
         segid = line[72:76]
         element = line[76:78].strip().upper()
-        return AtomData(record_type, fullname, altloc, resname, chainid, serial_number, resseq,
-                        icode, hetero_flag, coord, occupancy, bfactor, segid, element, name,
-                        residue_id)
+        return AtomData(
+            record_type,
+            fullname,
+            altloc,
+            resname,
+            chainid,
+            serial_number,
+            resseq,
+            icode,
+            hetero_flag,
+            coord,
+            occupancy,
+            bfactor,
+            segid,
+            element,
+            name,
+            residue_id,
+        )
 
     def _handle_PDB_exception(self, message, line_counter):
         """Handle exception (PRIVATE).
@@ -279,15 +331,16 @@ class PDBParser(Parser):
         object (if PERMISSIVE), or raises it again, this time adding the
         PDB line number to the error message.
         """
-        message = "%s at line %i." % (message, line_counter)
+        count = self._error_message_counter.get(message, 0)
+        message_full = "%s at line %i (occurence number %i)" % (message, line_counter, count)
         if self.PERMISSIVE:
-            # just print a warning - some residues/atoms may be missing
-            logger.warning("PDBConstructionException: %s\n"
-                           "Exception ignored.\n"
-                           "Some atoms or residues may be missing in the data structure.", message)
+            if count <= 5:
+                logger.warning("PDBConstructionException: '%s'.", message_full)
+            if count == 5:
+                logger.warning("Future '%s' warnings will be ignored!", message)
+            self._error_message_counter[message] = count + 1
         else:
-            # exceptions are fatal - raise again with new message (including line nr)
-            raise PDBConstructionException(message)
+            raise PDBConstructionException(message_full)
 
 
 def _get_journal(inl):
@@ -334,12 +387,24 @@ def _format_date(pdb_date):
         century = 1900
     date = str(century + year) + "-"
     all_months = [
-        'xxx', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+        "xxx",
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
     ]
     month = str(all_months.index(pdb_date[3:6]))
     if len(month) == 1:
-        month = '0' + month
-    date = date + month + '-' + pdb_date[:2]
+        month = "0" + month
+    date = date + month + "-" + pdb_date[:2]
     return date
 
 
@@ -361,11 +426,19 @@ def _nice_case(line):
     nextCap = 1
     while i < len(line):
         c = line[i]
-        if c >= 'a' and c <= 'z' and nextCap:
+        if c >= "a" and c <= "z" and nextCap:
             c = c.upper()
             nextCap = 0
-        elif (c == ' ' or c == '.' or c == ',' or c == ';' or c == ':' or c == '\t' or c == '-'
-              or c == '_'):
+        elif (
+            c == " "
+            or c == "."
+            or c == ","
+            or c == ";"
+            or c == ":"
+            or c == "\t"
+            or c == "-"
+            or c == "_"
+        ):
             nextCap = 1
         s += c
         i += 1
@@ -381,7 +454,7 @@ def parse_pdb_header(infile):
     compound.
     """
     header = []
-    with File.as_handle(infile, 'r') as f:
+    with File.as_handle(infile, "r") as f:
         for l in f:
             record_type = l[0:6]
             if record_type in ("ATOM  ", "HETATM", "MODEL "):
@@ -394,30 +467,22 @@ def parse_pdb_header(infile):
 def _parse_pdb_header_list(header):
     # database fields
     dict = {
-        'id': header[0][62:66] if len(header) > 0 else '',
-        'name': "",
-        'head': '',
-        'deposition_date': "1909-01-08",
-        'release_date': "1909-01-08",
-        'structure_method': "unknown",
-        'resolution': 0.0,
-        'structure_reference': "unknown",
-        'journal_reference': "unknown",
-        'author': "",
-        'compound': {
-            '1': {
-                'misc': ''
-            }
-        },
-        'source': {
-            '1': {
-                'misc': ''
-            }
-        }
+        "id": header[0][62:66] if len(header) > 0 else "",
+        "name": "",
+        "head": "",
+        "deposition_date": "1909-01-08",
+        "release_date": "1909-01-08",
+        "structure_method": "unknown",
+        "resolution": 0.0,
+        "structure_reference": "unknown",
+        "journal_reference": "unknown",
+        "author": "",
+        "compound": {"1": {"misc": ""}},
+        "source": {"1": {"misc": ""}},
     }
 
-    dict['structure_reference'] = _get_references(header)
-    dict['journal_reference'] = _get_journal(header)
+    dict["structure_reference"] = _get_references(header)
+    dict["journal_reference"] = _get_journal(header)
     comp_molid = "1"
     # src_molid = "1"
     last_comp_key = "misc"
@@ -435,36 +500,36 @@ def _parse_pdb_header_list(header):
         # From here, all the keys from the header are being parsed
         if key == "TITLE":
             name = _chop_end_codes(tail).lower()
-            if 'name' in dict:
-                dict['name'] += " " + name
+            if "name" in dict:
+                dict["name"] += " " + name
             else:
-                dict['name'] = name
+                dict["name"] = name
         elif key == "HEADER":
             rr = re.search("\d\d-\w\w\w-\d\d", tail)
             if rr is not None:
-                dict['deposition_date'] = _format_date(_nice_case(rr.group()))
+                dict["deposition_date"] = _format_date(_nice_case(rr.group()))
             head = _chop_end_misc(tail).lower()
-            dict['head'] = head
+            dict["head"] = head
         elif key == "COMPND":
             tt = re.sub("\;\s*\Z", "", _chop_end_codes(tail)).lower()
             # look for E.C. numbers in COMPND lines
-            rec = re.search('\d+\.\d+\.\d+\.\d+', tt)
+            rec = re.search("\d+\.\d+\.\d+\.\d+", tt)
             if rec:
-                dict['compound'][comp_molid]['ec_number'] = rec.group()
+                dict["compound"][comp_molid]["ec_number"] = rec.group()
                 tt = re.sub("\((e\.c\.)*\d+\.\d+\.\d+\.\d+\)", "", tt)
             tok = tt.split(":")
             if len(tok) >= 2:
                 ckey = tok[0]
                 cval = re.sub("\A\s*", "", tok[1])
-                if ckey == 'mol_id':
-                    dict['compound'][cval] = {'misc': ''}
+                if ckey == "mol_id":
+                    dict["compound"][cval] = {"misc": ""}
                     comp_molid = cval
                     last_comp_key = "misc"
                 else:
-                    dict['compound'][comp_molid][ckey] = cval
+                    dict["compound"][comp_molid][ckey] = cval
                     last_comp_key = ckey
             else:
-                dict['compound'][comp_molid][last_comp_key] += tok[0] + " "
+                dict["compound"][comp_molid][last_comp_key] += tok[0] + " "
         elif key == "SOURCE":
             tt = re.sub("\;\s*\Z", "", _chop_end_codes(tail)).lower()
             tok = tt.split(":")
@@ -472,67 +537,67 @@ def _parse_pdb_header_list(header):
             if len(tok) >= 2:
                 ckey = tok[0]
                 cval = re.sub("\A\s*", "", tok[1])
-                if ckey == 'mol_id':
-                    dict['source'][cval] = {'misc': ''}
+                if ckey == "mol_id":
+                    dict["source"][cval] = {"misc": ""}
                     comp_molid = cval
                     last_src_key = "misc"
                 else:
-                    dict['source'][comp_molid][ckey] = cval
+                    dict["source"][comp_molid][ckey] = cval
                     last_src_key = ckey
             else:
-                dict['source'][comp_molid][last_src_key] += tok[0] + " "
+                dict["source"][comp_molid][last_src_key] += tok[0] + " "
         elif key == "KEYWDS":
             kwd = _chop_end_codes(tail).lower()
-            if 'keywords' in dict:
-                dict['keywords'] += " " + kwd
+            if "keywords" in dict:
+                dict["keywords"] += " " + kwd
             else:
-                dict['keywords'] = kwd
+                dict["keywords"] = kwd
         elif key == "EXPDTA":
             expd = _chop_end_codes(tail)
             # chop junk at end of lines for some structures
-            expd = re.sub('\s\s\s\s\s\s\s.*\Z', '', expd)
+            expd = re.sub("\s\s\s\s\s\s\s.*\Z", "", expd)
             # if re.search('\Anmr',expd,re.IGNORECASE): expd='nmr'
             # if re.search('x-ray diffraction',expd,re.IGNORECASE): expd='x-ray diffraction'
-            dict['structure_method'] = expd.lower()
+            dict["structure_method"] = expd.lower()
         elif key == "CAVEAT":
             # make Annotation entries out of these!!!
             pass
         elif key == "REVDAT":
             rr = re.search("\d\d-\w\w\w-\d\d", tail)
             if rr is not None:
-                dict['release_date'] = _format_date(_nice_case(rr.group()))
+                dict["release_date"] = _format_date(_nice_case(rr.group()))
         elif key == "JRNL":
             # print("%s:%s" % (key, tail))
-            if 'journal' in dict:
-                dict['journal'] += tail
+            if "journal" in dict:
+                dict["journal"] += tail
             else:
-                dict['journal'] = tail
+                dict["journal"] = tail
         elif key == "AUTHOR":
             auth = _nice_case(_chop_end_codes(tail))
-            if 'author' in dict:
-                dict['author'] += auth
+            if "author" in dict:
+                dict["author"] += auth
             else:
-                dict['author'] = auth
+                dict["author"] = auth
         elif key == "REMARK":
             if re.search("REMARK   2 RESOLUTION.", hh):
-                r = _chop_end_codes(re.sub("REMARK   2 RESOLUTION.", '', hh))
+                r = _chop_end_codes(re.sub("REMARK   2 RESOLUTION.", "", hh))
                 r = re.sub("\s+ANGSTROM.*", "", r)
                 try:
-                    dict['resolution'] = float(r)
+                    dict["resolution"] = float(r)
                 except Exception:
                     # print('nonstandard resolution %r' % r)
-                    dict['resolution'] = None
-            elif hh.startswith('REMARK 350 '):
+                    dict["resolution"] = None
+            elif hh.startswith("REMARK 350 "):
                 remark_350_lines.append(hh)
         else:
             # print(key)
             pass
-    if dict['structure_method'] == 'unknown':
-        if dict['resolution'] > 0.0:
-            dict['structure_method'] = 'x-ray diffraction'
+    if dict["structure_method"] == "unknown":
+        if dict["resolution"] > 0.0:
+            dict["structure_method"] = "x-ray diffraction"
 
     if remark_350_lines:
         pr350 = ProcessRemark350()
-        dict['bioassembly_data'] = pr350.process_lines(remark_350_lines)
+        dict["bioassembly_data"] = pr350.process_lines(remark_350_lines)
 
     return dict
