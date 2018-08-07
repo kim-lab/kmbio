@@ -1,29 +1,30 @@
 import io
 
-import nglview
-
-from . import save
-from .. import Entity
+import kmbio.PDB
+from kmbio.PDB import Structure
 
 
-class KMBioStructure(nglview.Structure):
-    def __init__(self, entity, ext="pdb", params={}):
-        super().__init__()
-        self.path = ""
-        self.ext = ext
-        self.params = params
-        self._entity = entity
+def structure_to_ngl(structure: Structure):
+    import nglview
 
-    def get_structure_string(self):
-        io_str = io.StringIO()
-        save(self._entity, io_str)
-        return io_str.getvalue()
+    class NGLStructure(nglview.Structure):
+        def __init__(self, entity, ext="pdb", params={}) -> None:
+            super().__init__()
+            self.path = ""
+            self.ext = ext
+            self.params = params
+            self._entity = entity
+
+        def get_structure_string(self) -> str:
+            io_str = io.StringIO()
+            kmbio.PDB.save(self._entity, io_str)
+            return io_str.getvalue()
+
+    return NGLStructure(structure)
 
 
-def show(entity, **kwargs):
-    """Veiw structure (or another entity) inside an NGLViewer."""
-    return nglview.NGLWidget(KMBioStructure(entity), **kwargs)
+def view_structure(structure: Structure, **kwargs):
+    import nglview
 
-
-Entity.show = lambda self, **kwargs: show(self, **kwargs)
-Entity.to_ngl = lambda self: KMBioStructure(self)
+    structure_ngl = structure_to_ngl(structure)
+    return nglview.NGLWidget(structure_ngl, **kwargs)
