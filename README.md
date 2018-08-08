@@ -1,9 +1,9 @@
 # kmbio
 
 [![conda](https://img.shields.io/conda/dn/kimlab/kmbio.svg)](https://anaconda.org/kimlab/kmbio/)
-[![docs](https://img.shields.io/badge/docs-v2.0.6-blue.svg)](https://kimlab.gitlab.io/kmbio/v2.0.6/)
-[![build status](https://gitlab.com/kimlab/kmbio/badges/v2.0.6/build.svg)](https://gitlab.com/kimlab/kmbio/commits/v2.0.6/)
-[![coverage report](https://gitlab.com/kimlab/kmbio/badges/v2.0.6/coverage.svg)](https://kimlab.gitlab.io/kmbio/v2.0.6/htmlcov/)
+[![docs](https://img.shields.io/badge/docs-v2.0.7-blue.svg)](https://kimlab.gitlab.io/kmbio/v2.0.7/)
+[![build status](https://gitlab.com/kimlab/kmbio/badges/v2.0.7/build.svg)](https://gitlab.com/kimlab/kmbio/commits/v2.0.7/)
+[![coverage report](https://gitlab.com/kimlab/kmbio/badges/v2.0.7/coverage.svg)](https://kimlab.gitlab.io/kmbio/v2.0.7/htmlcov/)
 
 Fork of `biopython.PDB` with special powers.
 
