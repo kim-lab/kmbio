@@ -71,7 +71,7 @@ class A_ExceptionTest(unittest.TestCase):
         structure = permissive.get_structure("PDB/occupancy.pdb", "test")
         atoms = structure[0]['A'][(' ', 152, ' ')]
         # Blank occupancy behavior set in Bio/PDB/PDBParser
-        self.assertEqual(atoms['N'].occupancy, None)
+        self.assertEqual(atoms['N'].occupancy, 0.0)
         self.assertEqual(atoms['CA'].occupancy, 1.0)
         self.assertEqual(atoms['C'].occupancy, 0.0)
 
@@ -825,7 +825,7 @@ class WriteTest(unittest.TestCase):
             io.save(filename)
             struct2 = self.parser.get_structure(filename, "test")
             atoms = struct2[0]['A'][(' ', 152, ' ')]
-            self.assertEqual(atoms['N'].occupancy, None)
+            self.assertEqual(atoms['N'].occupancy, 0.0)
         finally:
             os.remove(filename)
 
