@@ -10,6 +10,7 @@ __pycache__/
 .Python
 env/
 build/
+conda-bld/
 develop-eggs/
 dist/
 downloads/
@@ -43,6 +44,8 @@ htmlcov/
 nosetests.xml
 coverage.xml
 *,cover
+.mypy_cache/
+.pytest_cache/
 .hypothesis/
 
 # Translations
@@ -55,6 +58,7 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 docs/_modules/
+public/
 
 # PyBuilder
 target/
@@ -63,13 +67,11 @@ target/
 .python-version
 
 # AS
-public/
-conda-bld/
-.mypy_cache/
-.pytest_cache/
-.idea/
 .vscode/
 *-bak.py
+
+# Jupyter
+.ipynb_checkpoints
 
 # Ignore compiled Cython code
 kmbio/PDB/parsers/_shlex*.c

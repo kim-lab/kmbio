@@ -3,6 +3,11 @@ from Cython.Build import cythonize
 from setuptools import Extension, setup
 
 
+def read_md(file):
+    with open(file) as fin:
+        return fin.read()
+
+
 PACKAGES = [
     "kmbio",
     "kmbio.PDB",
@@ -36,6 +41,7 @@ setup(
     author_email="alexey.strokach@kimlab.org",
     url="https://github.com/kimlaborg/kmbio",
     description="Freely available tools for computational molecular biology.",
+    long_description=read_md("README.md"),
     download_url="https://github.com/kimlaborg/kmbortio/release/",
     packages=PACKAGES,
     ext_modules=cythonize(EXTENSIONS),
