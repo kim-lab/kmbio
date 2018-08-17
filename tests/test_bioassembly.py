@@ -72,7 +72,7 @@ def test_process_line_350_2(pdb_id, bioassembly_id):
 
     Only validates for the presence of the bioassembly id in bioassembly_data.
     """
-    pdb_url = DEFAULT_ROUTES["rcsb://"](pdb_id, "pdb")
+    pdb_url = DEFAULT_ROUTES["rcsb"](pdb_id, "pdb")
     with open_url(pdb_url) as ifh:
         data = [l for l in ifh if l.startswith("REMARK 350")]
     pr350 = ProcessRemark350()
@@ -92,10 +92,10 @@ with open(op.join(op.splitext(__file__)[0], "test_data.yml"), "rt") as ifh:
 @parametrize("pdb_id", TEST_DATA["pdb_vs_mmcif_bioassembly_data"])
 def test_pdb_vs_mmcif_bioassembly_data(pdb_id):
     """Make sure that the bioassembly data is the same in PDB and MMCIF files."""
-    pdb_url = DEFAULT_ROUTES["rcsb://"](pdb_id, "pdb")
+    pdb_url = DEFAULT_ROUTES["rcsb"](pdb_id, "pdb")
     logger.debug(pdb_url)
 
-    mmcif_url = DEFAULT_ROUTES["rcsb://"](pdb_id, "cif")
+    mmcif_url = DEFAULT_ROUTES["rcsb"](pdb_id, "cif")
     logger.debug(mmcif_url)
 
     with open_url(pdb_url) as fh:
@@ -128,7 +128,7 @@ def test_pdb_vs_mmcif_bioassembly_data(pdb_id):
 
 @parametrize("pdb_id, pdb_type, bioassembly_id", TEST_DATA["can_load_bioassembly"])
 def test_can_load_bioassembly(pdb_id, pdb_type, bioassembly_id):
-    url = DEFAULT_ROUTES["rcsb://"](pdb_id, pdb_type)
+    url = DEFAULT_ROUTES["rcsb"](pdb_id, pdb_type)
     structure = kmbio.PDB.load(url, bioassembly_id=bioassembly_id, use_auth_id=False)
     assert structure
 
@@ -157,7 +157,7 @@ def test_pdb_vs_pdb_ref(pdb_bioassembly_file):
     pdb_id, bioassembly_id = re.findall("(.*)\.pdb([0-9]+)\.gz", pdb_bioassembly_file)[0]
     logger.debug("pdb_id, bioassembly_id: %s, %s", pdb_id, bioassembly_id)
 
-    pdb_url = DEFAULT_ROUTES["rcsb://"](pdb_id, "pdb")
+    pdb_url = DEFAULT_ROUTES["rcsb"](pdb_id, "pdb")
     logger.debug(pdb_url)
 
     pdb_bioassembly_url = URL + "biounit/PDB/divided/{0}/{1}".format(
@@ -194,7 +194,7 @@ def test_mmcif_vs_pdb_ref(pdb_bioassembly_file):
     pdb_id, bioassembly_id = re.findall(r"(.*)\.pdb([0-9]+)\.gz", pdb_bioassembly_file)[0]
     logger.debug("pdb_id, bioassembly_id: %s, %s", pdb_id, bioassembly_id)
 
-    pdb_url = DEFAULT_ROUTES["rcsb://"](pdb_id, "cif")
+    pdb_url = DEFAULT_ROUTES["rcsb"](pdb_id, "cif")
     logger.debug(pdb_url)
 
     pdb_bioassembly_url = URL + "biounit/PDB/divided/{0}/{1}".format(
@@ -239,7 +239,7 @@ def test_mmcif_vs_mmcif_ref(mmcif_bioassembly_file):
     ]
     logger.debug("pdb_id, bioassembly_id: %s, %s", pdb_id, bioassembly_id)
 
-    mmcif_url = DEFAULT_ROUTES["rcsb://"](pdb_id, "cif")
+    mmcif_url = DEFAULT_ROUTES["rcsb"](pdb_id, "cif")
     logger.debug(mmcif_url)
 
     mmcif_bioassembly_url = URL + "biounit/mmCIF/divided/{0}/{1}".format(

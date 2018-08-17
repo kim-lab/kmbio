@@ -5,7 +5,7 @@ import logging
 import pytest
 
 from kmbio.PDB.parsers._mmcif_to_dict import mmcif2dict
-from kmbio.PDB.utils import read_url
+from kmbio.PDB.utils import read_web
 
 # from kmbio.PDB.parsers.mmcif_to_dict import MMCIF2Dict as mmcif_to_dict  # for reference
 
@@ -32,7 +32,7 @@ def cif_file_ref_time(request, tmpdir_factory):
     cif_id, ref_time = request.param
     url = WWPDB_URL + "/{}/{}.cif.gz".format(cif_id[1:3], cif_id)
     fn = tmpdir_factory.mktemp("cif_data").join(cif_id + ".cif")
-    data = read_url(url)
+    data = read_web(url)
     with open(str(fn), "wb") as ofh:
         ofh.write(gzip.decompress(data))
     return str(fn), ref_time

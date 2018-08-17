@@ -78,3 +78,6 @@ kmbio/PDB/parsers/_mmcif_to_dict*.c
 kmbio/PDB/parsers/_mmcif_to_dict*.so
 kmbio/PDB/tools/QCPSuperimposer/qcprotmodule*.so
 kmbio/KDTree/_CKDTree*.so
+
+# TODO: Sort this out
+tests/test_utils/structures-subset/*.cif.gz

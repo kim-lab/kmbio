@@ -2,11 +2,11 @@ import functools
 import inspect
 import logging
 import os.path as op
-import re
 import string
 import warnings
 from pathlib import Path
-from typing import Union
+from typing import Type
+from urllib.parse import urlparse
 
 from kmbio.PDB import MMCIFParser, MMTFParser, Parser, PDBParser, Structure, open_url
 
@@ -15,7 +15,7 @@ from .routes import DEFAULT_ROUTES
 logger = logging.getLogger(__name__)
 
 
-def load(pdb_file: Union[str, Path], structure_id: str = None, **kwargs) -> Structure:
+def load(pdb_file: str, structure_id: str = None, **kwargs) -> Structure:
     """Load local PDB file.
 
     Args:
@@ -38,29 +38,25 @@ def load(pdb_file: Union[str, Path], structure_id: str = None, **kwargs) -> Stru
     """
     if isinstance(pdb_file, Path):
         pdb_file = pdb_file.as_posix()
-    for default_route in DEFAULT_ROUTES:
-        if pdb_file.startswith(default_route):
-            pdb_filename = pdb_file.partition(default_route)[-1]
-            pdb_id, _, pdb_type = pdb_filename.rpartition(".")
-            pdb_file = DEFAULT_ROUTES[default_route](pdb_id, pdb_type)
-            break
 
-    if pdb_file.startswith("file://"):
-        pdb_file = pdb_file.partition("file://")[-1]
-
-    logger.debug("pdb_file: %s", pdb_file)
+    pdb_id = guess_pdb_id(pdb_file)
     pdb_type = guess_pdb_type(pdb_file)
-    logger.debug("pdb_type: %s", pdb_type)
-    parser = _get_parser(pdb_type, **kwargs)
-    logger.debug("parser: %s", parser)
+
+    scheme = urlparse(pdb_file).scheme
+    if scheme in DEFAULT_ROUTES:
+        pdb_file = DEFAULT_ROUTES[scheme](pdb_id, pdb_type)
+
+    parser = get_parser(pdb_type, **kwargs)
+
     with open_url(pdb_file) as fh:
         structure = parser.get_structure(fh)
         if not structure.id:
-            structure.id = guess_pdb_id(pdb_file)
+            structure.id = pdb_id
+
     return structure
 
 
-def guess_pdb_id(pdb_file):
+def guess_pdb_id(pdb_file: str) -> str:
     """Extract the PDB id from a PDB file.
 
     Examples
@@ -83,7 +79,7 @@ def guess_pdb_id(pdb_file):
     return pdb_id
 
 
-def guess_pdb_type(pdb_file):
+def guess_pdb_type(pdb_file: str) -> str:
     """Guess PDB file type from file name.
 
     Examples
@@ -93,38 +89,39 @@ def guess_pdb_type(pdb_file):
     >>> _guess_pdb_type('/tmp/4dkl.cif.gz')
     'cif'
     """
-    for chunk in reversed(re.split("/|\.|:", pdb_file)):
-        chunk = chunk.lower().strip(string.digits)
-        if chunk in ["pdb", "ent"]:
+    for suffix in reversed(Path(pdb_file).suffixes):
+        suffix = suffix.lower().strip(string.digits)
+        if suffix in [".pdb", ".ent"]:
             return "pdb"
-        elif chunk in ["cif", "mmcif"]:
+        elif suffix in [".cif", ".mmcif"]:
             return "cif"
-        elif chunk in ["mmtf"]:
+        elif suffix in [".mmtf"]:
             return "mmtf"
-    raise Exception("Count not guess pdb type for file '{}'!".format(pdb_file))
+    raise Exception(f"Could not guess pdb type for file '{pdb_file}'!")
 
 
-def _get_parser(pdb_type, **kwargs) -> Parser:
-    """Get kmbioPython PDB parser appropriate for `pdb_type`."""
+def get_parser(pdb_type: str, **kwargs) -> Parser:
+    """Get `kmbio.PDB` parser appropriate for `pdb_type`."""
+    MyParser: Type[Parser]
     if pdb_type == "pdb":
-        Parser = PDBParser
+        MyParser = PDBParser
     elif pdb_type == "cif":
         kwargs.setdefault("use_auth_id", False)
-        Parser = MMCIFParser
+        MyParser = MMCIFParser
     elif pdb_type == "mmtf":
-        Parser = MMTFParser
+        MyParser = MMTFParser
     else:
         raise Exception("Wrong pdb_type: '{}'".format(pdb_type))
-    init_params = set(inspect.signature(Parser).parameters)
-    parser = Parser(**{k: kwargs.pop(k) for k in list(kwargs) if k in init_params})
+    init_params = set(inspect.signature(MyParser).parameters)
+    parser = MyParser(  # type: ignore
+        **{k: kwargs.pop(k) for k in list(kwargs) if k in init_params}
+    )
     func_params = set(inspect.signature(parser.get_structure).parameters)
-    parser.get_structure = functools.partial(
+    parser.get_structure = functools.partial(  # type: ignore
         parser.get_structure, **{k: kwargs.pop(k) for k in list(kwargs) if k in func_params}
     )
     if kwargs:
         warnings.warn(
-            "Not all arguments where used during the call to _get_parser! (kwargs = {})".format(
-                kwargs
-            )
+            f"Not all arguments where used during the call to _get_parser! (kwargs = {kwargs})"
         )
     return parser

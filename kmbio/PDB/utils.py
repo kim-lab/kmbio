@@ -2,15 +2,20 @@ import bz2
 import contextlib
 import functools
 import gzip
+import io
 import itertools
 import logging
 import lzma
+import shlex
 import socket
-import tempfile
+import subprocess
+
+# import tempfile
 import urllib.error
 import urllib.request
 from collections import OrderedDict
-from typing import Callable, TextIO
+from typing import IO, Callable, Generator
+from urllib.parse import urlparse
 
 from retrying import retry
 
@@ -33,7 +38,7 @@ def sort_ordered_dict(ordered_dict: OrderedDict) -> None:
         Number of items *at the end of the dictionary* that are sored.
     """
     for n_sorted in range(len(ordered_dict)):
-        min_key = min(list(ordered_dict)[:-n_sorted or None])
+        min_key = min(list(ordered_dict)[: -n_sorted or None])
         ordered_dict.move_to_end(min_key)
 
 
@@ -53,13 +58,19 @@ def allequal(s1, s2, atol=1e-3):
             for atom_2 in atoms_2:
                 if atom_1.atoms_equal(atom_2, atol):
                     return True
-        logger.debug('Atoms not equal: (%s, %s) (%s, %s)', atoms_1, [a.coord for a in atoms_1],
-                     atoms_2, [a.coord for a in atoms_2])
+        logger.debug(
+            "Atoms not equal: (%s, %s) (%s, %s)",
+            atoms_1,
+            [a.coord for a in atoms_1],
+            atoms_2,
+            [a.coord for a in atoms_2],
+        )
         return False
     # Check if object types are the same
     if type(s1) != type(s2):
-        raise Exception("Can't compare objects of different types! ({}, {})".format(
-            type(s1), type(s2)))
+        raise Exception(
+            "Can't compare objects of different types! ({}, {})".format(type(s1), type(s2))
+        )
     # Check if lengths are the same
     lengths_equal = len(s1) == len(s2)
     if not lengths_equal:
@@ -138,7 +149,8 @@ def unfold_entities(entity_list, target_level):
             # find unique parents
             _seen = set()
             entity_list = [
-                entity.parent for entity in entity_list
+                entity.parent
+                for entity in entity_list
                 if entity.parent.id not in _seen and not _seen.add(entity.parent.id)
             ]
     return list(entity_list)
@@ -160,11 +172,11 @@ class uncompressed:
 
 
 def anyzip(filename):
-    if filename.endswith('.gz'):
+    if filename.endswith(".gz"):
         return gzip
-    elif filename.endswith('.bz2'):
+    elif filename.endswith(".bz2"):
         return bz2
-    elif filename.endswith('.xz'):
+    elif filename.endswith(".xz"):
         return lzma
     else:
         return uncompressed
@@ -172,45 +184,57 @@ def anyzip(filename):
 
 def check_exception(exc, valid_exc):
     to_retry = isinstance(exc, valid_exc)
-    logger.error("The following exception occured: '%s'! %s", exc, 'Retrying...'
-                 if to_retry else "Failed!")
+    logger.error(
+        "The following exception occured: '%s'! %s", exc, "Retrying..." if to_retry else "Failed!"
+    )
     return to_retry
 
 
 def retry_urlopen(fn: Callable) -> Callable:
     """Retry downloading data from a url after a timeout."""
     _check_exception = functools.partial(
-        check_exception, valid_exc=(socket.timeout, urllib.error.URLError))
+        check_exception, valid_exc=(socket.timeout, urllib.error.URLError)
+    )
     wrapper = retry(
         retry_on_exception=_check_exception,
         wait_exponential_multiplier=1000,
         wait_exponential_max=10000,
-        stop_max_attempt_number=5)
+        stop_max_attempt_number=5,
+    )
     return wrapper(fn)
 
 
 @retry_urlopen
-def read_url(url: str, timeout: float = 10.0, **kwargs) -> bytes:
+def read_web(url: str, timeout: float = 10.0, **kwargs) -> bytes:
     """Read the contents of a URL or a file."""
     with urllib.request.urlopen(url, timeout=timeout, **kwargs) as ifh:
         data = ifh.read()
     return data
 
 
+def read_ff(url: str):
+    url_obj = urlparse(url)
+    system_command = f"ffindex_get '{url_obj.path}.data' '{url_obj.path}.ffindex' {url_obj.query}"
+    p = subprocess.run(shlex.split(system_command), stdout=subprocess.PIPE, check=True)
+    return p.stdout
+
+
 @contextlib.contextmanager
-def open_url(url: str) -> TextIO:
-    """Return a filehandle to a tempfile containig url data."""
-    logger.debug("URL: %s", url)
-    if url.startswith(('ftp:', 'http:', 'https:')):
-        logger.debug("reading...")
-        data_bin = read_url(url)
-        logger.debug("decompressing...")
-        data_txt = anyzip(url).decompress(data_bin).decode('utf-8')
-        logger.debug("writing...")
-        with tempfile.TemporaryFile('w+t') as fh:
-            fh.write(data_txt)
-            fh.seek(0)
-            yield fh
+def open_url(url: str) -> Generator[IO, None, None]:
+    """Return a filehandle to a tempfile containig `url` data."""
+    if any(url.startswith(prefix) for prefix in ["ftp://", "http://", "https://", "ff://"]):
+        if any(url.startswith(prefix) for prefix in ["ftp://", "http://", "https://"]):
+            data_raw = read_web(url)
+        elif url.startswith("ff://"):
+            data_raw = read_ff(url)
+        else:
+            raise TypeError
+
+        data_text = anyzip(url).decompress(data_raw).decode("utf-8")
+        fio = io.StringIO()
+        fio.write(data_text)
+        fio.seek(0)
+        yield fio
     else:
-        with anyzip(url).open(url, mode='rt') as fh:
+        with anyzip(url).open(url, mode="rt") as fh:
             yield fh

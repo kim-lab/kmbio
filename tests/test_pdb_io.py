@@ -36,25 +36,25 @@ def test_guess_pdb_type(url, pdb_type):
 
 
 @pytest.mark.parametrize(
-    "pdb_id, pdb_type, bioassembly_id, route",
+    "pdb_id, pdb_type, bioassembly_id, scheme",
     [
-        (pdb_id, pdb_type, bioassembly_id, route)
+        (pdb_id, pdb_type, bioassembly_id, scheme)
         for pdb_id in PDB_IDS
         for pdb_type in ["pdb", "cif"]
         for bioassembly_id in ([0] if pdb_type == "pdb" else [0, 1])
-        for route in DEFAULT_ROUTES
+        for scheme in DEFAULT_ROUTES
         if (pdb_id, pdb_type) not in LOCAL_REMOTE_MISMATCH
         if (pdb_id, pdb_type, bioassembly_id) not in MISSING
     ],
 )
-def test_equal(pdb_id, pdb_type, bioassembly_id, route):
+def test_equal(pdb_id, pdb_type, bioassembly_id, scheme):
     """Make sure that loading local and remote files produces the same result."""
     filename = "{}.{}".format(pdb_id, pdb_type)
     logger.debug(filename)
     structures = []
     exceptions = []
     try:
-        url = route + filename
+        url = f"{scheme}://{filename}"
         logger.debug("Loading structure from '%s'...", url)
         structure = kmbio.PDB.load(url, bioassembly_id=bioassembly_id)
         logger.debug("Done!")
