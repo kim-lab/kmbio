@@ -49,6 +49,8 @@ test:
     - pytest-cov
     - pytest-benchmark
     - hypothesis
+    # Binaries
+    - hh-suite
 
 # outputs:
 #   - name: kmbio
