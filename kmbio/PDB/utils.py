@@ -9,8 +9,6 @@ import lzma
 import shlex
 import socket
 import subprocess
-
-# import tempfile
 import urllib.error
 import urllib.request
 from collections import OrderedDict
