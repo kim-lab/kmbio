@@ -1,6 +1,5 @@
 from collections import OrderedDict
 from pathlib import Path
-from urllib.parse import urlparse
 
 import pytest
 
