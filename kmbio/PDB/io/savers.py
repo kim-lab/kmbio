@@ -14,8 +14,6 @@ from kmbio.PDB import Structure, StructureBuilder
 
 logger = logging.getLogger(__name__)
 
-_ATOM_FORMAT_STRING = "%s%5i %-4s%c%3s %c%4i%c   %8.3f%8.3f%8.3f%s%6.2f      %4s%2s%2s\n"
-
 
 def save(
     structure: Structure,
@@ -146,25 +144,27 @@ class PDBIO(object):
             else:
                 raise TypeError("Invalid occupancy %r in atom %r" % (occupancy, atom.full_id))
 
-        args = (
-            record_type,
-            atom_number,
-            name,
-            altloc,
-            resname,
-            chain_id,
-            resseq,
-            icode,
-            x,
-            y,
-            z,
-            occupancy_str,
-            bfactor,
-            segid,
-            element,
-            charge,
+        line = (
+            f"{record_type:6s}"
+            f"{atom_number:>5d} "
+            f"{name.strip():4s}"
+            f"{altloc:1s}"
+            f"{resname:>3s}"
+            f"{chain_id:>2s}"
+            f"{resseq:4d}"
+            f"{icode:1s}   "
+            f"{x:8.3f}"
+            f"{y:8.3f}"
+            f"{z:8.3f}"
+            f"{occupancy_str:6s}"
+            f"{bfactor:6.2f}"
+            f"{segid:>7s}"
+            f"{element:>5s}"
+            f"{charge:>2s}"
+            "\n"
         )
-        return _ATOM_FORMAT_STRING % args
+        assert len(line) == 81, line
+        return line
 
     # Public methods
 
