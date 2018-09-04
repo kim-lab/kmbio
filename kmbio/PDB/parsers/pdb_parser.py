@@ -5,8 +5,7 @@
 """Parser for PDB files."""
 import logging
 import re
-from collections import namedtuple
-from typing import Dict
+from typing import Dict, NamedTuple, Tuple
 
 import numpy as np
 from Bio import File
@@ -20,13 +19,25 @@ from .parser import Parser
 
 logger = logging.getLogger(__name__)
 
-AtomData = namedtuple(
-    "AtomData",
-    (
-        "record_type, fullname, altloc, resname, chainid, serial_number, resseq, icode, "
-        "hetero_flag, coord, occupancy, bfactor, segid, element, name, residue_id"
-    ),
-)
+
+class AtomData(NamedTuple):
+    record_type: str
+    fullname: str
+    altloc: str
+    resname: str
+    chainid: str
+    serial_number: int
+    resseq: int
+    icode: str
+    hetero_flag: str
+    coord: np.ndarray
+    occupancy: float
+    bfactor: float
+    segid: str
+    element: str
+    name: str
+    residue_id: Tuple[str, int, str]
+
 
 # If PDB spec says "COLUMNS 18-20" this means line[17:20]
 
@@ -246,7 +257,7 @@ class PDBParser(Parser):
         self.line_counter = self.line_counter + local_line_counter
         return []
 
-    def _parse_atom_line(self, line, global_line_counter):
+    def _parse_atom_line(self, line: str, global_line_counter: int) -> AtomData:
         record_type = line[0:6]
         fullname = line[12:16]
         # get rid of whitespace in atom names
