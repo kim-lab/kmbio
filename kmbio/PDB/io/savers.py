@@ -5,9 +5,8 @@
 """Output of PDB files."""
 import logging
 from pathlib import Path
-from typing import Union
+from typing import TextIO, Union
 
-from Bio._py3k import basestring
 from Bio.Data.IUPACData import atom_weights
 
 from kmbio.PDB import Structure, StructureBuilder
@@ -163,7 +162,7 @@ class PDBIO(object):
             f"{charge:>2s}"
             "\n"
         )
-        assert len(line) == 81, line
+        assert len(line) == 81, (len(line), line)
         return line
 
     # Public methods
@@ -207,11 +206,16 @@ class PDBIO(object):
             structure = sb.structure
         self.structure = structure
 
-    def save(self, file, select=Select(), write_end=True, preserve_atom_numbering=False):
+    def save(
+        self,
+        file: Union[str, Path, TextIO],
+        select=Select(),
+        write_end: bool = True,
+        atom_numbering: str = "by_chain",
+    ) -> None:
         """
         Args:
             file: output file
-            file: string or filehandle
             select: selects which entities will be written.
                 Typically select is a subclass of L{Select}.
                 It should have the following methods:
@@ -223,9 +227,17 @@ class PDBIO(object):
 
                 These methods should return 1 if the entity is to be
                 written out, 0 otherwise.
+            write_end:
+            atom_numbering: One of {"keep", "model", "chain"}
+
+                - keep - Keeps atom numbering from the input model.
+                - by_model - Numbers atoms ``1..N``, where ``N`` is the length of the model.
+                - by_chain - Numbers atoms ``1..N``, where ``N`` is the length of the chain.
         """
+        assert atom_numbering in ["keep", "by_model", "by_chain"]
+
         get_atom_line = self._get_atom_line
-        if isinstance(file, (basestring, Path)):
+        if isinstance(file, (str, Path)):
             fp = open(file, "w")
             close_file = 1
         else:
@@ -240,18 +252,20 @@ class PDBIO(object):
         for model in self.structure:
             if not select.accept_model(model):
                 continue
+            if atom_numbering == "by_model":
+                atom_number = 1
             # necessary for ENDMDL
             # do not write ENDMDL if no residues were written
             # for this model
             model_residues_written = 0
-            if not preserve_atom_numbering:
-                atom_number = 1
             if model_flag:
                 fp.write("MODEL      %s\n" % model.serial_num)
             for chain in model:
                 if not select.accept_chain(chain):
                     continue
                 chain_id = chain.id
+                if atom_numbering == "by_chain":
+                    atom_number = 1
                 # necessary for TER
                 # do not write TER if no residues were written
                 # for this chain
@@ -266,14 +280,13 @@ class PDBIO(object):
                         if select.accept_atom(atom):
                             chain_residues_written = 1
                             model_residues_written = 1
-                            if preserve_atom_numbering:
+                            if atom_numbering == "keep":
                                 atom_number = atom.serial_number
                             s = get_atom_line(
                                 atom, hetfield, segid, atom_number, resname, resseq, icode, chain_id
                             )
                             fp.write(s)
-                            if not preserve_atom_numbering:
-                                atom_number += 1
+                            atom_number += 1
                 if chain_residues_written:
                     fp.write("TER\n")
             if model_flag and model_residues_written:
@@ -305,4 +318,4 @@ if __name__ == "__main__":
         io.set_structure(s1)
         io.save(fp)
         io.set_structure(s2)
-        io.save(fp, write_end=1)
+        io.save(fp, write_end=True)
