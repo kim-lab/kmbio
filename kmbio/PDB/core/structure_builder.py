@@ -136,12 +136,13 @@ class StructureBuilder(object):
                 else:
                     if resname == duplicate_residue.resname:
                         logger.warning(
-                            "Residue ('%s', %i, '%s','%s') already defined "
+                            "Residue '%s' ('%s', %i, '%s') is already defined in chain '%s' "
                             "with the same name at line %i.",
+                            resname,
                             field,
                             resseq,
                             icode,
-                            resname,
+                            self.chain.id,
                             self.line_counter,
                         )
                         self.residue = duplicate_residue
