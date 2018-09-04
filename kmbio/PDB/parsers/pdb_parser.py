@@ -271,7 +271,7 @@ class PDBParser(Parser):
             name = split_list[0]
         altloc = line[16]
         resname = line[17:20].strip(" ")
-        chainid = line[21]
+        chainid = line[20:22].strip(" ")
         try:
             serial_number = int(line[6:11])
         except Exception:
