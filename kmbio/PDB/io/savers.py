@@ -17,8 +17,6 @@ logger = logging.getLogger(__name__)
 def save(
     structure: Structure,
     filename: Union[str, Path],
-    model_ids=None,
-    chain_ids=None,
     include_disordered=True,
 ):
     """Save kmbio `Structure` object as a PDB.
