@@ -4,9 +4,9 @@
 # as part of this package.
 """mmCIF parsers."""
 import logging
+from typing import Union
 
 import numpy as np
-from Bio._py3k import range
 from Bio.File import as_handle
 
 from kmbio.PDB import StructureBuilder
@@ -56,15 +56,13 @@ class MMCIFParser(Parser):
 
     # Public methods
 
-    def get_structure(self, filename, structure_id=None, bioassembly_id=0):
+    def get_structure(self, filename, structure_id=None, bioassembly_id: Union[int, bool] = 0):
         """Return the structure.
 
         Parameters
         ----------
-        filename : `str`
-            Name of the mmCIF file OR an open filehandle
-        structure_id : `str`
-            The id that will be used for the structure
+        filename: Name of the mmCIF file OR an open filehandle
+        structure_id: The id that will be used for the structure
         """
         self._mmcif_dict = mmcif2dict(filename)
         self._build_structure(structure_id)
@@ -73,11 +71,15 @@ class MMCIFParser(Parser):
 
         if bioassembly_id != 0:
             try:
-                bioassembly_data = get_mmcif_bioassembly_data(self._mmcif_dict,
-                                                              self.use_auth_id)[str(bioassembly_id)]
+                bioassembly_data = get_mmcif_bioassembly_data(self._mmcif_dict, self.use_auth_id)
+                bioassembly_data = bioassembly_data[str(int(bioassembly_id))]
             except KeyError:
-                raise BioassemblyError
-            structure = apply_bioassembly(structure, bioassembly_data)
+                if bioassembly_id is True:
+                    pass
+                else:
+                    raise BioassemblyError
+            else:
+                structure = apply_bioassembly(structure, bioassembly_data)
         return structure
 
     # Private methods
@@ -85,7 +87,7 @@ class MMCIFParser(Parser):
     def _build_structure(self, structure_id=None):
         mmcif_dict = self._mmcif_dict
         if structure_id is None:
-            structure_id = mmcif_dict.get('_pdbx_database_status.entry_id', None)
+            structure_id = mmcif_dict.get("_pdbx_database_status.entry_id", None)
         atom_id_list = mmcif_dict["_atom_site.label_atom_id"]
         residue_id_list = mmcif_dict["_atom_site.label_comp_id"]
 
@@ -160,7 +162,7 @@ class MMCIFParser(Parser):
                 altloc = " "
             # hetero atoms do not have seq_id number in seq_label only '.'
             # use the auth_seq number
-            if seq_id_list[i] == '.':
+            if seq_id_list[i] == ".":
                 assert not self.use_auth_id
                 int_resseq = int(seq_id_auth_list[i])
             else:
@@ -219,10 +221,17 @@ class MMCIFParser(Parser):
             coord = np.array((x, y, z), np.float64)
             element = element_list[i] if element_list else None
             structure_builder.init_atom(
-                name, coord, tempfactor, occupancy, altloc, name, element=element)
+                name, coord, tempfactor, occupancy, altloc, name, element=element
+            )
             if aniso_flag == 1:
-                u = (aniso_u11[i], aniso_u12[i], aniso_u13[i], aniso_u22[i], aniso_u23[i],
-                     aniso_u33[i])
+                u = (
+                    aniso_u11[i],
+                    aniso_u12[i],
+                    aniso_u13[i],
+                    aniso_u22[i],
+                    aniso_u23[i],
+                    aniso_u33[i],
+                )
                 mapped_anisou = [float(x) for x in u]
                 anisou_array = np.array(mapped_anisou, np.float64)
                 structure_builder.atom.anisou_array = anisou_array
@@ -301,17 +310,17 @@ class FastMMCIFParser(Parser):
         _fields, _records = [], []
         _anisof, _anisors = [], []
         for line in filehandle:
-            if structure_id is None and line.startswith('_pdbx_database_status.entry_id'):
+            if structure_id is None and line.startswith("_pdbx_database_status.entry_id"):
                 structure_id = line.strip().split()[-1]
-            elif line.startswith('_atom_site.'):
+            elif line.startswith("_atom_site."):
                 read_atom = True
                 _fields.append(line.strip())
-            elif line.startswith('_atom_site_anisotrop.'):
+            elif line.startswith("_atom_site_anisotrop."):
                 read_aniso = True
                 _anisof.append(line.strip())
-            elif read_atom and line.startswith('#'):
+            elif read_atom and line.startswith("#"):
                 read_atom = False
-            elif read_aniso and line.startswith('#'):
+            elif read_aniso and line.startswith("#"):
                 read_aniso = False
             elif read_atom:
                 _records.append(line.strip())
@@ -408,7 +417,7 @@ class FastMMCIFParser(Parser):
 
             # hetero atoms do not have seq_id number in seq_label only '.'
             # use the auth_seq number
-            if not self.use_auth_id and seq_id_list[i] == '.':
+            if not self.use_auth_id and seq_id_list[i] == ".":
                 int_resseq = int(seq_id_auth_list[i])
             else:
                 int_resseq = int(seq_id_list[i])
@@ -470,10 +479,17 @@ class FastMMCIFParser(Parser):
             coord = np.array((x, y, z), np.float64)
             element = element_list[i] if element_list else None
             structure_builder.init_atom(
-                name, coord, tempfactor, occupancy, altloc, name, element=element)
+                name, coord, tempfactor, occupancy, altloc, name, element=element
+            )
             if aniso_flag == 1:
-                u = (aniso_u11[i], aniso_u12[i], aniso_u13[i], aniso_u22[i], aniso_u23[i],
-                     aniso_u33[i])
+                u = (
+                    aniso_u11[i],
+                    aniso_u12[i],
+                    aniso_u13[i],
+                    aniso_u22[i],
+                    aniso_u23[i],
+                    aniso_u33[i],
+                )
                 mapped_anisou = [float(x) for x in u]
                 anisou_array = np.array(mapped_anisou, np.float64)
                 structure_builder.atom.anisou_array = anisou_array

@@ -5,14 +5,14 @@
 """Parser for PDB files."""
 import logging
 import re
-from typing import Dict, NamedTuple, Tuple
+from typing import Dict, NamedTuple, Tuple, Union
 
 import numpy as np
 from Bio import File
 from Bio.File import as_handle
 
 from kmbio.PDB import StructureBuilder
-from kmbio.PDB.exceptions import PDBConstructionException
+from kmbio.PDB.exceptions import BioassemblyError, PDBConstructionException
 
 from .bioassembly import ProcessRemark350, apply_bioassembly
 from .parser import Parser
@@ -78,7 +78,9 @@ class PDBParser(Parser):
 
     # Public methods
 
-    def get_structure(self, filename, structure_id=None, bioassembly_id=0):
+    def get_structure(
+        self, filename, structure_id: str = None, bioassembly_id: Union[int, bool] = 0
+    ):
         """Return the structure.
 
         Arguments:
@@ -98,8 +100,15 @@ class PDBParser(Parser):
         structure = self.structure_builder.get_structure()
 
         if bioassembly_id != 0:
-            bioassembly_data = self.header["bioassembly_data"][str(bioassembly_id)]
-            structure = apply_bioassembly(structure, bioassembly_data)
+            try:
+                bioassembly_data = self.header["bioassembly_data"][str(int(bioassembly_id))]
+            except KeyError:
+                if bioassembly_id is True:
+                    pass
+                else:
+                    raise BioassemblyError
+            else:
+                structure = apply_bioassembly(structure, bioassembly_data)
 
         return structure
 
