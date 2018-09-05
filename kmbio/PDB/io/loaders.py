@@ -39,7 +39,10 @@ def load(pdb_file: str, structure_id: str = None, **kwargs) -> Structure:
     if isinstance(pdb_file, Path):
         pdb_file = pdb_file.as_posix()
 
-    pdb_id = guess_pdb_id(pdb_file)
+    if structure_id is None:
+        pdb_id = guess_pdb_id(pdb_file)
+    else:
+        pdb_id = structure_id
     pdb_type = guess_pdb_type(pdb_file)
 
     scheme = urlparse(pdb_file).scheme
