@@ -141,6 +141,10 @@ class PDBIO(object):
             else:
                 raise TypeError("Invalid occupancy %r in atom %r" % (occupancy, atom.full_id))
 
+        bfactor_str = f"{bfactor:6.2f}"
+        if len(bfactor_str) > 6:
+            bfactor_str = bfactor_str[:bfactor_str.index(".")]
+
         line = (
             f"{record_type:6s}"
             f"{atom_number:>5d} "
@@ -154,7 +158,7 @@ class PDBIO(object):
             f"{y:8.3f}"
             f"{z:8.3f}"
             f"{occupancy_str:6s}"
-            f"{bfactor:6.2f}"
+            f"{bfactor_str:6s}"
             f"{segid:>7s}"
             f"{element:>5s}"
             f"{charge:>2s}"
