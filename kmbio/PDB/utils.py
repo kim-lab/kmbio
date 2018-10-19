@@ -217,7 +217,9 @@ def read_ff(url: str):
     assert url_obj.query.endswith(".gz")
     system_command = f"ffindex_get '{url_obj.path}.data' '{url_obj.path}.ffindex' {url_obj.query}"
     p = subprocess.run(shlex.split(system_command), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    matches = re.findall("ffindex_get key not found in index: (.*): No such file or directory", p.stderr.decode())
+    matches = re.findall(
+        "ffindex_get key not found in index: (.*): No such file or directory", p.stderr.decode()
+    )
     if matches:
         raise FileNotFoundError(f"File not found: '{matches[0]}'")
     return p.stdout
