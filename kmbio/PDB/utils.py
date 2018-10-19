@@ -6,6 +6,7 @@ import io
 import itertools
 import logging
 import lzma
+import re
 import shlex
 import socket
 import subprocess
@@ -212,8 +213,13 @@ def read_web(url: str, timeout: float = 10.0, **kwargs) -> bytes:
 
 def read_ff(url: str):
     url_obj = urlparse(url)
+    assert url_obj.query.islower()
+    assert url_obj.query.endswith(".gz")
     system_command = f"ffindex_get '{url_obj.path}.data' '{url_obj.path}.ffindex' {url_obj.query}"
-    p = subprocess.run(shlex.split(system_command), stdout=subprocess.PIPE, check=True)
+    p = subprocess.run(shlex.split(system_command), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    matches = re.findall("ffindex_get key not found in index: (.*): No such file or directory", p.stderr.decode())
+    if matches:
+        raise FileNotFoundError(f"File not found: '{matches[0]}'")
     return p.stdout
 
 
