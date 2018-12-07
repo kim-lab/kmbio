@@ -1,0 +1,4 @@
+structure_id	model_idx	model_id	chain_idx	chain_id	residue_idx	residue_id_0	residue_id_1	residue_id_2	residue_resname	residue_segid	atom_idx	atom_name	atom_fullname	atom_x	atom_y	atom_z	atom_bfactor	atom_occupancy	atom_altloc	atom_serial_number	atom_extra_bonds
+1A8O	0	0	0	A	0	 	152	 	ASP		0	N	 N  	21.554	34.953	27.691	0.0	0.0	 	9	[]
+1A8O	0	0	0	A	0	 	152	 	ASP		1	CA	 CA 	21.835	36.306	28.144	20.88	1.0	 	10	[]
+1A8O	0	0	0	A	0	 	152	 	ASP		2	C	 C  	21.947	37.322	27.0	19.01	0.0	 	11	[]
