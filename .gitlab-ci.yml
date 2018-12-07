@@ -26,29 +26,17 @@ variables:
       - .ci/conda_packages/*.tar.bz2
       - .ci/conda_packages/urls.txt
   before_script:
-    # Conda environment variables
+    - pwd
+    - ls -al
+    - id
+    - ls -al /opt/conda
+    - conda update conda -y
     - export CONDA_PKGS_DIRS="$CI_PROJECT_DIR/.ci/conda_packages"
-    # Make conda cache and bld folders
     - mkdir -p "$CI_PROJECT_DIR/conda-bld" "${CONDA_PKGS_DIRS}"
-    # Conda configure
-    - conda config --set channel_priority true
-    # - conda config --append pkgs_dirs "${CONDA_PKGS_DIRS}"
+    - conda config --append pkgs_dirs "${CONDA_PKGS_DIRS}"
     - conda config --append channels kimlab
-    # - case "${PACKAGE_VERSION}" in
-    #   *dev*)
-    #     conda config --append channels kimlab/label/dev;
-    #     conda config --append channels kimlab;
-    #   ;;
-    #   *)
-    #     conda config --append channels kimlab;
-    #   ;;
-    #   esac
-    # Clear cache
     - rm -rf /opt/conda/pkgs/*
-    # Update conda
-    - sudo chmod -R 777 /opt/conda
-    # - conda update -y -q conda --no-channel-priority
-    - conda update -y -q conda-build --no-channel-priority
+    - conda update -y -q conda conda-build --no-channel-priority
 
 # === Lint ===
 
