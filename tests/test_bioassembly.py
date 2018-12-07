@@ -154,7 +154,7 @@ def test_pdb_vs_pdb_ref(pdb_bioassembly_file):
         pytest.xfail("This structure is known to fail.")
 
     # Filenames are of the form: '{pdb_id}.pdb{bioassembly_id}.gz'
-    pdb_id, bioassembly_id = re.findall("(.*)\.pdb([0-9]+)\.gz", pdb_bioassembly_file)[0]
+    pdb_id, bioassembly_id = re.findall(r"(.*)\.pdb([0-9]+)\.gz", pdb_bioassembly_file)[0]
     logger.debug("pdb_id, bioassembly_id: %s, %s", pdb_id, bioassembly_id)
 
     pdb_url = DEFAULT_ROUTES["rcsb"](pdb_id, "pdb")

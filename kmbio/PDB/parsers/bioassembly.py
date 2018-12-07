@@ -82,7 +82,7 @@ class ProcessRemark350:
     RE_CHAINS = re.compile('^APPLY THE FOLLOWING TO CHAINS: +([a-zA-Z0-9, ]+)')
     RE_CHAINS_EXTRA = re.compile('^AND CHAINS: +([a-zA-Z0-9, ]+)')
     RE_BIOMT = re.compile(
-        '^BIOMT([0-9]+)\s+([0-9]+)\s+([-0-9\.]+)\s+([-0-9\.]+)\s+([-0-9\.]+)\s+([-0-9\.]+)')
+        r'^BIOMT([0-9]+)\s+([0-9]+)\s+([-0-9\.]+)\s+([-0-9\.]+)\s+([-0-9\.]+)\s+([-0-9\.]+)')
 
     def __init__(self):
         self._biomolecule = None
