@@ -33,10 +33,7 @@ variables:
     # Conda configure
     - conda config --set channel_priority true
     - conda config --append pkgs_dirs "${CONDA_PKGS_DIRS}"
-    - conda config --add channels kimlab
-    - conda config --add channels ostrokach-forge
-    - conda config --add channels defaults
-    - conda config --add channels conda-forge
+    - conda config --append channels kimlab
     # - case "${PACKAGE_VERSION}" in
     #   *dev*)
     #     conda config --append channels kimlab/label/dev;
@@ -49,6 +46,7 @@ variables:
     # Clear cache
     - rm -rf /opt/conda/pkgs/*
     # Update conda
+    - sudo chmod -R 777 /opt/conda
     - conda update -n root -yq conda conda-build --no-channel-priority
 
 # === Lint ===
