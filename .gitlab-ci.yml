@@ -1,4 +1,4 @@
-image: condaforge/linux-anvil:latest
+image: registry.gitlab.com/ostrokach-docker/conda:latest
 
 stages:
   - lint
@@ -26,16 +26,10 @@ variables:
       - .ci/conda_packages/*.tar.bz2
       - .ci/conda_packages/urls.txt
   before_script:
-    - pwd
-    - ls -al
-    - id
-    - ls -al /opt/conda
-    - conda update conda -y
     - export CONDA_PKGS_DIRS="$CI_PROJECT_DIR/.ci/conda_packages"
     - mkdir -p "$CI_PROJECT_DIR/conda-bld" "${CONDA_PKGS_DIRS}"
     - conda config --append pkgs_dirs "${CONDA_PKGS_DIRS}"
     - conda config --append channels kimlab
-    - rm -rf /opt/conda/pkgs/*
     - conda update -y -q conda conda-build --no-channel-priority
 
 # === Lint ===
