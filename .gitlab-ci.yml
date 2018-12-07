@@ -31,6 +31,8 @@ variables:
     - mkdir -p "$CI_PROJECT_DIR/conda-bld" "${CONDA_PKGS_DIRS}"
     - conda config --append pkgs_dirs "${CONDA_PKGS_DIRS}"
     - conda config --append channels kimlab
+    - cat ~/.condarc
+    - ls "${CONDA_PKGS_DIRS}"
     - conda update -y -q conda conda-build --no-channel-priority
 
 # === Lint ===
