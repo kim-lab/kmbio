@@ -47,7 +47,7 @@ variables:
     - rm -rf /opt/conda/pkgs/*
     # Update conda
     - sudo chmod -R 777 /opt/conda
-    - conda update -y -q conda --no-channel-priority
+    # - conda update -y -q conda --no-channel-priority
     - conda update -y -q conda-build --no-channel-priority
 
 # === Lint ===
