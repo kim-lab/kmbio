@@ -1,4 +1,4 @@
-image: registry.gitlab.com/ostrokach-docker/conda:latest
+image: condaforge/linux-anvil:latest
 
 stages:
   - lint
