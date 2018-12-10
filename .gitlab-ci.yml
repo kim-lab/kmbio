@@ -20,11 +20,11 @@ variables:
 # === Configurations ===
 
 .configure: &configure
-  cache:
-    key: ${CI_JOB_NAME}
-    paths:
-      - .ci/conda_packages/*.tar.bz2
-      - .ci/conda_packages/urls.txt
+#   cache:
+#     key: ${CI_JOB_NAME}
+#     paths:
+#       - .ci/conda_packages/*.tar.bz2
+#       - .ci/conda_packages/urls.txt
   before_script:
     - sudo chmod ugo+rw .ci/conda_packages -R
     - export CONDA_PKGS_DIRS="$CI_PROJECT_DIR/.ci/conda_packages"
