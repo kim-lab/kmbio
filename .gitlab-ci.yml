@@ -30,7 +30,7 @@ variables:
     - mkdir -p "$CI_PROJECT_DIR/conda-bld" "${CONDA_PKGS_DIRS}"
     - ls -al .ci
     - ls -al "${CONDA_PKGS_DIRS}"
-    - sudo chmod ugo+rw .ci -R
+    - sudo chmod ugo+rwX .ci -R
     - sudo chown root:root .ci -R
     - conda config --append pkgs_dirs "${CONDA_PKGS_DIRS}"
     - conda config --append channels kimlab
