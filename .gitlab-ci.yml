@@ -26,9 +26,12 @@ variables:
 #       - .ci/conda_packages/*.tar.bz2
 #       - .ci/conda_packages/urls.txt
   before_script:
-    - sudo chmod ugo+rw .ci -R
     - export CONDA_PKGS_DIRS="$CI_PROJECT_DIR/.ci/conda_packages"
     - mkdir -p "$CI_PROJECT_DIR/conda-bld" "${CONDA_PKGS_DIRS}"
+    - ls -al .ci
+    - ls -al "${CONDA_PKGS_DIRS}"
+    - sudo chmod ugo+rw .ci -R
+    - sudo chown root:root .ci -R
     - conda config --append pkgs_dirs "${CONDA_PKGS_DIRS}"
     - conda config --append channels kimlab
     - cat ~/.condarc
