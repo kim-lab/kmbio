@@ -32,7 +32,7 @@ variables:
     - ls -al "${CONDA_PKGS_DIRS}"
     - sudo chmod ugo+rwX .ci -R
     - sudo chown root:root .ci -R
-    - conda config --append pkgs_dirs "${CONDA_PKGS_DIRS}"
+    # - conda config --append pkgs_dirs "${CONDA_PKGS_DIRS}"
     - conda config --append channels kimlab
     - cat ~/.condarc
     - ls "${CONDA_PKGS_DIRS}"
