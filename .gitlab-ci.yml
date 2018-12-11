@@ -20,18 +20,15 @@ variables:
 # === Configurations ===
 
 .configure: &configure
-#   cache:
-#     key: ${CI_JOB_NAME}
-#     paths:
-#       - .ci/conda_packages/*.tar.bz2
-#       - .ci/conda_packages/urls.txt
+  cache:
+    key: ${CI_JOB_NAME}-2
+    paths:
+      - .cache
   before_script:
-    # - export CONDA_PKGS_DIRS="$CI_PROJECT_DIR/.ci/conda_packages"
-    # - mkdir -p "$CI_PROJECT_DIR/conda-bld" "${CONDA_PKGS_DIRS}"
-    # - ls -al .ci
-    # - ls -al "${CONDA_PKGS_DIRS}"
-    - sudo chmod ugo+rwX .ci -R
-    - sudo chown root:root .ci -R
+    - export CONDA_PKGS_DIRS="${CI_PROJECT_DIR}/.cache/conda/pkgs"
+    - export CONDA_ENVS_DIRS="${CI_PROJECT_DIR}/.cache/conda/envs"
+    - mkdir -p "$CONDA_PKGS_DIRS" "${CONDA_ENVS_DIRS}"
+    - ls -al "$CONDA_PKGS_DIRS" "${CONDA_ENVS_DIRS}"
     - id
     - ls -al /opt
     - ls -al /opt/conda
