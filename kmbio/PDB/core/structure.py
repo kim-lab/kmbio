@@ -84,10 +84,15 @@ class Structure(Entity):
     def to_dataframe(self) -> pd.DataFrame:
         """Convert this structure into a pandas DataFrame."""
         data = []
-        for model_idx, model in enumerate(self.models):
-            for chain_idx, chain in enumerate(model.chains):
-                for residue_idx, residue in enumerate(chain.residues):
-                    for atom_idx, atom in enumerate(residue.atoms):
+        model_idx, chain_idx, residue_idx, atom_idx = -1, -1, -1, -1
+        for model in self.models:
+            model_idx += 1
+            for chain in model.chains:
+                chain_idx += 1
+                for residue in chain.residues:
+                    residue_idx += 1
+                    for atom in residue.atoms:
+                        atom_idx += 1
                         data.append(
                             StructureRow(
                                 structure_id=self.id,
@@ -141,21 +146,14 @@ class Structure(Entity):
         structure = Structure(df["structure_id"].iloc[0])
         # Groupby skips rows with NAs
         structure_df = df.drop(columns=["structure_id"])
-        for (model_idx, model_id), model_df in _groupby(structure_df, ["model_idx", "model_id"]):
+        for (_, model_id), model_df in _groupby(structure_df, ["model_idx", "model_id"]):
             model = Model(model_id)
             structure.add(model)
-            for (chain_idx, chain_id), chain_df in _groupby(model_df, ["chain_idx", "chain_id"]):
+            for (_, chain_id), chain_df in _groupby(model_df, ["chain_idx", "chain_id"]):
                 chain = Chain(chain_id)
                 model.add(chain)
                 for (
-                    (
-                        residue_idx,
-                        residue_id_0,
-                        residue_id_1,
-                        residue_id_2,
-                        residue_resname,
-                        residue_segid,
-                    ),
+                    (_, residue_id_0, residue_id_1, residue_id_2, residue_resname, residue_segid),
                     residue_df,
                 ) in _groupby(
                     chain_df,
@@ -174,9 +172,7 @@ class Structure(Entity):
                         segid=residue_segid,
                     )
                     chain.add(residue)
-                    for (atom_idx, atom_name), atom_df in _groupby(
-                        residue_df, ["atom_idx", "atom_name"]
-                    ):
+                    for (_, atom_name), atom_df in _groupby(residue_df, ["atom_idx", "atom_name"]):
                         assert len(atom_df) == 1
                         atom_s = atom_df.iloc[0]
                         atom = Atom(
