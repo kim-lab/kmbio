@@ -16,7 +16,7 @@ from collections import OrderedDict
 from typing import IO, Callable, Generator
 from urllib.parse import urlparse
 
-from retrying import retry
+from tenacity import retry
 
 from kmbio.PDB import Atom, DisorderedAtom
 from kmbio.PDB.core.entity import Entity

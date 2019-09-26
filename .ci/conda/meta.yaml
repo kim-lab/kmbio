@@ -22,7 +22,7 @@ requirements:
     - mmtf-python
     - pandas
     - biopython
-    - retrying
+    - tenacity
     - pyyaml
 
 test:
