@@ -1,6 +1,5 @@
 import bz2
 import contextlib
-import functools
 import gzip
 import io
 import itertools
@@ -16,7 +15,7 @@ from collections import OrderedDict
 from typing import IO, Callable, Generator
 from urllib.parse import urlparse
 
-from tenacity import retry
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from kmbio.PDB import Atom, DisorderedAtom
 from kmbio.PDB.core.entity import Entity
@@ -181,24 +180,14 @@ def anyzip(filename):
         return uncompressed
 
 
-def check_exception(exc, valid_exc):
-    to_retry = isinstance(exc, valid_exc)
-    logger.error(
-        "The following exception occured: '%s'! %s", exc, "Retrying..." if to_retry else "Failed!"
-    )
-    return to_retry
-
-
 def retry_urlopen(fn: Callable) -> Callable:
     """Retry downloading data from a url after a timeout."""
-    _check_exception = functools.partial(
-        check_exception, valid_exc=(socket.timeout, urllib.error.URLError)
-    )
     wrapper = retry(
-        retry_on_exception=_check_exception,
-        wait_exponential_multiplier=1000,
-        wait_exponential_max=10000,
-        stop_max_attempt_number=5,
+        retry=(
+            retry_if_exception_type(socket.timeout) | retry_if_exception_type(urllib.error.URLError)
+        ),
+        wait=wait_exponential(multiplier=1000, max=10000),
+        stop=stop_after_attempt(5),
     )
     return wrapper(fn)
 
