@@ -52,11 +52,6 @@ test:
     # Binaries
     - hh-suite
 
-# outputs:
-#   - name: kmbio
-#     type: conda
-#   - type: wheel
-
 about:
   home: https://gitlab.com/kimlab/kmbio
   license: BioPython License
