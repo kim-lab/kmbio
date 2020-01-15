@@ -172,10 +172,7 @@ def dssp_dict_from_pdb_file(in_file, DSSP="dssp"):
     # Using universal newlines is important on Python 3, this
     # gives unicode handles rather than bytes handles.
     p = subprocess.Popen(
-        [DSSP, in_file],
-        universal_newlines=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        [DSSP, in_file], universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
     )
     out, err = p.communicate()
 
@@ -264,18 +261,18 @@ def _make_dssp_dict(handle):
             if l[34] != " ":
                 shift = l[34:].find(" ")
 
-                NH_O_1_relidx = int(l[38 + shift:45 + shift])
-                NH_O_1_energy = float(l[46 + shift:50 + shift])
-                O_NH_1_relidx = int(l[50 + shift:56 + shift])
-                O_NH_1_energy = float(l[57 + shift:61 + shift])
-                NH_O_2_relidx = int(l[61 + shift:67 + shift])
-                NH_O_2_energy = float(l[68 + shift:72 + shift])
-                O_NH_2_relidx = int(l[72 + shift:78 + shift])
-                O_NH_2_energy = float(l[79 + shift:83 + shift])
+                NH_O_1_relidx = int(l[38 + shift : 45 + shift])
+                NH_O_1_energy = float(l[46 + shift : 50 + shift])
+                O_NH_1_relidx = int(l[50 + shift : 56 + shift])
+                O_NH_1_energy = float(l[57 + shift : 61 + shift])
+                NH_O_2_relidx = int(l[61 + shift : 67 + shift])
+                NH_O_2_energy = float(l[68 + shift : 72 + shift])
+                O_NH_2_relidx = int(l[72 + shift : 78 + shift])
+                O_NH_2_energy = float(l[79 + shift : 83 + shift])
 
-                acc = int((l[34 + shift:38 + shift]))
-                phi = float(l[103 + shift:109 + shift])
-                psi = float(l[109 + shift:115 + shift])
+                acc = int((l[34 + shift : 38 + shift]))
+                phi = float(l[103 + shift : 109 + shift])
+                psi = float(l[109 + shift : 115 + shift])
             else:
                 raise ValueError(exc)
         res_id = (" ", resseq, icode)

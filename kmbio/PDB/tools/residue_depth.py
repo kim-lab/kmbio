@@ -84,7 +84,8 @@ def get_surface(pdb_file, PDB_TO_XYZR="pdb_to_xyzr", MSMS="msms"):
     os.system(make_surface)
     surface_file = surface_tmp + ".vert"
     assert os.path.isfile(surface_file), (
-        "Failed to generate surface file using command:\n%s" % make_surface)
+        "Failed to generate surface file using command:\n%s" % make_surface
+    )
     # read surface vertices from vertex file
     surface = _read_vertex_array(surface_file)
     # clean up tmp files

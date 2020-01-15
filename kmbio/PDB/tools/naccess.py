@@ -27,12 +27,9 @@ from ._abstract_property_map import AbstractAtomPropertyMap, AbstractResidueProp
 logger = logging.getLogger(__name__)
 
 
-def run_naccess(model,
-                pdb_file,
-                probe_size=None,
-                z_slice=None,
-                naccess="naccess",
-                temp_path="/tmp/"):
+def run_naccess(
+    model, pdb_file, probe_size=None, z_slice=None, naccess="naccess", temp_path="/tmp/"
+):
 
     # make temp directory;
     tmp_path = tempfile.mkdtemp(dir=temp_path)
@@ -63,7 +60,8 @@ def run_naccess(model,
         command.extend(["-z", z_slice])
 
     p = subprocess.Popen(
-        command, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        command, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
     out, err = p.communicate()
     os.chdir(old_dir)
 
@@ -131,7 +129,8 @@ def process_asa_data(rsa_data):
 class NACCESS(AbstractResiduePropertyMap):
     def __init__(self, model, pdb_file=None, naccess_binary="naccess", tmp_directory="/tmp"):
         res_data, atm_data = run_naccess(
-            model, pdb_file, naccess=naccess_binary, temp_path=tmp_directory)
+            model, pdb_file, naccess=naccess_binary, temp_path=tmp_directory
+        )
         naccess_dict = process_rsa_data(res_data)
         property_dict = {}
         property_keys = []
@@ -157,7 +156,8 @@ class NACCESS(AbstractResiduePropertyMap):
 class NACCESS_atomic(AbstractAtomPropertyMap):
     def __init__(self, model, pdb_file=None, naccess_binary="naccess", tmp_directory="/tmp"):
         res_data, atm_data = run_naccess(
-            model, pdb_file, naccess=naccess_binary, temp_path=tmp_directory)
+            model, pdb_file, naccess=naccess_binary, temp_path=tmp_directory
+        )
         self.naccess_atom_dict = process_asa_data(atm_data)
         property_dict = {}
         property_keys = []

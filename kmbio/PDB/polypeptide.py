@@ -59,8 +59,26 @@ from kmbio.PDB.exceptions import PDBException
 logger = logging.getLogger(__name__)
 
 standard_aa_names = [
-    "ALA", "CYS", "ASP", "GLU", "PHE", "GLY", "HIS", "ILE", "LYS", "LEU", "MET", "ASN", "PRO",
-    "GLN", "ARG", "SER", "THR", "VAL", "TRP", "TYR"
+    "ALA",
+    "CYS",
+    "ASP",
+    "GLU",
+    "PHE",
+    "GLY",
+    "HIS",
+    "ILE",
+    "LYS",
+    "LEU",
+    "MET",
+    "ASN",
+    "PRO",
+    "GLN",
+    "ARG",
+    "SER",
+    "THR",
+    "VAL",
+    "TRP",
+    "TYR",
 ]
 
 aa1 = "ACDEFGHIKLMNPQRSTVWY"
@@ -207,9 +225,9 @@ class Polypeptide(list):
         for i in range(0, lng):
             res = self[i]
             try:
-                n = res['N'].get_vector()
-                ca = res['CA'].get_vector()
-                c = res['C'].get_vector()
+                n = res["N"].get_vector()
+                ca = res["CA"].get_vector()
+                c = res["C"].get_vector()
             except Exception:
                 # Some atoms are missing
                 # Phi/Psi cannot be calculated for this residue
@@ -221,7 +239,7 @@ class Polypeptide(list):
             if i > 0:
                 rp = self[i - 1]
                 try:
-                    cp = rp['C'].get_vector()
+                    cp = rp["C"].get_vector()
                     phi = calc_dihedral(cp, n, ca, c)
                 except Exception:
                     phi = None
@@ -232,7 +250,7 @@ class Polypeptide(list):
             if i < (lng - 1):
                 rn = self[i + 1]
                 try:
-                    nn = rn['N'].get_vector()
+                    nn = rn["N"].get_vector()
                     psi = calc_dihedral(n, ca, c, nn)
                 except Exception:
                     psi = None
@@ -281,7 +299,7 @@ class Polypeptide(list):
         """
         s = ""
         for res in self:
-            s += SCOPData.protein_letters_3to1.get(res.resname, 'X')
+            s += SCOPData.protein_letters_3to1.get(res.resname, "X")
         seq = Seq(s, generic_protein)
         return seq
 
@@ -321,8 +339,9 @@ class _PPBuilder(object):
             # It has an alpha carbon...
             # We probably need to update the hard coded list of
             # non-standard residues, see function is_aa for details.
-            logger.warning("Assuming residue %s is an unknown modified "
-                           "amino acid" % residue.resname)
+            logger.warning(
+                "Assuming residue %s is an unknown modified " "amino acid" % residue.resname
+            )
             return True
         else:
             # not a standard AA so skip
@@ -362,9 +381,11 @@ class _PPBuilder(object):
                 continue
             pp = None
             for next_res in chain_it:
-                if accept(prev_res, aa_only) \
-                        and accept(next_res, aa_only) \
-                        and is_connected(prev_res, next_res):
+                if (
+                    accept(prev_res, aa_only)
+                    and accept(next_res, aa_only)
+                    and is_connected(prev_res, next_res)
+                ):
                     if pp is None:
                         pp = Polypeptide()
                         pp.append(prev_res)

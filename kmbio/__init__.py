@@ -13,8 +13,8 @@ http://biopython.org
 __version__ = "2.0.13"
 
 __all__ = [
-    'KDTree',
-    'PDB',
-    'SVDSuperimposer',
+    "KDTree",
+    "PDB",
+    "SVDSuperimposer",
 ]
 from . import *

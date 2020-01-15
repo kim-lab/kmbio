@@ -15,9 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 def save(
-    structure: Structure,
-    filename: Union[str, Path],
-    include_disordered=True,
+    structure: Structure, filename: Union[str, Path], include_disordered=True,
 ):
     """Save kmbio `Structure` object as a PDB.
 
@@ -143,7 +141,7 @@ class PDBIO(object):
 
         bfactor_str = f"{bfactor:6.2f}"
         if len(bfactor_str) > 6:
-            bfactor_str = bfactor_str[:bfactor_str.index(".")]
+            bfactor_str = bfactor_str[: bfactor_str.index(".")]
 
         line = (
             f"{record_type:6s}"

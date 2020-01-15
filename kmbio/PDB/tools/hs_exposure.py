@@ -150,8 +150,9 @@ class HSExposureCA(_AbstractHSExposure):
             of the number of neighbors
         @type offset: int
         """
-        _AbstractHSExposure.__init__(self, model, radius, offset, "EXP_HSE_A_U", "EXP_HSE_A_D",
-                                     "EXP_CB_PCB_ANGLE")
+        _AbstractHSExposure.__init__(
+            self, model, radius, offset, "EXP_HSE_A_U", "EXP_HSE_A_D", "EXP_CB_PCB_ANGLE"
+        )
 
     def _get_cb(self, r1, r2, r3):
         """

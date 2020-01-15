@@ -214,10 +214,8 @@ htmlhelp_basename = "kmbiodoc"
 latex_elements = {
     # The paper size ("letterpaper" or "a4paper").
     # "papersize": "letterpaper",
-
     # The font size ("10pt", "11pt" or "12pt").
     # "pointsize": "10pt",
-
     # Additional stuff for the LaTeX preamble.
     # "preamble": "",
 }
@@ -226,9 +224,7 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass
 # [howto/manual]).
 latex_documents = [
-    ("index", "kmbio.tex",
-     "kmbio Documentation",
-     "KimLab", "manual"),
+    ("index", "kmbio.tex", "kmbio Documentation", "KimLab", "manual"),
 ]
 
 # The name of an image file (relative to this directory) to place at
@@ -256,11 +252,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    ("index", "kmbio",
-     "kmbio Documentation",
-     ["KimLab"], 1)
-]
+man_pages = [("index", "kmbio", "kmbio Documentation", ["KimLab"], 1)]
 
 # If true, show URL addresses after external links.
 # man_show_urls = False
@@ -272,12 +264,15 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ("index", "kmbio",
-     "kmbio Documentation",
-     "KimLab",
-     "kmbio",
-     "One line description of project.",
-     "Miscellaneous"),
+    (
+        "index",
+        "kmbio",
+        "kmbio Documentation",
+        "KimLab",
+        "kmbio",
+        "One line description of project.",
+        "Miscellaneous",
+    ),
 ]
 
 # Documents to append as an appendix to all manuals.
