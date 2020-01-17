@@ -146,7 +146,7 @@ class PDBIO(object):
         line = (
             f"{record_type:6s}"
             f"{atom_number:>5d} "
-            f"{name.strip():4s}"
+            f"{name.strip().ljust(3).rjust(4):4s}"
             f"{altloc:1s}"
             f"{resname:>3s}"
             f"{chain_id:>2s}"
