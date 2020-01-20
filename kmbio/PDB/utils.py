@@ -8,6 +8,7 @@ import lzma
 import re
 import shlex
 import socket
+import ssl
 import subprocess
 import urllib.error
 import urllib.request
@@ -15,7 +16,8 @@ from collections import OrderedDict
 from typing import IO, Callable, Generator
 from urllib.parse import urlparse
 
-from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
+import certifi
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_random_exponential
 
 from kmbio.PDB import Atom, DisorderedAtom
 from kmbio.PDB.core.entity import Entity
@@ -186,7 +188,7 @@ def retry_urlopen(fn: Callable) -> Callable:
         retry=(
             retry_if_exception_type(socket.timeout) | retry_if_exception_type(urllib.error.URLError)
         ),
-        wait=wait_exponential(multiplier=1000, max=10000),
+        wait=wait_random_exponential(multiplier=1, max=10),
         stop=stop_after_attempt(5),
     )
     return wrapper(fn)
@@ -195,7 +197,12 @@ def retry_urlopen(fn: Callable) -> Callable:
 @retry_urlopen
 def read_web(url: str, timeout: float = 10.0, **kwargs) -> bytes:
     """Read the contents of a URL or a file."""
-    with urllib.request.urlopen(url, timeout=timeout, **kwargs) as ifh:
+    with urllib.request.urlopen(
+        url,
+        timeout=timeout,
+        context=ssl.create_default_context(cafile=certifi.where()),
+        **kwargs,
+    ) as ifh:
         data = ifh.read()
     return data
 
