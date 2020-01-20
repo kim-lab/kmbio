@@ -102,7 +102,7 @@ class HeaderTests(unittest.TestCase):
             "OF THE HIV-1 CAPSID PROTEIN.REF    "
             "SCIENCE                       V. 278   849 1997REFN                   "
             "ISSN 0036-8075PMID   9346481DOI    10.1126/SCIENCE.278.5339.849",
-            "journal_reference": "t.r.gamble,s.yoo,f.f.vajdos,u.k.von schwedler, d.k.worthylake,h.wang,j.p.mccutcheon,"
+            "journal_reference": "t.r.gamble,s.yoo,f.f.vajdos,u.k.von schwedler, d.k.worthylake,h.wang,j.p.mccutcheon,"  # noqa
             "w.i.sundquist, c.p.hill structure of the carboxyl-terminal dimerization domain "
             "of the hiv-1 capsid protein. science v. 278 849 1997 issn 0036-8075 9346481 "
             "10.1126/science.278.5339.849 ",
@@ -119,7 +119,7 @@ class HeaderTests(unittest.TestCase):
         parser = PDBParser()
         struct = parser.get_structure("PDB/2BEG.pdb", "2BEG")
         known_strings = {
-            "author": "T.Luhrs,C.Ritter,M.Adrian,D.Riek-Loher,B.Bohrmann,H.Dobeli,D.Schubert,R.Riek",
+            "author": "T.Luhrs,C.Ritter,M.Adrian,D.Riek-Loher,B.Bohrmann,H.Dobeli,D.Schubert,R.Riek",  # noqa
             "deposition_date": "2005-10-24",
             "head": "protein fibril",
             "journal": "AUTH   T.LUHRS,C.RITTER,M.ADRIAN,D.RIEK-LOHER,B.BOHRMANN,"
@@ -127,7 +127,7 @@ class HeaderTests(unittest.TestCase):
             "3D STRUCTURE OF ALZHEIMER'S AMYLOID-{BETA}(1-42)TITL 2 FIBRILS.REF    "
             "PROC.NATL.ACAD.SCI.USA        V. 102 17342 2005REFN                   "
             "ISSN 0027-8424PMID   16293696DOI    10.1073/PNAS.0506723102",
-            "journal_reference": "t.luhrs,c.ritter,m.adrian,d.riek-loher,b.bohrmann, h.dobeli,d.schubert,"
+            "journal_reference": "t.luhrs,c.ritter,m.adrian,d.riek-loher,b.bohrmann, h.dobeli,d.schubert,"  # noqa
             "r.riek 3d structure of alzheimer's amyloid-{beta}(1-42) fibrils. "
             "proc.natl.acad.sci.usa v. 102 17342 2005 issn 0027-8424 16293696 "
             "10.1073/pnas.0506723102 ",
