@@ -32,8 +32,6 @@ test:
     - tests
   imports:
     - kmbio
-    - kmbio.KDTree
-    - kmbio.KDTree._CKDTree
     - kmbio.PDB
     - kmbio.PDB.core
     - kmbio.PDB.io

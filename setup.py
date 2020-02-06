@@ -17,15 +17,9 @@ PACKAGES = [
     "kmbio.PDB.tools",
     "kmbio.PDB.tools.QCPSuperimposer",
     "kmbio.SVDSuperimposer",
-    "kmbio.KDTree",
 ]
 
 EXTENSIONS = [
-    Extension(
-        "kmbio.KDTree._CKDTree",
-        ["kmbio/KDTree/KDTree.c", "kmbio/KDTree/KDTreemodule.c"],
-        include_dirs=[np.get_include()],
-    ),
     Extension(
         "kmbio.PDB.tools.QCPSuperimposer.qcprotmodule",
         ["kmbio/PDB/tools/QCPSuperimposer/qcprotmodule.c"],
