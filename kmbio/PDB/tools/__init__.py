@@ -16,10 +16,6 @@ from .hs_exposure import HSExposureCA, HSExposureCB, ExposureCN
 # Kolodny et al.'s backbone libraries
 from .fragment_mapper import FragmentMapper
 
-# Fast atom neighbor search
-# Depends on KDTree C++ module
-from .neighbor_search import NeighborSearch
-
 # Residue depth:
 # distance of residue atoms from solvent accessible surface
 from .residue_depth import ResidueDepth, get_surface

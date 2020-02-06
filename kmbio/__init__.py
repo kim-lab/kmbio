@@ -13,7 +13,6 @@ http://biopython.org
 __version__ = "2.0.14"
 
 __all__ = [
-    "KDTree",
     "PDB",
     "SVDSuperimposer",
 ]
