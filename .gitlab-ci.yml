@@ -11,10 +11,10 @@ stages:
 variables:
   PACKAGE_VERSION: "2.0.15"
 
-.py36: &py36
+.py37: &py37
   PYTHON_VERSION: "3.6"
 
-.py37: &py37
+.py38: &py38
   PYTHON_VERSION: "3.7"
 
 # === Configurations ===
@@ -30,7 +30,7 @@ lint:
   stage: lint
   <<: [*configure]
   variables:
-    <<: [*py36]
+    <<: [*py37]
   script:
     - cd $(dirname ${CI_CONFIG_PATH})
     - conda create -n lint -y -q "python=${PYTHON_VERSION}" isort flake8 mypy
@@ -55,15 +55,15 @@ lint:
     paths:
       - conda-bld
 
-build-py36:
-  <<: [*configure, *build]
-  variables:
-    <<: [*py36]
-
 build-py37:
   <<: [*configure, *build]
   variables:
     <<: [*py37]
+
+build-py38:
+  <<: [*configure, *build]
+  variables:
+    <<: [*py38]
 
 # === Test ===
 
@@ -84,19 +84,19 @@ build-py37:
       - environment-py${PYTHON_VERSION/./}.yml
       - .ci/conda/.coverage
 
-test-py36:
-  <<: [*configure, *test]
-  dependencies:
-    - build-py36
-  variables:
-    <<: [*py36]
-
 test-py37:
   <<: [*configure, *test]
   dependencies:
     - build-py37
   variables:
     <<: [*py37]
+
+test-py38:
+  <<: [*configure, *test]
+  dependencies:
+    - build-py38
+  variables:
+    <<: [*py38]
 
 # === Docs ===
 
@@ -114,9 +114,9 @@ docs:
     # Build docs
     - sphinx-build ${CI_PROJECT_DIR}/docs public
   dependencies:
-    - build-py37
+    - build-py38
   variables:
-    <<: [*py37]
+    <<: [*py38]
   artifacts:
     paths:
       - public
@@ -148,15 +148,15 @@ docs:
         twine upload $CI_PROJECT_DIR/conda-bld/linux-64/*.whl || true ;
       fi
 
-deploy-py36:
-  <<: *deploy
-  dependencies:
-    - build-py36
-
 deploy-py37:
   <<: *deploy
   dependencies:
     - build-py37
+
+deploy-py38:
+  <<: *deploy
+  dependencies:
+    - build-py38
 
 # === Pages ===
 
