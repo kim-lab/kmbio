@@ -41,7 +41,7 @@ import logging
 import re
 import subprocess
 
-from Bio._py3k import StringIO
+from io import StringIO
 from Bio.Data import SCOPData
 
 from kmbio.PDB import PDBParser

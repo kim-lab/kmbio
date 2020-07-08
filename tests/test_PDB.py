@@ -14,9 +14,9 @@ import os
 import sys
 import tempfile
 import unittest
+from io import StringIO
 
 import numpy as np
-from Bio._py3k import StringIO
 from Bio.Alphabet import generic_protein
 from Bio.Seq import Seq
 

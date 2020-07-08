@@ -48,7 +48,6 @@ last residues) have been shown as M (methionine) by the get_sequence method.
 """
 import logging
 
-from Bio._py3k import basestring
 from Bio.Alphabet import generic_protein
 from Bio.Data import SCOPData
 from Bio.Seq import Seq
@@ -194,7 +193,7 @@ def is_aa(residue, standard=False):
     False
     """
     # TODO - What about special cases like XXX, can they appear in PDB files?
-    if not isinstance(residue, basestring):
+    if not isinstance(residue, str):
         residue = residue.resname
     residue = residue.upper()
     if standard:
