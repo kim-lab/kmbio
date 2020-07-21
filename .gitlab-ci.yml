@@ -25,11 +25,14 @@ variables:
       cat <<EOF > ~/.condarc
       channel_priority: strict
       channels:
+        - file://${CI_PROJECT_DIR}/conda-bld
         - conda-forge
         - defaults
         - kimlab
         - ostrokach-forge
       EOF
+    - mkdir -p ${CI_PROJECT_DIR}/conda-bld
+    - conda index ${CI_PROJECT_DIR}/conda-bld
     - conda update -y -q conda conda-build --no-channel-priority
 
 # === Lint ===
@@ -82,8 +85,8 @@ build-py38:
   script:
     # Create conda environment for testing
     - conda update -yq conda
-    - conda create -n test -q -c file://${CI_PROJECT_DIR}/conda-bld --strict-channel-priority
-      "python=${PYTHON_VERSION}" ${CI_PROJECT_NAME} pytest pytest-cov ffindex || true
+    - conda create -n test -q
+      "python=${PYTHON_VERSION}" ${CI_PROJECT_NAME} pytest pytest-cov hh-suite
     - source activate test
     # Run tests
     - PKG_INSTALL_DIR=$(python -c "import kmbio; print(kmbio.__path__[0])")
@@ -126,9 +129,6 @@ docs:
   stage: test
   <<: [*configure]
   script:
-    # Restore built packages
-    - cp -r $CI_PROJECT_DIR/conda-bld/* /opt/conda/conda-bld/
-    - conda index /opt/conda/conda-bld/
     # Install required packages
     - conda install -yq --use-local "python=$PYTHON_VERSION" $CI_PROJECT_NAME
     - conda install -yq nbconvert ipython ipykernel pandoc
