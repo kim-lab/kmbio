@@ -46,7 +46,7 @@ lint:
     - cd $(dirname ${CI_CONFIG_PATH})
     - conda create -n lint -y -q "python=${PYTHON_VERSION}" isort flake8 mypy
     - source activate lint
-    - python -m isort -p ${CI_PROJECT_NAME} -c
+    - python -m isort ${CI_PROJECT_NAME} --check --diff
     - python -m flake8
     - python -m black --config pyproject.toml --check . || true
     - python -m mypy -p ${CI_PROJECT_NAME} || true
