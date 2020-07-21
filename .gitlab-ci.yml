@@ -67,7 +67,7 @@ build-py38:
 
 # === Test ===
 
-test:
+.test:
   stage: test
   extends:
     - .configure
