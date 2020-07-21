@@ -84,7 +84,6 @@ build-py38:
     - .configure
   script:
     # Create conda environment for testing
-    - conda update -yq conda
     - conda create -n test -q
       "python=${PYTHON_VERSION}" ${CI_PROJECT_NAME} pytest pytest-cov hh-suite
     - source activate test
@@ -130,8 +129,9 @@ docs:
   <<: [*configure]
   script:
     # Install required packages
-    - conda install -yq --use-local "python=$PYTHON_VERSION" $CI_PROJECT_NAME
-    - conda install -yq nbconvert ipython ipykernel pandoc
+    - conda create -n test -q
+      "python=${PYTHON_VERSION}" ${CI_PROJECT_NAME} nbconvert ipython ipykernel pandoc
+    - source activate test
     - pip install -q sphinx sphinx_rtd_theme recommonmark nbsphinx
     # Build docs
     - sphinx-build ${CI_PROJECT_DIR}/docs public
