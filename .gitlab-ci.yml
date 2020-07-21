@@ -28,6 +28,7 @@ variables:
         - conda-forge
         - defaults
         - kimlab
+        - ostrokach-forge
       EOF
     - conda update -y -q conda conda-build --no-channel-priority
 
@@ -82,7 +83,7 @@ build-py38:
     # Create conda environment for testing
     - conda update -yq conda
     - conda create -n test -q -c file://${CI_PROJECT_DIR}/conda-bld --strict-channel-priority
-      "python=${PYTHON_VERSION}" ${CI_PROJECT_NAME} pytest pytest-cov || true
+      "python=${PYTHON_VERSION}" ${CI_PROJECT_NAME} pytest pytest-cov ffindex || true
     - source activate test
     # Run tests
     - PKG_INSTALL_DIR=$(python -c "import kmbio; print(kmbio.__path__[0])")
