@@ -67,32 +67,44 @@ build-py38:
 
 # === Test ===
 
-.test: &test
+test:
   stage: test
+  extends:
+    - .configure
   script:
-    # Restore built packages
-    - cp -r ${CI_PROJECT_DIR}/conda-bld/* /opt/conda/conda-bld/
-    - conda index /opt/conda/conda-bld/
+    # Create conda environment for testing
+    - conda update -yq conda
+    - conda create -n test -q -c file://${CI_PROJECT_DIR}/conda-bld --strict-channel-priority
+      "python=${PYTHON_VERSION}" ${CI_PROJECT_NAME} pytest pytest-cov || true
+    - source activate test
     # Run tests
-    - cd ${CI_PROJECT_DIR}/.ci/conda
-    - conda build .
-      --test
-      --python $PYTHON_VERSION
-  coverage: /^TOTAL.* (\d+\%)/
+    - PKG_INSTALL_DIR=$(python -c "import kmbio; print(kmbio.__path__[0])")
+    - python -m pytest
+      -c setup.cfg
+      --cov="${PKG_INSTALL_DIR}"
+      --cov-config=setup.cfg
+      --color=yes
+      "tests/"
+    # Coverage
+    - mkdir coverage
+    - mv .coverage coverage/.coverage.all
+  dependencies:
+    - build
   artifacts:
     paths:
-      - environment-py${PYTHON_VERSION/./}.yml
-      - .ci/conda/.coverage
+      - coverage
 
 test-py37:
-  <<: [*configure, *test]
+  extends:
+    - .test
   dependencies:
     - build-py37
   variables:
     <<: [*py37]
 
 test-py38:
-  <<: [*configure, *test]
+  extends:
+    - .test
   dependencies:
     - build-py38
   variables:
