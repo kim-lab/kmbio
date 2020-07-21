@@ -21,7 +21,6 @@ variables:
 
 .configure: &configure
   before_script:
-    # Set conda envs and pkgs dirs
     - |
       cat <<EOF > ~/.condarc
       channel_priority: strict
@@ -87,6 +86,8 @@ build-py38:
     - source activate test
     # Run tests
     - PKG_INSTALL_DIR=$(python -c "import kmbio; print(kmbio.__path__[0])")
+    # TODO(ostrokach): Fix this with pytest --importorder
+    - rm -rf kmbio
     - python -m pytest
       -c setup.cfg
       --cov="${PKG_INSTALL_DIR}"
