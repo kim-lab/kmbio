@@ -24,9 +24,8 @@ EXTENSIONS = [
         "kmbio.PDB.tools.QCPSuperimposer.qcprotmodule",
         ["kmbio/PDB/tools/QCPSuperimposer/qcprotmodule.c"],
         include_dirs=[np.get_include()],
-    ),
-    Extension("*", ["kmbio/PDB/parsers/*.pyx"]),
-]
+    )
+] + cythonize([Extension("*", ["kmbio/PDB/parsers/*.pyx"])])
 
 setup(
     name="kmbio",
@@ -38,6 +37,6 @@ setup(
     long_description=read_md("README.md"),
     download_url="https://github.com/kimlaborg/kmbortio/release/",
     packages=PACKAGES,
-    ext_modules=cythonize(EXTENSIONS),
+    ext_modules=EXTENSIONS,
     package_data={},
 )
