@@ -56,6 +56,7 @@ lint:
 .build: &build
   stage: build
   script:
+    - conda config --set channel_priority true
     - cd "${CI_PROJECT_DIR}/.ci/conda"
     - conda build .
       --no-test

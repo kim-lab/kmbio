@@ -13,8 +13,8 @@ requirements:
   build:
     - {{ compiler('c') }}
   host:
-    - pip
     - python
+    - pip
     - cython
     - numpy
   run:
