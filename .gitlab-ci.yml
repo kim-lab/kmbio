@@ -1,4 +1,5 @@
-image: registry.gitlab.com/ostrokach-docker/conda:latest
+default:
+  image: condaforge/linux-anvil-cos7-x86_64:latest
 
 stages:
   - lint
@@ -56,12 +57,12 @@ lint:
 .build: &build
   stage: build
   script:
-    - conda config --set channel_priority strict
-    - cd "${CI_PROJECT_DIR}/.ci/conda"
-    - conda build .
+    - conda install -y -q conda build conda-forge-pinning
+    - conda build .ci/conda
       --no-test
       --python ${PYTHON_VERSION}
       --output-folder "${CI_PROJECT_DIR}/conda-bld"
+      --variant-config-files /opt/conda/conda_build_config.yaml
   artifacts:
     paths:
       - conda-bld
