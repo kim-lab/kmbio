@@ -21,7 +21,15 @@ variables:
 
 .configure: &configure
   before_script:
-    - conda config --append channels kimlab
+    # Set conda envs and pkgs dirs
+    - |
+      cat <<EOF > ~/.condarc
+      channel_priority: strict
+      channels:
+        - conda-forge
+        - defaults
+        - kimlab
+      EOF
     - conda update -y -q conda conda-build --no-channel-priority
 
 # === Lint ===
