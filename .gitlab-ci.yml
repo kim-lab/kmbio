@@ -83,17 +83,18 @@ build-py38:
   script:
     # Create conda environment for testing
     - conda create -n test -y -q -c "file://${CI_PROJECT_DIR}/conda-bld"
-      "python=${PYTHON_VERSION}" ${CI_PROJECT_NAME} pytest pytest-cov hh-suite
+      "python=${PYTHON_VERSION}" ${CI_PROJECT_NAME} 'pytest>=6.0.0rc1' pytest-cov hh-suite
     - conda activate test
     # Run tests
     - PKG_INSTALL_DIR=$(python -c "import kmbio; print(kmbio.__path__[0])")
-    # TODO(ostrokach): Fix this with pytest --import-order
+    # TODO(ostrokach): This should not be neccessary.
     - rm -rf kmbio
     - python -m pytest
       -c setup.cfg
       --cov="${PKG_INSTALL_DIR}"
       --cov-config=setup.cfg
       --color=yes
+      --import-mode=importlib
       "tests/"
     # Coverage
     - mkdir coverage
