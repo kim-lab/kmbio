@@ -16,10 +16,10 @@ requirements:
     - python
     - pip
     - cython
-    - numpy >=1.14
+    - numpy
   run:
     - python
-    - numpy >=1.14
+    - numpy
     - mmtf-python
     - pandas
     - biopython
