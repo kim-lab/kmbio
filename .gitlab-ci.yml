@@ -128,7 +128,7 @@ docs:
   script:
     # Install required packages
     - conda create -n test -y -q -c "file://${CI_PROJECT_DIR}/conda-bld"
-      "python=${PYTHON_VERSION}" ${CI_PROJECT_NAME} nbconvert ipython ipykernel pandoc
+      "python=${PYTHON_VERSION}" ${CI_PROJECT_NAME} nbconvert ipython ipykernel pandoc coverage
     - conda activate test
     - pip install -q sphinx sphinx_rtd_theme recommonmark nbsphinx
     # Build docs
