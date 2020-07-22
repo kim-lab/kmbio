@@ -134,11 +134,11 @@ docs:
     # Build docs
     - sphinx-build ${CI_PROJECT_DIR}/docs public/
     # Coverage
-    - coverage combine coverage/
-    - coverage report
-    - coverage html
-    - mv htmlcov public/
-  coverage: /^TOTAL.* (\d+\%)/
+    # - coverage combine coverage/
+    # - coverage report
+    # - coverage html
+    # - mv htmlcov public/
+  # coverage: /^TOTAL.* (\d+\%)/
   dependencies:
     - build-py38
   variables:
