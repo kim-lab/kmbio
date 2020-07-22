@@ -57,7 +57,7 @@ lint:
 .build: &build
   stage: build
   script:
-    - conda install -y -q conda build conda-forge-pinning
+    - conda install -y -q conda-forge-pinning
     - conda build .ci/conda
       --no-test
       --python ${PYTHON_VERSION}
