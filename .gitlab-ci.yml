@@ -26,15 +26,11 @@ variables:
       cat <<EOF > ~/.condarc
       channel_priority: strict
       channels:
-        - file://${CI_PROJECT_DIR}/conda-bld
         - conda-forge
         - kimlab
         - ostrokach-forge
         - defaults
       EOF
-    - mkdir -p ${CI_PROJECT_DIR}/conda-bld
-    - conda index ${CI_PROJECT_DIR}/conda-bld
-    - conda update -y -q conda conda-build --no-channel-priority
 
 # === Lint ===
 
@@ -84,6 +80,7 @@ build-py38:
   extends:
     - .configure
   script:
+    - conda config --add channels "file://${CI_PROJECT_DIR}/conda-bld"
     # Create conda environment for testing
     - conda create -n test -q
       "python=${PYTHON_VERSION}" ${CI_PROJECT_NAME} pytest pytest-cov hh-suite
@@ -129,6 +126,7 @@ docs:
   stage: test
   <<: [*configure]
   script:
+    - conda config --add channels "file://${CI_PROJECT_DIR}/conda-bld"
     # Install required packages
     - conda create -n test -q
       "python=${PYTHON_VERSION}" ${CI_PROJECT_NAME} nbconvert ipython ipykernel pandoc
