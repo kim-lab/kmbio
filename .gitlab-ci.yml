@@ -31,6 +31,7 @@ variables:
         - ostrokach-forge
         - defaults
       EOF
+    - source /opt/conda/etc/profile.d/conda.sh
 
 # === Lint ===
 
@@ -42,7 +43,7 @@ lint:
   script:
     - cd $(dirname ${CI_CONFIG_PATH})
     - conda create -n lint -y -q "python=${PYTHON_VERSION}" isort flake8 mypy
-    - source activate lint
+    - conda activate lint
     - python -m isort ${CI_PROJECT_NAME} --check --diff || true
     - python -m flake8
     - python -m black --config pyproject.toml --check . || true
@@ -80,14 +81,13 @@ build-py38:
   extends:
     - .configure
   script:
-    - conda config --add channels "file://${CI_PROJECT_DIR}/conda-bld"
     # Create conda environment for testing
-    - conda create -n test -q
+    - conda create -n test -y -q -c "file://${CI_PROJECT_DIR}/conda-bld"
       "python=${PYTHON_VERSION}" ${CI_PROJECT_NAME} pytest pytest-cov hh-suite
-    - source activate test
+    - conda activate test
     # Run tests
     - PKG_INSTALL_DIR=$(python -c "import kmbio; print(kmbio.__path__[0])")
-    # TODO(ostrokach): Fix this with pytest --importorder
+    # TODO(ostrokach): Fix this with pytest --import-order
     - rm -rf kmbio
     - python -m pytest
       -c setup.cfg
@@ -126,11 +126,10 @@ docs:
   stage: test
   <<: [*configure]
   script:
-    - conda config --add channels "file://${CI_PROJECT_DIR}/conda-bld"
     # Install required packages
-    - conda create -n test -q
+    - conda create -n test -y -q -c "file://${CI_PROJECT_DIR}/conda-bld"
       "python=${PYTHON_VERSION}" ${CI_PROJECT_NAME} nbconvert ipython ipykernel pandoc
-    - source activate test
+    - conda activate test
     - pip install -q sphinx sphinx_rtd_theme recommonmark nbsphinx
     # Build docs
     - sphinx-build ${CI_PROJECT_DIR}/docs public
