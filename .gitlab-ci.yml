@@ -132,7 +132,13 @@ docs:
     - conda activate test
     - pip install -q sphinx sphinx_rtd_theme recommonmark nbsphinx
     # Build docs
-    - sphinx-build ${CI_PROJECT_DIR}/docs public
+    - sphinx-build ${CI_PROJECT_DIR}/docs public/
+    # Coverage
+    - coverage combine coverage/
+    - coverage report
+    - coverage html
+    - mv htmlcov public/
+  coverage: /^TOTAL.* (\d+\%)/
   dependencies:
     - build-py38
   variables:
