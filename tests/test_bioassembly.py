@@ -86,7 +86,7 @@ def test_process_line_350_2(pdb_id, bioassembly_id):
 # #############################################################################
 
 with open(op.join(op.splitext(__file__)[0], "test_data.yml"), "rt") as ifh:
-    TEST_DATA = yaml.load(ifh)
+    TEST_DATA = yaml.safe_load(ifh)
 
 
 @parametrize("pdb_id", TEST_DATA["pdb_vs_mmcif_bioassembly_data"])

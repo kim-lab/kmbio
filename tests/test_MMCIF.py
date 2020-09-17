@@ -74,7 +74,6 @@ class ParseReal(unittest.TestCase):
             self.assertEqual(s, f_s)  # enough to test this
 
             self.assertTrue(isinstance(s, Seq))
-            self.assertEqual(s.alphabet)
 
             # Here non-standard MSE are shown as M
             self.assertEqual(
@@ -98,7 +97,6 @@ class ParseReal(unittest.TestCase):
                 self.assertEqual(pp[-1].id[1], 184)
             s = pp.get_sequence()
             self.assertTrue(isinstance(s, Seq))
-            self.assertEqual(s.alphabet)
             self.assertEqual("DIRQGPKEPFRDYVDRFYKTLRAEQASQEVKNW", str(s))
 
             # Second fragment
@@ -112,7 +110,6 @@ class ParseReal(unittest.TestCase):
 
             s = pp.get_sequence()
             self.assertTrue(isinstance(s, Seq))
-            self.assertEqual(s.alphabet)
             self.assertEqual("TETLLVQNANPDCKTILKALGPGATLEE", str(s))
 
             # Third fragment
@@ -126,7 +123,6 @@ class ParseReal(unittest.TestCase):
 
             s = pp.get_sequence()
             self.assertTrue(isinstance(s, Seq))
-            self.assertEqual(s.alphabet)
             self.assertEqual("TACQG", str(s))
 
     def test_models_PDB_num(self):
@@ -162,7 +158,6 @@ class ParseReal(unittest.TestCase):
             # Check the sequence
             s = pp.get_sequence()
             self.assertTrue(isinstance(s, Seq))
-            self.assertEqual(s.alphabet)
             # Here non-standard MSE are shown as M
             self.assertEqual("MKPVTLYDVAEYAGVSYQTVSRVVNQASHVSAKTREKVEAAMAELNYIPNR", str(s))
             # ==========================================================
@@ -176,7 +171,6 @@ class ParseReal(unittest.TestCase):
             # Check the sequence
             s = pp.get_sequence()
             self.assertTrue(isinstance(s, Seq))
-            self.assertEqual(s.alphabet)
             self.assertEqual("MKPVTLYDVAEYAGVSYQTVSRVVNQASHVSAKTREKVEAAMAELNYIPNR", str(s))
 
         # This structure contains several models with multiple lengths.
@@ -217,7 +211,6 @@ class ParseReal(unittest.TestCase):
 
             s = pp.get_sequence()
             self.assertTrue(isinstance(s, Seq))
-            self.assertEqual(s.alphabet)
             self.assertEqual(refseq, str(s))
 
     def test_filehandle_PDB_num(self):

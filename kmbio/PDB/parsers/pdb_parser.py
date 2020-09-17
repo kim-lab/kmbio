@@ -87,7 +87,7 @@ class PDBParser(Parser):
          - id - string, the id that will be used for the structure
          - file - name of the PDB file OR an open filehandle
         """
-        with as_handle(filename, mode="rU") as handle:
+        with as_handle(filename, mode="r") as handle:
             data = handle.readlines()
 
         self.header, coords_trailer = self._get_header(data)

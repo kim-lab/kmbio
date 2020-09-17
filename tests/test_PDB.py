@@ -157,7 +157,6 @@ class ParseTest(unittest.TestCase):
         # Check the sequence
         s = pp.get_sequence()
         self.assertTrue(isinstance(s, Seq))
-        self.assertEqual(s.alphabet)
         self.assertEqual(
             "RCGSQGGGSTCPGLRCCSIWGWCGDSEPYCGRTCENKCWSGER"
             "SDHRCGAAVGNPPCGQDRCCSVHGWCGGGNDYCSGGNCQYRC",
@@ -176,7 +175,6 @@ class ParseTest(unittest.TestCase):
         # Check the sequence
         s = pp.get_sequence()
         self.assertTrue(isinstance(s, Seq))
-        self.assertEqual(s.alphabet)
         self.assertEqual(
             "RCGSQGGGSTCPGLRCCSIWGWCGDSEPYCGRTCENKCWSGER"
             "SDHRCGAAVGNPPCGQDRCCSVHGWCGGGNDYCSGGNCQYRC",
@@ -563,7 +561,6 @@ class ParseReal(unittest.TestCase):
             # Check the sequence
             s = pp.get_sequence()
             self.assertTrue(isinstance(s, Seq))
-            self.assertEqual(s.alphabet)
             # Here non-standard MSE are shown as M
             self.assertEqual(
                 "MDIRQGPKEPFRDYVDRFYKTLRAEQASQEVKNWMTETLLVQ" "NANPDCKTILKALGPGATLEEMMTACQG", str(s)
@@ -580,7 +577,6 @@ class ParseReal(unittest.TestCase):
             self.assertEqual(pp[-1].id[1], 184)
             s = pp.get_sequence()
             self.assertTrue(isinstance(s, Seq))
-            self.assertEqual(s.alphabet)
             self.assertEqual("DIRQGPKEPFRDYVDRFYKTLRAEQASQEVKNW", str(s))
             # Second fragment
             pp = polypeptides[1]
@@ -588,7 +584,6 @@ class ParseReal(unittest.TestCase):
             self.assertEqual(pp[-1].id[1], 213)
             s = pp.get_sequence()
             self.assertTrue(isinstance(s, Seq))
-            self.assertEqual(s.alphabet)
             self.assertEqual("TETLLVQNANPDCKTILKALGPGATLEE", str(s))
             # Third fragment
             pp = polypeptides[2]
@@ -596,7 +591,6 @@ class ParseReal(unittest.TestCase):
             self.assertEqual(pp[-1].id[1], 220)
             s = pp.get_sequence()
             self.assertTrue(isinstance(s, Seq))
-            self.assertEqual(s.alphabet)
             self.assertEqual("TACQG", str(s))
 
     def test_strict(self):
