@@ -19,7 +19,7 @@ from kmbio.PDB import (
     open_url,
     sort_structure,
 )
-from kmbio.utils import parametrize
+from kmbio.test_helpers import parametrize
 
 random.seed(42)
 logger = logging.getLogger(__name__)

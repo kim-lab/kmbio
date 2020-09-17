@@ -2,12 +2,18 @@ import logging
 import os
 
 import pytest
-from common import ATOM_DEFINED_TWICE_PDBS, LOCAL_REMOTE_MISMATCH, MISSING, PDB_IDS, random_subset
 
 import kmbio.PDB
 from kmbio.PDB import DEFAULT_ROUTES, allequal
 from kmbio.PDB.exceptions import BioassemblyError
 from kmbio.PDB.io.loaders import guess_pdb_type
+from kmbio.test_helpers import (
+    ATOM_DEFINED_TWICE_PDBS,
+    LOCAL_REMOTE_MISMATCH,
+    MISSING,
+    PDB_IDS,
+    random_subset,
+)
 
 logger = logging.getLogger(__name__)
 
