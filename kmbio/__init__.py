@@ -10,7 +10,7 @@ of freely available Python tools for computational molecular biology.
 
 http://biopython.org
 """
-__version__ = "2.0.21"
+__version__ = "2.1.0"
 
 __all__ = [
     "PDB",
