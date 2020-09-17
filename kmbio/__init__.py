@@ -15,5 +15,6 @@ __version__ = "2.0.21"
 __all__ = [
     "PDB",
     "SVDSuperimposer",
+    "utils",
 ]
 from . import *

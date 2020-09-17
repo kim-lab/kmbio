@@ -6,7 +6,6 @@ import re
 
 import pytest
 import yaml
-from conftest import parametrize
 
 import kmbio.PDB
 from kmbio.PDB import (
@@ -20,6 +19,7 @@ from kmbio.PDB import (
     open_url,
     sort_structure,
 )
+from kmbio.utils import parametrize
 
 random.seed(42)
 logger = logging.getLogger(__name__)
