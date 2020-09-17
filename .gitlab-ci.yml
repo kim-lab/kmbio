@@ -91,7 +91,7 @@ build-py38:
     - python -m pytest
       -c ../setup.cfg
       --cov="${PKG_INSTALL_DIR}"
-      --cov-config=setup.cfg
+      --cov-config=../setup.cfg
       --color=yes
       --import-mode=importlib
       "."
