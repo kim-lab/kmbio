@@ -87,15 +87,14 @@ build-py38:
     - conda activate test
     # Run tests
     - PKG_INSTALL_DIR=$(python -c "import kmbio; print(kmbio.__path__[0])")
-    # TODO(ostrokach): This should not be neccessary.
-    - rm -rf kmbio
+    - cd tests
     - python -m pytest
       -c setup.cfg
       --cov="${PKG_INSTALL_DIR}"
       --cov-config=setup.cfg
       --color=yes
       --import-mode=importlib
-      "tests/"
+      "."
     # Coverage
     - mkdir coverage
     - mv .coverage coverage/.coverage.all
