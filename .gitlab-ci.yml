@@ -89,7 +89,7 @@ build-py38:
     - PKG_INSTALL_DIR=$(python -c "import kmbio; print(kmbio.__path__[0])")
     - cd tests
     - python -m pytest
-      -c setup.cfg
+      -c ../setup.cfg
       --cov="${PKG_INSTALL_DIR}"
       --cov-config=setup.cfg
       --color=yes
