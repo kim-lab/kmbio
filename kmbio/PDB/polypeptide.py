@@ -48,7 +48,6 @@ last residues) have been shown as M (methionine) by the get_sequence method.
 """
 import logging
 
-from Bio.Alphabet import generic_protein
 from Bio.Data import SCOPData
 from Bio.Seq import Seq
 
@@ -299,7 +298,7 @@ class Polypeptide(list):
         s = ""
         for res in self:
             s += SCOPData.protein_letters_3to1.get(res.resname, "X")
-        seq = Seq(s, generic_protein)
+        seq = Seq(s)
         return seq
 
     def __repr__(self):

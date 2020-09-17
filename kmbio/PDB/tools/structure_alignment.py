@@ -99,7 +99,6 @@ class StructureAlignment(object):
 
 if __name__ == "__main__":
     import sys
-    from Bio.Alphabet import generic_protein
     from Bio import AlignIO
     from kmbio.PDB import PDBParser
 
@@ -111,7 +110,7 @@ if __name__ == "__main__":
         sys.exit()
 
     # The alignment
-    fa = AlignIO.read(open(sys.argv[1]), "fasta", generic_protein)
+    fa = AlignIO.read(open(sys.argv[1]), "fasta")
 
     pdb_file1 = sys.argv[2]
     pdb_file2 = sys.argv[3]
